@@ -823,14 +823,38 @@
       <div class="success-msg" id="successMsg">
         <div class="icon">✅</div>
         <p>¡Registro enviado exitosamente!<br>El equipo de Helse se comunicará con usted pronto.</p>
+        <p style="margin-top:12px; font-size:13px; color: var(--verde-dark);">
+          📂 Se abrirá automáticamente una carpeta de Google Drive.<br>
+          Por favor suba allí su fórmula médica con su <strong>nombre y número de documento</strong> en el nombre del archivo.
+        </p>
+        <a href="https://drive.google.com/drive/folders/1mEr6A_dQGOJn1ptlyNR_gH6T6J6VC3Cy" target="_blank"
+           style="display:inline-block; margin-top:14px; padding: 10px 22px; background: var(--verde); color:white; border-radius:8px; font-weight:600; font-size:13px; text-decoration:none;">
+          📤 Subir fórmula al Drive
+        </a>
       </div>
 
     </form>
   </div>
 </div>
 
-<script>
-  // ---- Campo 16: upload fórmula ----
+<script type="module">
+  // ── Firebase ──────────────────────────────────────────────
+  import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+    authDomain: "helse-entregas.firebaseapp.com",
+    projectId: "helse-entregas",
+    storageBucket: "helse-entregas.firebasestorage.app",
+    messagingSenderId: "1086193469864",
+    appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+  };
+
+  const app     = initializeApp(firebaseConfig);
+  const db      = getFirestore(app);
+
+  // ── Upload fórmula ────────────────────────────────────────
   let archivoFormula = null;
 
   function setCapture(val) {
@@ -957,11 +981,51 @@
       return;
     }
 
-    // Todo OK
-    document.querySelector('.btn-submit').style.display = 'none';
-    document.querySelector('.submit-note').style.display = 'none';
-    document.getElementById('successMsg').style.display = 'block';
-    document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // ── Todo válido → enviar a Firebase ───────────────────
+    const btn = document.querySelector('.btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    try {
+      // Guardar todos los campos en Firestore (sin Storage)
+      await addDoc(collection(db, 'registros_entrega_efectiva'), {
+        fecha:                 serverTimestamp(),
+        rol:                   document.querySelector('input[name="rol"]:checked')?.value || '',
+        acepta_programa:       document.getElementById('acepta_programa').checked,
+        contacto_whatsapp:     document.querySelector('input[name="contacto_whatsapp"]:checked')?.value || '',
+        contacto_llamada:      document.querySelector('input[name="contacto_llamada"]:checked')?.value || '',
+        autoriza_recopilacion: document.querySelector('input[name="autoriza_recopilacion"]:checked')?.value || '',
+        menor_edad:            document.querySelector('input[name="menor_edad"]:checked')?.value || '',
+        acepta_programa2:      document.getElementById('acepta_programa2').checked,
+        acepta_menor:          document.getElementById('acepta_menor').checked,
+        nombre:                document.getElementById('nombre').value.trim(),
+        tipo_documento:        document.querySelector('input[name="tipo_doc"]:checked')?.value || '',
+        num_identificacion:    document.getElementById('num_id').value.trim(),
+        ciudad:                document.getElementById('ciudad').value.trim(),
+        numero_contacto:       document.getElementById('contacto').value.trim(),
+        eps:                   document.getElementById('eps').value.trim(),
+        mipres:                document.getElementById('mipres').value.trim(),
+        formula_archivo:       archivoFormula ? archivoFormula.name : '',
+        formula_nota:          'Archivo subido por el paciente al Google Drive compartido',
+      });
+
+      // Mostrar mensaje de éxito con instrucción de Drive
+      btn.style.display = 'none';
+      document.querySelector('.submit-note').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+      document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // Abrir Google Drive automáticamente tras 1.5 segundos
+      setTimeout(() => {
+        window.open('https://drive.google.com/drive/folders/1mEr6A_dQGOJn1ptlyNR_gH6T6J6VC3Cy', '_blank');
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Enviar Registro';
+      alert('❌ Ocurrió un error al enviar. Revisa tu conexión e intenta de nuevo.\n\n' + err.message);
+    }
   });
 </script>
 </body>
