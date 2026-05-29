@@ -379,8 +379,14 @@ function mostrarPreview(file) {
   const thumb = document.getElementById('previewThumb');
   if (file.type.startsWith('image/')) {
     const url = URL.createObjectURL(file);
-    thumb.innerHTML = `<img src="${url}" alt="preview">`;
-  } else { thumb.innerHTML = '📄'; }
+    // Mostrar imagen grande debajo del nombre
+    thumb.innerHTML = `<img src="${url}" alt="preview" style="width:100%;max-width:100%;border-radius:10px;margin-top:10px;border:1.5px solid var(--border);">`;
+    thumb.style.cssText = 'width:100%;height:auto;font-size:inherit;background:none;border:none;';
+  } else {
+    thumb.innerHTML = '📄';
+    thumb.style.cssText = '';
+  }
+  document.getElementById('archivoPreview').style.flexDirection = 'column';
   document.getElementById('archivoPreview').classList.add('visible');
   document.getElementById('uploadZona').style.borderColor = 'var(--verde)';
   document.getElementById('c15').classList.remove('invalid');
@@ -502,10 +508,10 @@ document.getElementById('form').addEventListener('submit', async e => {
   btn.disabled = true; btn.textContent = 'Enviando...';
 
   try {
-    // Comprimir foto antes de guardar (máx 800px, calidad 0.7)
+    // Comprimir foto antes de guardar (máx 1200px, calidad 0.85)
     let formulaB64 = '';
     if (archivoFormula) {
-      formulaB64 = await comprimirImagen(archivoFormula, 800, 0.7);
+      formulaB64 = await comprimirImagen(archivoFormula, 1200, 0.85);
     }
 
     await addDoc(collection(db, 'registros_entrega_efectiva'), {
