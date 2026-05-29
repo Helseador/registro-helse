@@ -311,12 +311,8 @@ input::placeholder{color:#9EAFAD;}
         <div class="icon">✅</div>
         <p>¡Registro enviado exitosamente!<br>El equipo de Helse se comunicará con usted pronto.</p>
         <p style="margin-top:12px;font-size:13px;color:var(--verde-dark);">
-          📂 Por favor suba su fórmula médica con su <strong>nombre y número de documento</strong> como nombre del archivo.
+          Su fórmula médica y firma quedaron guardadas junto con su registro.
         </p>
-        <a href="https://drive.google.com/drive/folders/15sKWXMLQCB5d7UjRmgbmuORaupl5GHW1" target="_blank"
-           style="display:inline-block;margin-top:14px;padding:10px 22px;background:var(--verde);color:white;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;">
-          📤 Subir fórmula al Drive
-        </a>
       </div>
 
     </form>
@@ -348,6 +344,33 @@ document.querySelectorAll('input[name="menor"]').forEach(r => {
 
 // ── Upload fórmula ──
 let archivoFormula = null;
+let formulaBase64  = null;
+
+function comprimirImagen(file, maxW, calidad) {
+  return new Promise(resolve => {
+    if (file.type === 'application/pdf') {
+      // PDF: leer como base64 directamente (sin comprimir)
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const ratio = Math.min(1, maxW / img.width);
+      const w = Math.round(img.width  * ratio);
+      const h = Math.round(img.height * ratio);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', calidad));
+    };
+    img.src = url;
+  });
+}
+
 function mostrarPreview(file) {
   archivoFormula = file;
   document.getElementById('previewNombre').textContent = file.name;
@@ -479,6 +502,12 @@ document.getElementById('form').addEventListener('submit', async e => {
   btn.disabled = true; btn.textContent = 'Enviando...';
 
   try {
+    // Comprimir foto antes de guardar (máx 800px, calidad 0.7)
+    let formulaB64 = '';
+    if (archivoFormula) {
+      formulaB64 = await comprimirImagen(archivoFormula, 800, 0.7);
+    }
+
     await addDoc(collection(db, 'registros_entrega_efectiva'), {
       fecha:              serverTimestamp(),
       rol:                radio('rol'),
@@ -495,7 +524,8 @@ document.getElementById('form').addEventListener('submit', async e => {
       ciudad:             txt('ciudad'),
       numero_contacto:    txt('contacto'),
       eps:                txt('eps'),
-      formula_archivo:    archivoFormula ? archivoFormula.name : '',
+      formula_nombre:     archivoFormula ? archivoFormula.name : '',
+      formula_imagen:     formulaB64,
       firma_imagen:       canvas.toDataURL('image/png'),
     });
 
@@ -503,7 +533,6 @@ document.getElementById('form').addEventListener('submit', async e => {
     document.querySelector('.submit-note').style.display = 'none';
     document.getElementById('successMsg').style.display = 'block';
     document.getElementById('successMsg').scrollIntoView({ behavior:'smooth', block:'center' });
-    setTimeout(() => window.open('https://drive.google.com/drive/folders/15sKWXMLQCB5d7UjRmgbmuORaupl5GHW1', '_blank'), 1500);
 
   } catch(err) {
     btn.disabled = false; btn.textContent = 'Enviar Registro';
