@@ -418,6 +418,13 @@
       </div>`;
     }
 
+    if (r.formula_imagen) {
+      html += `<div class="detalle-fila" style="flex-direction:column;">
+        <span class="detalle-key" style="margin-bottom:8px;">Fórmula médica ${r.formula_nombre ? '('+r.formula_nombre+')' : ''}</span>
+        <img src="${r.formula_imagen}" class="firma-preview" alt="Fórmula médica" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border);">
+      </div>`;
+    }
+
     document.getElementById('modalBody').innerHTML = html;
     document.getElementById('modalOverlay').classList.add('open');
   };
