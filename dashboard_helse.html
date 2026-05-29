@@ -3,205 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard – Programa Entrega Efectiva</title>
+<title>Dashboard – Programa Entrega Efectiva · Helse</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase compat (NO module, funciona con scripts normales) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-  :root {
-    --verde: #00897B;
-    --verde-dark: #00695C;
-    --verde-light: #E0F2F1;
-    --verde-bg: #F0FAF9;
-    --rojo: #C62828;
-    --gris: #546E7A;
-    --gris-light: #ECEFF1;
-    --text: #1A2C2B;
-    --border: #B2DFDB;
-    --white: #FFFFFF;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--verde-bg); color: var(--text); min-height: 100vh; }
-
-  /* Header */
-  .topbar {
-    background: var(--verde);
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,137,123,0.2);
-  }
-  .topbar h1 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; }
-  .topbar span { font-size: 12px; opacity: 0.75; }
-  .topbar-right { display: flex; align-items: center; gap: 14px; }
-  .btn-export {
-    background: white; color: var(--verde-dark);
-    border: none; border-radius: 8px;
-    padding: 8px 16px; font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-export:hover { background: var(--verde-light); }
-
-  /* Estadísticas */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px;
-    padding: 24px 32px 0;
-  }
-  .stat-card {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 2px 12px rgba(0,137,123,0.08);
-    border-top: 3px solid var(--verde);
-  }
-  .stat-num { font-size: 32px; font-weight: 700; color: var(--verde); }
-  .stat-label { font-size: 12px; color: var(--gris); margin-top: 4px; }
-
-  /* Buscador */
-  .toolbar {
-    padding: 20px 32px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .search-box {
-    flex: 1;
-    min-width: 220px;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    background: white;
-    transition: border-color 0.2s;
-  }
-  .search-box:focus { border-color: var(--verde); }
-
-  /* Tabla */
-  .table-wrap {
-    padding: 0 32px 40px;
-    overflow-x: auto;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,137,123,0.08);
-    font-size: 13.5px;
-  }
-  thead { background: var(--verde); color: white; }
-  thead th {
-    padding: 14px 16px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
-  tbody tr { border-bottom: 1px solid var(--gris-light); transition: background 0.15s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--verde-bg); }
-  td { padding: 12px 16px; vertical-align: middle; }
-  td.nombre { font-weight: 600; color: var(--text); }
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .badge-si  { background: #E8F5E9; color: #2E7D32; }
-  .badge-no  { background: #FFEBEE; color: #C62828; }
-  .badge-rol { background: var(--verde-light); color: var(--verde-dark); }
-
-  /* Botón ver detalle */
-  .btn-ver {
-    background: var(--verde-light);
-    color: var(--verde-dark);
-    border: none;
-    border-radius: 7px;
-    padding: 6px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-ver:hover { background: var(--verde); color: white; }
-
-  /* Modal detalle */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: white;
-    border-radius: 18px;
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-  }
-  .modal-header {
-    background: var(--verde);
-    color: white;
-    padding: 20px 24px;
-    border-radius: 18px 18px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .modal-header h2 { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; }
-  .btn-cerrar { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
-  .modal-body { padding: 24px; }
-  .detalle-fila {
-    display: flex;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--gris-light);
-    font-size: 13.5px;
-  }
-  .detalle-fila:last-child { border-bottom: none; }
-  .detalle-key { font-weight: 600; color: var(--gris); min-width: 160px; flex-shrink: 0; }
-  .firma-preview { max-width: 100%; border: 1.5px solid var(--border); border-radius: 10px; margin-top: 8px; }
-
-  /* Loading */
-  .loading {
-    text-align: center;
-    padding: 60px;
-    color: var(--gris);
-    font-size: 15px;
-  }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--verde);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .empty { text-align: center; padding: 60px; color: var(--gris); }
-
-  @media(max-width:600px) {
-    .stats, .toolbar, .table-wrap { padding-left: 16px; padding-right: 16px; }
-    .topbar { padding: 14px 16px; }
-  }
+:root{--verde:#00897B;--verde-dark:#00695C;--verde-light:#E0F2F1;--verde-bg:#F0FAF9;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B2DFDB;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--verde-bg);color:var(--text);min-height:100vh;}
+.topbar{background:var(--verde);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,137,123,0.2);}
+.topbar h1{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.btn-top{background:white;color:var(--verde-dark);border:none;border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-top:hover{background:var(--verde-light);}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;padding:24px 32px 0;}
+.stat-card{background:white;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,137,123,0.08);border-top:3px solid var(--verde);}
+.stat-num{font-size:32px;font-weight:700;color:var(--verde);}
+.stat-label{font-size:12px;color:var(--gris);margin-top:4px;}
+.toolbar{padding:20px 32px;display:flex;gap:12px;align-items:center;}
+.search-box{flex:1;min-width:220px;border:1.5px solid var(--border);border-radius:10px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;background:white;transition:border-color 0.2s;}
+.search-box:focus{border-color:var(--verde);}
+.table-wrap{padding:0 32px 40px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,137,123,0.08);font-size:13.5px;}
+thead{background:var(--verde);color:white;}
+thead th{padding:14px 16px;text-align:left;font-weight:600;font-size:12px;letter-spacing:0.5px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--gris-light);transition:background 0.15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--verde-bg);}
+td{padding:12px 16px;vertical-align:middle;}
+td.nombre{font-weight:600;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-si{background:#E8F5E9;color:#2E7D32;}
+.badge-no{background:#FFEBEE;color:#C62828;}
+.badge-rol{background:var(--verde-light);color:var(--verde-dark);}
+.btn-ver{background:var(--verde-light);color:var(--verde-dark);border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-ver:hover{background:var(--verde);color:white;}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:18px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.modal-header{background:var(--verde);color:white;padding:20px 24px;border-radius:18px 18px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-header h2{font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;}
+.btn-cerrar{background:none;border:none;color:white;font-size:22px;cursor:pointer;}
+.modal-body{padding:24px;}
+.detalle-fila{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--gris-light);font-size:13.5px;}
+.detalle-fila:last-child{border-bottom:none;}
+.detalle-key{font-weight:600;color:var(--gris);min-width:160px;flex-shrink:0;}
+.firma-preview{max-width:100%;border:1.5px solid var(--border);border-radius:10px;margin-top:8px;}
+/* Loading */
+.loading{text-align:center;padding:60px;color:var(--gris);font-size:15px;}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--verde);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:60px;color:var(--gris);}
+@media(max-width:600px){.stats,.toolbar,.table-wrap{padding-left:16px;padding-right:16px;}.topbar{padding:14px 16px;}}
 </style>
 </head>
 <body>
@@ -212,63 +72,34 @@
     <span>Grupo Helse SAS</span>
   </div>
   <div class="topbar-right">
-    <span id="ultimaActualizacion" style="font-size:12px; opacity:0.75;"></span>
-    <button class="btn-export" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+    <span id="ultimaActualizacion" style="font-size:12px;opacity:0.75;"></span>
+    <button class="btn-top" onclick="exportarCSV()">⬇️ Exportar CSV</button>
   </div>
 </div>
 
-<!-- Estadísticas -->
 <div class="stats">
-  <div class="stat-card">
-    <div class="stat-num" id="statTotal">—</div>
-    <div class="stat-label">Total registros</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-num" id="statHoy">—</div>
-    <div class="stat-label">Registros hoy</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-num" id="statPacientes">—</div>
-    <div class="stat-label">Pacientes</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-num" id="statCuidadores">—</div>
-    <div class="stat-label">Cuidadores</div>
-  </div>
+  <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total registros</div></div>
+  <div class="stat-card"><div class="stat-num" id="statHoy">—</div><div class="stat-label">Registros hoy</div></div>
+  <div class="stat-card"><div class="stat-num" id="statPacientes">—</div><div class="stat-label">Pacientes</div></div>
+  <div class="stat-card"><div class="stat-num" id="statCuidadores">—</div><div class="stat-label">Cuidadores</div></div>
 </div>
 
-<!-- Buscador -->
 <div class="toolbar">
   <input type="text" class="search-box" id="buscador" placeholder="🔍 Buscar por nombre, documento, ciudad, EPS...">
 </div>
 
-<!-- Tabla -->
 <div class="table-wrap">
-  <div class="loading" id="loadingMsg">
-    <div class="spinner"></div>
-    Cargando registros...
-  </div>
+  <div class="loading" id="loadingMsg"><div class="spinner"></div>Cargando registros...</div>
   <table id="tablaRegistros" style="display:none;">
     <thead>
-      <tr>
-        <th>#</th>
-        <th>Fecha</th>
-        <th>Nombre</th>
-        <th>Documento</th>
-        <th>Ciudad</th>
-        <th>EPS</th>
-        <th>Rol</th>
-        <th>WhatsApp</th>
-        <th>Ver</th>
-      </tr>
+      <tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Documento</th><th>Ciudad</th><th>EPS</th><th>Rol</th><th>WhatsApp</th><th>Ver</th></tr>
     </thead>
     <tbody id="tbody"></tbody>
   </table>
   <div class="empty" id="emptyMsg" style="display:none;">No se encontraron registros.</div>
 </div>
 
-<!-- Modal detalle -->
-<div class="modal-overlay" id="modalOverlay">
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
   <div class="modal">
     <div class="modal-header">
       <h2 id="modalNombre">Detalle del registro</h2>
@@ -278,441 +109,304 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script type="module">
-  import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script>
+// ── Firebase config ──────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+});
+const db = firebase.firestore();
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
-    authDomain: "helse-entregas.firebaseapp.com",
-    projectId: "helse-entregas",
-    storageBucket: "helse-entregas.firebasestorage.app",
-    messagingSenderId: "1086193469864",
-    appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
-  };
+let todosLosRegistros = [];
+let registroActual    = null;
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  let todosLosRegistros = [];
-
-  async function cargarRegistros() {
-    try {
-      // Timeout de 10 segundos para evitar carga infinita
-      const timeout = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Tiempo de espera agotado')), 10000)
-      );
-      const snap = await Promise.race([
-        getDocs(collection(db, 'registros_entrega_efectiva')),
-        timeout
-      ]);
-      todosLosRegistros = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => {
-          const ta = a.fecha?.toDate ? a.fecha.toDate() : new Date(0);
-          const tb = b.fecha?.toDate ? b.fecha.toDate() : new Date(0);
-          return tb - ta;
-        });
-      renderTabla(todosLosRegistros);
-      actualizarStats(todosLosRegistros);
-      document.getElementById('ultimaActualizacion').textContent =
-        'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
-    } catch (e) {
-      document.getElementById('loadingMsg').innerHTML =
-        '❌ ' + (e.message.includes('agotado')
-          ? 'No se pudo conectar con Firebase. Verifica tu conexión e intenta recargar.'
-          : 'Error al cargar datos: ' + e.message);
-      console.error(e);
-    }
-  }
-
-  function formatFecha(ts) {
-    if (!ts) return '—';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric' }) +
-           ' ' + d.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
-  }
-
-  function badge(val, siVal='Si') {
-    if (!val) return '—';
-    const esSi = val.toLowerCase() === siVal.toLowerCase() || val === true || val === 'true';
-    return `<span class="badge ${esSi ? 'badge-si' : 'badge-no'}">${val}</span>`;
-  }
-
-  function renderTabla(registros) {
-    document.getElementById('loadingMsg').style.display = 'none';
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = '';
-
-    if (registros.length === 0) {
-      document.getElementById('tablaRegistros').style.display = 'none';
-      document.getElementById('emptyMsg').style.display = 'block';
-      return;
-    }
-
-    document.getElementById('tablaRegistros').style.display = 'table';
-    document.getElementById('emptyMsg').style.display = 'none';
-
-    registros.forEach((r, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="color:var(--gris);font-size:12px;">${i + 1}</td>
-        <td style="white-space:nowrap;font-size:12px;color:var(--gris);">${formatFecha(r.fecha)}</td>
-        <td class="nombre">${r.nombre || '—'}</td>
-        <td>${r.tipo_documento || ''} ${r.num_identificacion || ''}</td>
-        <td>${r.ciudad || '—'}</td>
-        <td>${r.eps || '—'}</td>
-        <td><span class="badge badge-rol">${r.rol || '—'}</span></td>
-        <td>${badge(r.contacto_whatsapp)}</td>
-        <td><button class="btn-ver" data-id="${r.id}">Ver</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // Eventos botones ver
-    document.querySelectorAll('.btn-ver').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const reg = todosLosRegistros.find(r => r.id === btn.dataset.id);
-        if (reg) abrirModal(reg);
+// ── Cargar registros ──────────────────────────────────────
+async function cargarRegistros() {
+  try {
+    const snap = await db.collection('registros_entrega_efectiva').get();
+    todosLosRegistros = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const ta = a.fecha && a.fecha.toDate ? a.fecha.toDate().getTime() : 0;
+        const tb = b.fecha && b.fecha.toDate ? b.fecha.toDate().getTime() : 0;
+        return tb - ta;
       });
-    });
+    renderTabla(todosLosRegistros);
+    actualizarStats(todosLosRegistros);
+    document.getElementById('ultimaActualizacion').textContent =
+      'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
+  } catch(e) {
+    document.getElementById('loadingMsg').innerHTML =
+      '❌ Error al conectar con Firestore:<br><small>' + e.message + '</small>';
+    console.error(e);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function formatFecha(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'})
+    + ' ' + d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+
+function badge(val) {
+  if (!val) return '—';
+  const si = val === 'Sí' || val === 'Si' || val === true;
+  return '<span class="badge '+(si?'badge-si':'badge-no')+'">'+val+'</span>';
+}
+
+// ── Render tabla ──────────────────────────────────────────
+function renderTabla(registros) {
+  document.getElementById('loadingMsg').style.display = 'none';
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  if (!registros.length) {
+    document.getElementById('tablaRegistros').style.display = 'none';
+    document.getElementById('emptyMsg').style.display = 'block';
+    return;
+  }
+  document.getElementById('tablaRegistros').style.display = 'table';
+  document.getElementById('emptyMsg').style.display = 'none';
+  registros.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td style="color:var(--gris);font-size:12px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:12px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.tipo_documento||'')+' '+(r.num_identificacion||'')+'</td>'+
+      '<td>'+(r.ciudad||'—')+'</td>'+
+      '<td>'+(r.eps||'—')+'</td>'+
+      '<td><span class="badge badge-rol">'+(r.rol||'—')+'</span></td>'+
+      '<td>'+badge(r.contacto_whatsapp)+'</td>'+
+      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Stats ─────────────────────────────────────────────────
+function actualizarStats(registros) {
+  const hoy = new Date().toDateString();
+  document.getElementById('statTotal').textContent     = registros.length;
+  document.getElementById('statHoy').textContent       = registros.filter(r => {
+    const d = r.fecha && r.fecha.toDate ? r.fecha.toDate() : null;
+    return d && d.toDateString() === hoy;
+  }).length;
+  document.getElementById('statPacientes').textContent  = registros.filter(r => r.rol === 'Paciente').length;
+  document.getElementById('statCuidadores').textContent = registros.filter(r => r.rol === 'Cuidador').length;
+}
+
+// ── Buscador ──────────────────────────────────────────────
+document.getElementById('buscador').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  renderTabla(todosLosRegistros.filter(r =>
+    (r.nombre||'').toLowerCase().includes(q) ||
+    (r.num_identificacion||'').toLowerCase().includes(q) ||
+    (r.ciudad||'').toLowerCase().includes(q) ||
+    (r.eps||'').toLowerCase().includes(q)
+  ));
+});
+
+// ── Modal ─────────────────────────────────────────────────
+function abrirModal(id) {
+  const r = todosLosRegistros.find(x => x.id === id);
+  if (!r) return;
+  registroActual = r;
+  document.getElementById('modalNombre').textContent = r.nombre || 'Detalle';
+
+  const campos = [
+    ['Fecha registro',        formatFecha(r.fecha)],
+    ['Rol',                   r.rol],
+    ['Nombre completo',       r.nombre],
+    ['Tipo documento',        r.tipo_documento],
+    ['N° identificación',     r.num_identificacion],
+    ['Ciudad',                r.ciudad],
+    ['Número de contacto',    r.numero_contacto],
+    ['EPS',                   r.eps],
+    ['Acepta programa',       r.acepta_programa ? '✅ Sí' : '❌ No'],
+    ['Contacto WhatsApp',     r.contacto_whatsapp],
+    ['Contacto llamada',      r.contacto_llamada],
+    ['Autoriza recopilación', r.autoriza_recopilacion],
+    ['Menor de edad',         r.menor_edad],
+    ['Acepta tutor/paciente', r.acepta_programa2 ? '✅ Sí' : '❌ No'],
+    ['Acepta datos menor',    r.acepta_menor ? '✅ Sí' : '❌ No'],
+  ];
+
+  let html =
+    '<div style="text-align:right;margin-bottom:16px;">'+
+    '<button onclick="generarPDF()" style="background:var(--verde);color:white;border:none;border-radius:8px;padding:9px 20px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">'+
+    '📄 Descargar Consentimiento PDF</button></div>';
+
+  html += campos.map(([k,v]) =>
+    '<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>'
+  ).join('');
+
+  if (r.firma_imagen) {
+    html += '<div class="detalle-fila" style="flex-direction:column;">'+
+      '<span class="detalle-key" style="margin-bottom:8px;">Firma</span>'+
+      '<img src="'+r.firma_imagen+'" class="firma-preview" alt="Firma"></div>';
+  }
+  if (r.formula_imagen) {
+    html += '<div class="detalle-fila" style="flex-direction:column;">'+
+      '<span class="detalle-key" style="margin-bottom:8px;">Fórmula médica'+(r.formula_nombre?' ('+r.formula_nombre+')'):'')+'</span>'+
+      '<img src="'+r.formula_imagen+'" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border);" alt="Fórmula"></div>';
   }
 
-  function actualizarStats(registros) {
-    const hoy = new Date().toDateString();
-    document.getElementById('statTotal').textContent     = registros.length;
-    document.getElementById('statHoy').textContent       = registros.filter(r => r.fecha && (r.fecha.toDate ? r.fecha.toDate() : new Date(r.fecha)).toDateString() === hoy).length;
-    document.getElementById('statPacientes').textContent = registros.filter(r => r.rol === 'Paciente').length;
-    document.getElementById('statCuidadores').textContent= registros.filter(r => r.rol === 'Cuidador').length;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function cerrarModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ── Exportar CSV ──────────────────────────────────────────
+function exportarCSV() {
+  if (!todosLosRegistros.length) return alert('No hay registros para exportar.');
+  const cols = ['fecha','nombre','tipo_documento','num_identificacion','ciudad','numero_contacto','eps','rol','contacto_whatsapp','contacto_llamada','autoriza_recopilacion','menor_edad'];
+  const rows = todosLosRegistros.map(r =>
+    cols.map(c => '"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(',')
+  );
+  const csv  = [cols.join(','), ...rows].join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'registros_helse_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ── Generar PDF ───────────────────────────────────────────
+function generarPDF() {
+  const r = registroActual;
+  if (!r) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W=210, M=18, CW=W-M*2;
+  let y=18;
+
+  function linea(){ doc.setDrawColor(220,220,220); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=5; }
+
+  function bloque(label, valor) {
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(84,110,122);
+    doc.text(label, M, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(26,44,43);
+    const lines = doc.splitTextToSize(valor||'—', CW-42);
+    doc.text(lines, M+42, y);
+    y += Math.max(lines.length*4.5, 5);
   }
 
-  // Buscador
-  document.getElementById('buscador').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    const filtrados = todosLosRegistros.filter(r =>
-      (r.nombre || '').toLowerCase().includes(q) ||
-      (r.num_identificacion || '').toLowerCase().includes(q) ||
-      (r.ciudad || '').toLowerCase().includes(q) ||
-      (r.eps || '').toLowerCase().includes(q)
-    );
-    renderTabla(filtrados);
-  });
+  function checkItem(txt, ok) {
+    doc.setFillColor(ok?0:198, ok?137:40, ok?123:40);
+    doc.roundedRect(M, y-3.5, 4, 4, 0.8, 0.8, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(6);
+    doc.text(ok?'✓':'✗', M+0.8, y-0.2);
+    doc.setTextColor(26,44,43); doc.setFontSize(9);
+    doc.text(txt, M+7, y); y+=6;
+  }
 
-  // Modal
-  window.abrirModal = function(r) {
-    document.getElementById('modalNombre').textContent = r.nombre || 'Detalle';
-    const campos = [
-      ['Fecha registro',      formatFecha(r.fecha)],
-      ['Rol',                 r.rol],
-      ['Nombre completo',     r.nombre],
-      ['Tipo documento',      r.tipo_documento],
-      ['N° identificación',   r.num_identificacion],
-      ['Ciudad',              r.ciudad],
-      ['Número de contacto',  r.numero_contacto],
-      ['EPS',                 r.eps],
-      ['Acepta programa',     r.acepta_programa ? '✅ Sí' : '❌ No'],
-      ['Contacto WhatsApp',   r.contacto_whatsapp],
-      ['Contacto llamada',    r.contacto_llamada],
-      ['Autoriza recopilación', r.autoriza_recopilacion],
-      ['Menor de edad',       r.menor_edad],
-      ['Acepta (tutor/paciente)', r.acepta_programa2 ? '✅ Sí' : '❌ No'],
-      ['Acepta datos menor',  r.acepta_menor ? '✅ Sí' : '❌ No'],
-      ['Fórmula adjunta',     r.formula_archivo || '—'],
-    ];
+  // Encabezado
+  doc.setFillColor(0,137,123); doc.rect(0,0,W,36,'F');
+  doc.setFontSize(17); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('Consentimiento Informado', M, 15);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('Programa de Entregas Efectivas · Grupo Helse SAS', M, 23);
+  const fechaReg = r.fecha && r.fecha.toDate ? r.fecha.toDate() : new Date();
+  doc.setFontSize(8); doc.setTextColor(200,245,240);
+  doc.text(fechaReg.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}), W-M, 15, {align:'right'});
+  doc.text('No. REG-'+fechaReg.getFullYear()+'-'+(r.id||'').slice(0,8).toUpperCase(), W-M, 22, {align:'right'});
+  y=44;
 
-    let html = campos.map(([k, v]) => `
-      <div class="detalle-fila">
-        <span class="detalle-key">${k}</span>
-        <span>${v || '—'}</span>
-      </div>`).join('');
+  // Datos paciente
+  doc.setFillColor(236,239,241); doc.roundedRect(M,y-4,CW,7,1,1,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(0,105,92);
+  doc.text('DATOS DEL PACIENTE', M+3, y+0.5); y+=9;
+  bloque('Nombre:', r.nombre);
+  bloque('Documento:', (r.tipo_documento||'')+' '+( r.num_identificacion||''));
+  bloque('Ciudad:', r.ciudad);
+  bloque('Contacto:', r.numero_contacto);
+  bloque('EPS:', r.eps);
+  bloque('Rol:', r.rol);
+  bloque('Fecha registro:', formatFecha(r.fecha));
+  y+=2; linea();
 
-    if (r.firma_imagen) {
-      html += `<div class="detalle-fila" style="flex-direction:column;">
-        <span class="detalle-key" style="margin-bottom:8px;">Firma</span>
-        <img src="${r.firma_imagen}" class="firma-preview" alt="Firma del paciente">
-      </div>`;
+  // Cuerpo consentimiento
+  doc.setFillColor(236,239,241); doc.roundedRect(M,y-4,CW,7,1,1,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(0,105,92);
+  doc.text('DECLARACIÓN DE CONSENTIMIENTO', M+3, y+0.5); y+=10;
+  const cuerpo = 'Yo, '+(r.nombre||'___')+ ', identificado(a) con '+(r.tipo_documento||'documento')+' No. '+(r.num_identificacion||'___')+', en pleno uso de mis facultades mentales, de manera libre, voluntaria e informada, otorgo mi consentimiento a Grupo Helse SAS para que, en mi nombre y representación, realice todas las gestiones administrativas, médicas y logísticas necesarias ante las entidades competentes, con el fin de garantizar el acceso oportuno a los productos de nutrición especializada prescritos por mi médico tratante.\n\nEstas gestiones incluyen, pero no se limitan a: trámites ante la EPS, seguimiento de autorizaciones MIPRES, coordinación de entregas, contacto por los canales autorizados y recopilación de información clínica relacionada con el programa de entregas efectivas.\n\nDeclaro haber sido informado(a) sobre el tratamiento de mis datos conforme a la Ley 1581 de 2012 y la política de privacidad de Grupo Helse SAS en www.helse.com.co.';
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(26,44,43);
+  const lines = doc.splitTextToSize(cuerpo, CW);
+  doc.text(lines, M, y); y+=lines.length*4.8+4; linea();
+
+  // Autorizaciones
+  doc.setFillColor(236,239,241); doc.roundedRect(M,y-4,CW,7,1,1,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(0,105,92);
+  doc.text('AUTORIZACIONES OTORGADAS', M+3, y+0.5); y+=10;
+  checkItem('Acepta ser parte del programa de entregas efectivas', r.acepta_programa);
+  checkItem('Contacto por WhatsApp: '+(r.contacto_whatsapp||'—'), r.contacto_whatsapp==='Sí');
+  checkItem('Contacto por llamada telefónica: '+(r.contacto_llamada||'—'), r.contacto_llamada==='Sí');
+  checkItem('Autoriza recopilación de información del programa', r.autoriza_recopilacion==='Sí');
+  if (r.menor_edad==='Sí') {
+    checkItem('Diligencia en representación de paciente menor de edad', true);
+    checkItem('Autoriza recopilación de datos del menor', r.acepta_menor);
+  }
+  y+=3; linea();
+
+  // Firma
+  doc.setFillColor(236,239,241); doc.roundedRect(M,y-4,CW,7,1,1,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(0,105,92);
+  doc.text('FIRMA DEL PACIENTE O ACUDIENTE', M+3, y+0.5); y+=10;
+  if (r.firma_imagen) {
+    try {
+      doc.addImage(r.firma_imagen,'PNG',M,y,90,35);
+      doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.rect(M,y,90,35);
+      y+=37;
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(84,110,122);
+      doc.text((r.nombre||'')+'  ·  '+(r.tipo_documento||'')+' '+(r.num_identificacion||''), M, y); y+=4;
+      doc.text('Firmado el '+fechaReg.toLocaleDateString('es-CO')+' a las '+fechaReg.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), M, y); y+=8;
+    } catch(e){ y+=45; }
+  }
+
+  // Fórmula en página 2
+  if (r.formula_imagen) {
+    doc.addPage(); y=18;
+    doc.setFillColor(0,137,123); doc.rect(0,0,W,22,'F');
+    doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text('Fórmula Médica Adjunta', M, 14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Paciente: '+(r.nombre||'')+'  ·  '+(r.num_identificacion||''), M, 20);
+    y=32;
+    try {
+      const props = doc.getImageProperties(r.formula_imagen);
+      const ratio = props.width/props.height;
+      const iW=CW, iH=Math.min(iW/ratio,200);
+      doc.addImage(r.formula_imagen,'JPEG',M,y,iW,iH);
+    } catch(e){
+      doc.setFontSize(9); doc.setTextColor(84,110,122);
+      doc.text('(No se pudo renderizar la imagen de la fórmula)',M,y+10);
     }
+  }
 
-    if (r.formula_imagen) {
-      html += `<div class="detalle-fila" style="flex-direction:column;">
-        <span class="detalle-key" style="margin-bottom:8px;">Fórmula médica ${r.formula_nombre ? '('+r.formula_nombre+')' : ''}</span>
-        <img src="${r.formula_imagen}" class="firma-preview" alt="Fórmula médica" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border);">
-      </div>`;
-    }
+  // Pie de página
+  const total = doc.internal.getNumberOfPages();
+  for(let i=1;i<=total;i++){
+    doc.setPage(i);
+    doc.setFillColor(236,239,241); doc.rect(0,285,W,12,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(84,110,122);
+    doc.text('Grupo Helse SAS · habeasdata@helse.com.co · www.helse.com.co', M, 292);
+    doc.text('Pág. '+i+' de '+total, W-M, 292, {align:'right'});
+    doc.text('Ley 1581 de 2012 · Documento electrónico', W/2, 292, {align:'center'});
+  }
 
-    document.getElementById('modalBody').innerHTML = html;
+  doc.save('Consentimiento_Helse_'+(r.nombre||'paciente').replace(/\s+/g,'_')+'_'+(r.num_identificacion||'')+'.pdf');
+}
 
-    // Botón descargar PDF
-    document.getElementById('modalBody').insertAdjacentHTML('afterbegin', `
-      <div style="text-align:right; margin-bottom:16px;">
-        <button onclick="generarPDF()" style="background:var(--verde);color:white;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;">
-          📄 Descargar Consentimiento PDF
-        </button>
-      </div>
-    `);
-
-    document.getElementById('modalOverlay').classList.add('open');
-    window._registroActual = r;
-  };
-
-  window.cerrarModal = function() {
-    document.getElementById('modalOverlay').classList.remove('open');
-  };
-  document.getElementById('modalOverlay').addEventListener('click', e => {
-    if (e.target === e.currentTarget) cerrarModal();
-  });
-
-  // Exportar CSV
-  window.exportarCSV = function() {
-    if (!todosLosRegistros.length) return alert('No hay registros para exportar.');
-    const cols = ['fecha','nombre','tipo_documento','num_identificacion','ciudad','numero_contacto','eps','rol',
-                  'contacto_whatsapp','contacto_llamada','autoriza_recopilacion','menor_edad','formula_archivo'];
-    const header = cols.join(',');
-    const rows = todosLosRegistros.map(r =>
-      cols.map(c => {
-        let v = c === 'fecha' ? formatFecha(r.fecha) : (r[c] ?? '');
-        return `"${String(v).replace(/"/g, '""')}"`;
-      }).join(',')
-    );
-    const csv  = [header, ...rows].join('\n');
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = `registros_helse_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-  };
-
-  // ── Generar PDF de consentimiento ──
-  window.generarPDF = async function() {
-    const r = window._registroActual;
-    if (!r) return;
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const W = 210, M = 18, CW = W - M * 2;
-    let y = 18;
-
-    // Colores
-    const verde    = [0, 137, 123];
-    const verdeDark= [0, 105, 92];
-    const gris     = [84, 110, 122];
-    const grisClaro= [236, 239, 241];
-    const texto    = [26, 44, 43];
-    const blanco   = [255, 255, 255];
-
-    function linea(color = grisClaro) {
-      doc.setDrawColor(...color);
-      doc.setLineWidth(0.3);
-      doc.line(M, y, W - M, y);
-      y += 5;
-    }
-
-    function textoCentrado(txt, size, bold, color) {
-      doc.setFontSize(size);
-      doc.setFont('helvetica', bold ? 'bold' : 'normal');
-      doc.setTextColor(...color);
-      doc.text(txt, W / 2, y, { align: 'center' });
-      y += size * 0.45;
-    }
-
-    function bloque(label, valor, labelW = 38) {
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...gris);
-      doc.text(label, M, y);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...texto);
-      const lines = doc.splitTextToSize(valor || '—', CW - labelW);
-      doc.text(lines, M + labelW, y);
-      y += Math.max(lines.length * 4.5, 5);
-    }
-
-    function checkItem(txt, ok = true) {
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...texto);
-      doc.setFillColor(ok ? ...[0,137,123] : ...[198,40,40]);
-      doc.roundedRect(M, y - 3.5, 4, 4, 0.8, 0.8, 'F');
-      doc.setTextColor(...blanco);
-      doc.setFontSize(6);
-      doc.text(ok ? '✓' : '✗', M + 0.8, y - 0.2);
-      doc.setTextColor(...texto);
-      doc.setFontSize(9);
-      doc.text(txt, M + 7, y);
-      y += 6;
-    }
-
-    function numRegistro() {
-      const id = r.id ? r.id.slice(0,8).toUpperCase() : '00000000';
-      const fecha = r.fecha?.toDate ? r.fecha.toDate() : new Date();
-      return `REG-${fecha.getFullYear()}-${id}`;
-    }
-
-    // ── ENCABEZADO ────────────────────────────────────────────
-    doc.setFillColor(...verde);
-    doc.rect(0, 0, W, 38, 'F');
-
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...blanco);
-    doc.text('Consentimiento Informado', M, 16);
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Programa de Entregas Efectivas · Grupo Helse SAS', M, 24);
-
-    // Número de registro (esquina superior derecha)
-    doc.setFontSize(8);
-    doc.setTextColor(220, 255, 250);
-    doc.text(numRegistro(), W - M, 16, { align: 'right' });
-    const fechaReg = r.fecha?.toDate ? r.fecha.toDate() : new Date();
-    doc.text(fechaReg.toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' }), W - M, 22, { align: 'right' });
-
-    y = 46;
-
-    // ── DATOS DEL PACIENTE ────────────────────────────────────
-    doc.setFillColor(...grisClaro);
-    doc.roundedRect(M, y - 4, CW, 7, 1, 1, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...verdeDark);
-    doc.text('DATOS DEL PACIENTE', M + 3, y + 0.5);
-    y += 9;
-
-    bloque('Nombre completo:', r.nombre);
-    bloque('Tipo de documento:', r.tipo_documento);
-    bloque('N° identificación:', r.num_identificacion);
-    bloque('Ciudad:', r.ciudad);
-    bloque('Contacto:', r.numero_contacto);
-    bloque('EPS:', r.eps);
-    bloque('Rol:', r.rol);
-    bloque('Fecha de registro:', formatFecha(r.fecha));
-
-    y += 2;
-    linea();
-
-    // ── CUERPO DEL CONSENTIMIENTO ─────────────────────────────
-    doc.setFillColor(...grisClaro);
-    doc.roundedRect(M, y - 4, CW, 7, 1, 1, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...verdeDark);
-    doc.text('DECLARACIÓN DE CONSENTIMIENTO', M + 3, y + 0.5);
-    y += 10;
-
-    const cuerpo = `Yo, ${r.nombre || '___________'}, identificado(a) con ${r.tipo_documento || 'documento'} No. ${r.num_identificacion || '___________'}, en pleno uso de mis facultades mentales, de manera libre, voluntaria e informada, otorgo mi consentimiento a Grupo Helse SAS para que, en mi nombre y representación, realice todas las gestiones administrativas, médicas y logísticas que sean necesarias ante las entidades competentes, con el fin de garantizar el acceso oportuno a los productos de nutrición especializada prescritos por mi médico tratante.\n\nEstas gestiones incluyen, pero no se limitan a: trámites ante la EPS, seguimiento de autorizaciones MIPRES, coordinación de entregas en el domicilio indicado, contacto por los canales autorizados para el seguimiento del programa, y recopilación de información clínica relacionada con el programa de entregas efectivas.\n\nDeclaro haber sido informado(a) sobre el tratamiento de mis datos personales conforme a la Ley 1581 de 2012 y la política de privacidad de Grupo Helse SAS disponible en www.helse.com.co.`;
-
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...texto);
-    const lines = doc.splitTextToSize(cuerpo, CW);
-    doc.text(lines, M, y);
-    y += lines.length * 4.8 + 4;
-
-    linea();
-
-    // ── AUTORIZACIONES ────────────────────────────────────────
-    doc.setFillColor(...grisClaro);
-    doc.roundedRect(M, y - 4, CW, 7, 1, 1, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...verdeDark);
-    doc.text('AUTORIZACIONES OTORGADAS', M + 3, y + 0.5);
-    y += 10;
-
-    checkItem('Acepta ser parte del programa de entregas efectivas', r.acepta_programa);
-    checkItem('Autoriza contacto por canal WhatsApp: ' + (r.contacto_whatsapp || '—'), r.contacto_whatsapp === 'Sí');
-    checkItem('Autoriza contacto por llamada telefónica: ' + (r.contacto_llamada || '—'), r.contacto_llamada === 'Sí');
-    checkItem('Autoriza a Grupo Helse a recopilar información del programa', r.autoriza_recopilacion === 'Sí');
-    if (r.menor_edad === 'Sí') {
-      checkItem('Diligencia en representación de paciente menor de edad', true);
-      checkItem('Autoriza recopilación de datos del paciente menor de edad', r.acepta_menor);
-    }
-
-    y += 3;
-    linea();
-
-    // ── FIRMA ─────────────────────────────────────────────────
-    doc.setFillColor(...grisClaro);
-    doc.roundedRect(M, y - 4, CW, 7, 1, 1, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...verdeDark);
-    doc.text('FIRMA DEL PACIENTE O ACUDIENTE', M + 3, y + 0.5);
-    y += 10;
-
-    if (r.firma_imagen) {
-      try {
-        const firmaH = 35;
-        const firmaW = 90;
-        doc.addImage(r.firma_imagen, 'PNG', M, y, firmaW, firmaH);
-        doc.setDrawColor(...grisClaro);
-        doc.setLineWidth(0.3);
-        doc.rect(M, y, firmaW, firmaH);
-        y += firmaH + 2;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(...gris);
-        doc.text(`${r.nombre || ''} · ${r.tipo_documento || ''} ${r.num_identificacion || ''}`, M, y);
-        y += 4;
-        doc.text(`Firmado digitalmente el ${fechaReg.toLocaleDateString('es-CO')} a las ${fechaReg.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'})}`, M, y);
-        y += 8;
-      } catch(e) { y += 40; }
-    }
-
-    // ── FÓRMULA MÉDICA ────────────────────────────────────────
-    if (r.formula_imagen) {
-      // Nueva página para la fórmula
-      doc.addPage();
-      y = 18;
-
-      doc.setFillColor(...verde);
-      doc.rect(0, 0, W, 22, 'F');
-      doc.setFontSize(13);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...blanco);
-      doc.text('Fórmula Médica Adjunta', M, 14);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Paciente: ${r.nombre || ''} · ${numRegistro()}`, M, 20);
-      y = 32;
-
-      try {
-        const imgProps = doc.getImageProperties(r.formula_imagen);
-        const ratio    = imgProps.width / imgProps.height;
-        const imgW     = CW;
-        const imgH     = Math.min(imgW / ratio, 200);
-        doc.addImage(r.formula_imagen, 'JPEG', M, y, imgW, imgH);
-        y += imgH + 6;
-      } catch(e) {
-        doc.setFontSize(9);
-        doc.setTextColor(...gris);
-        doc.text('(No se pudo cargar la imagen de la fórmula)', M, y);
-        y += 10;
-      }
-    }
-
-    // ── PIE DE PÁGINA ─────────────────────────────────────────
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFillColor(...grisClaro);
-      doc.rect(0, 285, W, 12, 'F');
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(...gris);
-      doc.text('Grupo Helse SAS · habeasdata@helse.com.co · www.helse.com.co', M, 292);
-      doc.text(`Pág. ${i} de ${totalPages}`, W - M, 292, { align: 'right' });
-      doc.text('Documento generado electrónicamente · Ley 1581 de 2012', W / 2, 292, { align: 'center' });
-    }
-
-    // ── DESCARGAR ─────────────────────────────────────────────
-    const nombreArchivo = `Consentimiento_Helse_${(r.nombre || 'paciente').replace(/\s+/g,'_')}_${r.num_identificacion || ''}.pdf`;
-    doc.save(nombreArchivo);
-  };
-
-  cargarRegistros();
+// ── Arrancar ──────────────────────────────────────────────
+cargarRegistros();
 </script>
 </body>
 </html>
