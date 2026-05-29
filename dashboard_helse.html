@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – Programa Entrega Efectiva</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #00897B;
+    --verde-dark: #00695C;
+    --verde-light: #E0F2F1;
+    --verde-bg: #F0FAF9;
+    --rojo: #C62828;
+    --gris: #546E7A;
+    --gris-light: #ECEFF1;
+    --text: #1A2C2B;
+    --border: #B2DFDB;
+    --white: #FFFFFF;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--verde-bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  .topbar {
+    background: var(--verde);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,137,123,0.2);
+  }
+  .topbar h1 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; }
+  .topbar span { font-size: 12px; opacity: 0.75; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .btn-export {
+    background: white; color: var(--verde-dark);
+    border: none; border-radius: 8px;
+    padding: 8px 16px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-export:hover { background: var(--verde-light); }
+
+  /* Estadísticas */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    padding: 24px 32px 0;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,137,123,0.08);
+    border-top: 3px solid var(--verde);
+  }
+  .stat-num { font-size: 32px; font-weight: 700; color: var(--verde); }
+  .stat-label { font-size: 12px; color: var(--gris); margin-top: 4px; }
+
+  /* Buscador */
+  .toolbar {
+    padding: 20px 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 220px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: var(--verde); }
+
+  /* Tabla */
+  .table-wrap {
+    padding: 0 32px 40px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,137,123,0.08);
+    font-size: 13.5px;
+  }
+  thead { background: var(--verde); color: white; }
+  thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--gris-light); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--verde-bg); }
+  td { padding: 12px 16px; vertical-align: middle; }
+  td.nombre { font-weight: 600; color: var(--text); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-si  { background: #E8F5E9; color: #2E7D32; }
+  .badge-no  { background: #FFEBEE; color: #C62828; }
+  .badge-rol { background: var(--verde-light); color: var(--verde-dark); }
+
+  /* Botón ver detalle */
+  .btn-ver {
+    background: var(--verde-light);
+    color: var(--verde-dark);
+    border: none;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ver:hover { background: var(--verde); color: white; }
+
+  /* Modal detalle */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    background: var(--verde);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 18px 18px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h2 { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; }
+  .btn-cerrar { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+  .modal-body { padding: 24px; }
+  .detalle-fila {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gris-light);
+    font-size: 13.5px;
+  }
+  .detalle-fila:last-child { border-bottom: none; }
+  .detalle-key { font-weight: 600; color: var(--gris); min-width: 160px; flex-shrink: 0; }
+  .firma-preview { max-width: 100%; border: 1.5px solid var(--border); border-radius: 10px; margin-top: 8px; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--gris);
+    font-size: 15px;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--verde);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { text-align: center; padding: 60px; color: var(--gris); }
+
+  @media(max-width:600px) {
+    .stats, .toolbar, .table-wrap { padding-left: 16px; padding-right: 16px; }
+    .topbar { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Dashboard · Entregas Efectivas</h1>
+    <span>Grupo Helse SAS</span>
+  </div>
+  <div class="topbar-right">
+    <span id="ultimaActualizacion" style="font-size:12px; opacity:0.75;"></span>
+    <button class="btn-export" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+  </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-num" id="statTotal">—</div>
+    <div class="stat-label">Total registros</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="statHoy">—</div>
+    <div class="stat-label">Registros hoy</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="statPacientes">—</div>
+    <div class="stat-label">Pacientes</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" id="statCuidadores">—</div>
+    <div class="stat-label">Cuidadores</div>
+  </div>
+</div>
+
+<!-- Buscador -->
+<div class="toolbar">
+  <input type="text" class="search-box" id="buscador" placeholder="🔍 Buscar por nombre, documento, ciudad, EPS...">
+</div>
+
+<!-- Tabla -->
+<div class="table-wrap">
+  <div class="loading" id="loadingMsg">
+    <div class="spinner"></div>
+    Cargando registros...
+  </div>
+  <table id="tablaRegistros" style="display:none;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Fecha</th>
+        <th>Nombre</th>
+        <th>Documento</th>
+        <th>Ciudad</th>
+        <th>EPS</th>
+        <th>Rol</th>
+        <th>WhatsApp</th>
+        <th>Ver</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="emptyMsg" style="display:none;">No se encontraron registros.</div>
+</div>
+
+<!-- Modal detalle -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalNombre">Detalle del registro</h2>
+      <button class="btn-cerrar" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+    authDomain: "helse-entregas.firebaseapp.com",
+    projectId: "helse-entregas",
+    storageBucket: "helse-entregas.firebasestorage.app",
+    messagingSenderId: "1086193469864",
+    appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  let todosLosRegistros = [];
+
+  async function cargarRegistros() {
+    try {
+      const q    = query(collection(db, 'registros_entrega_efectiva'), orderBy('fecha', 'desc'));
+      const snap = await getDocs(q);
+      todosLosRegistros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTabla(todosLosRegistros);
+      actualizarStats(todosLosRegistros);
+      document.getElementById('ultimaActualizacion').textContent =
+        'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
+    } catch (e) {
+      document.getElementById('loadingMsg').innerHTML = '❌ Error al cargar datos. Verifica las reglas de Firestore.';
+      console.error(e);
+    }
+  }
+
+  function formatFecha(ts) {
+    if (!ts) return '—';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric' }) +
+           ' ' + d.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function badge(val, siVal='Si') {
+    if (!val) return '—';
+    const esSi = val.toLowerCase() === siVal.toLowerCase() || val === true || val === 'true';
+    return `<span class="badge ${esSi ? 'badge-si' : 'badge-no'}">${val}</span>`;
+  }
+
+  function renderTabla(registros) {
+    document.getElementById('loadingMsg').style.display = 'none';
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+
+    if (registros.length === 0) {
+      document.getElementById('tablaRegistros').style.display = 'none';
+      document.getElementById('emptyMsg').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('tablaRegistros').style.display = 'table';
+    document.getElementById('emptyMsg').style.display = 'none';
+
+    registros.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--gris);font-size:12px;">${i + 1}</td>
+        <td style="white-space:nowrap;font-size:12px;color:var(--gris);">${formatFecha(r.fecha)}</td>
+        <td class="nombre">${r.nombre || '—'}</td>
+        <td>${r.tipo_documento || ''} ${r.num_identificacion || ''}</td>
+        <td>${r.ciudad || '—'}</td>
+        <td>${r.eps || '—'}</td>
+        <td><span class="badge badge-rol">${r.rol || '—'}</span></td>
+        <td>${badge(r.contacto_whatsapp)}</td>
+        <td><button class="btn-ver" data-id="${r.id}">Ver</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Eventos botones ver
+    document.querySelectorAll('.btn-ver').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const reg = todosLosRegistros.find(r => r.id === btn.dataset.id);
+        if (reg) abrirModal(reg);
+      });
+    });
+  }
+
+  function actualizarStats(registros) {
+    const hoy = new Date().toDateString();
+    document.getElementById('statTotal').textContent     = registros.length;
+    document.getElementById('statHoy').textContent       = registros.filter(r => r.fecha && (r.fecha.toDate ? r.fecha.toDate() : new Date(r.fecha)).toDateString() === hoy).length;
+    document.getElementById('statPacientes').textContent = registros.filter(r => r.rol === 'Paciente').length;
+    document.getElementById('statCuidadores').textContent= registros.filter(r => r.rol === 'Cuidador').length;
+  }
+
+  // Buscador
+  document.getElementById('buscador').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    const filtrados = todosLosRegistros.filter(r =>
+      (r.nombre || '').toLowerCase().includes(q) ||
+      (r.num_identificacion || '').toLowerCase().includes(q) ||
+      (r.ciudad || '').toLowerCase().includes(q) ||
+      (r.eps || '').toLowerCase().includes(q)
+    );
+    renderTabla(filtrados);
+  });
+
+  // Modal
+  window.abrirModal = function(r) {
+    document.getElementById('modalNombre').textContent = r.nombre || 'Detalle';
+    const campos = [
+      ['Fecha registro',      formatFecha(r.fecha)],
+      ['Rol',                 r.rol],
+      ['Nombre completo',     r.nombre],
+      ['Tipo documento',      r.tipo_documento],
+      ['N° identificación',   r.num_identificacion],
+      ['Ciudad',              r.ciudad],
+      ['Número de contacto',  r.numero_contacto],
+      ['EPS',                 r.eps],
+      ['Acepta programa',     r.acepta_programa ? '✅ Sí' : '❌ No'],
+      ['Contacto WhatsApp',   r.contacto_whatsapp],
+      ['Contacto llamada',    r.contacto_llamada],
+      ['Autoriza recopilación', r.autoriza_recopilacion],
+      ['Menor de edad',       r.menor_edad],
+      ['Acepta (tutor/paciente)', r.acepta_programa2 ? '✅ Sí' : '❌ No'],
+      ['Acepta datos menor',  r.acepta_menor ? '✅ Sí' : '❌ No'],
+      ['Fórmula adjunta',     r.formula_archivo || '—'],
+    ];
+
+    let html = campos.map(([k, v]) => `
+      <div class="detalle-fila">
+        <span class="detalle-key">${k}</span>
+        <span>${v || '—'}</span>
+      </div>`).join('');
+
+    if (r.firma_imagen) {
+      html += `<div class="detalle-fila" style="flex-direction:column;">
+        <span class="detalle-key" style="margin-bottom:8px;">Firma</span>
+        <img src="${r.firma_imagen}" class="firma-preview" alt="Firma del paciente">
+      </div>`;
+    }
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
+  window.cerrarModal = function() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  };
+  document.getElementById('modalOverlay').addEventListener('click', e => {
+    if (e.target === e.currentTarget) cerrarModal();
+  });
+
+  // Exportar CSV
+  window.exportarCSV = function() {
+    if (!todosLosRegistros.length) return alert('No hay registros para exportar.');
+    const cols = ['fecha','nombre','tipo_documento','num_identificacion','ciudad','numero_contacto','eps','rol',
+                  'contacto_whatsapp','contacto_llamada','autoriza_recopilacion','menor_edad','formula_archivo'];
+    const header = cols.join(',');
+    const rows = todosLosRegistros.map(r =>
+      cols.map(c => {
+        let v = c === 'fecha' ? formatFecha(r.fecha) : (r[c] ?? '');
+        return `"${String(v).replace(/"/g, '""')}"`;
+      }).join(',')
+    );
+    const csv  = [header, ...rows].join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `registros_helse_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+
+  cargarRegistros();
+</script>
+</body>
+</html>
