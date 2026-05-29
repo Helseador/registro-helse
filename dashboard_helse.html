@@ -281,7 +281,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script type="module">
   import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
@@ -299,15 +299,30 @@
 
   async function cargarRegistros() {
     try {
-      const q    = query(collection(db, 'registros_entrega_efectiva'), orderBy('fecha', 'desc'));
-      const snap = await getDocs(q);
-      todosLosRegistros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Timeout de 10 segundos para evitar carga infinita
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado')), 10000)
+      );
+      const snap = await Promise.race([
+        getDocs(collection(db, 'registros_entrega_efectiva')),
+        timeout
+      ]);
+      todosLosRegistros = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const ta = a.fecha?.toDate ? a.fecha.toDate() : new Date(0);
+          const tb = b.fecha?.toDate ? b.fecha.toDate() : new Date(0);
+          return tb - ta;
+        });
       renderTabla(todosLosRegistros);
       actualizarStats(todosLosRegistros);
       document.getElementById('ultimaActualizacion').textContent =
         'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
     } catch (e) {
-      document.getElementById('loadingMsg').innerHTML = '❌ Error al cargar datos. Verifica las reglas de Firestore.';
+      document.getElementById('loadingMsg').innerHTML =
+        '❌ ' + (e.message.includes('agotado')
+          ? 'No se pudo conectar con Firebase. Verifica tu conexión e intenta recargar.'
+          : 'Error al cargar datos: ' + e.message);
       console.error(e);
     }
   }
