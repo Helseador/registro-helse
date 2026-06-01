@@ -288,11 +288,169 @@ function generarPDF() {
   if (!r) return;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
-  const W=210, M=22, CW=W-M*2;
-  let y = 52; // Empezar debajo del encabezado del membrete
+  const W=210, M=20, CW=W-M*2;
+  let y = 48; // Debajo del encabezado del membrete
 
-  // ── Fondo membrete página 1 ──
+  // Membrete fondo página 1
   doc.addImage(MEMBRETE_B64, 'PNG', 0, 0, 210, 297);
+
+  function nuevaPagina() {
+    doc.addPage();
+    doc.addImage(MEMBRETE_B64, 'PNG', 0, 0, 210, 297);
+    y = 48;
+  }
+
+  function checkY(needed) {
+    if (y + needed > 250) nuevaPagina();
+  }
+
+  function seccion(titulo) {
+    checkY(10);
+    doc.setFillColor(0,137,123);
+    doc.roundedRect(M, y-3.5, CW, 6, 1, 1, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text(titulo, M+2, y+0.5);
+    y += 8;
+  }
+
+  function bloque(label, valor) {
+    checkY(5);
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(84,110,122);
+    doc.text(label, M, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(26,44,43);
+    const lines = doc.splitTextToSize(valor||'—', CW-38);
+    doc.text(lines, M+38, y);
+    y += Math.max(lines.length*4, 4.5);
+  }
+
+  function checkItem(txt, ok) {
+    checkY(5.5);
+    doc.setFillColor(ok?0:198, ok?137:40, ok?123:40);
+    doc.roundedRect(M, y-3, 3.5, 3.5, 0.6, 0.6, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(5.5);
+    doc.text(ok?'✓':'✗', M+0.7, y-0.1);
+    doc.setTextColor(26,44,43); doc.setFontSize(8);
+    doc.text(txt, M+6, y); y+=5.5;
+  }
+
+  function linea() {
+    doc.setDrawColor(210,225,225); doc.setLineWidth(0.2);
+    doc.line(M, y, W-M, y); y+=4;
+  }
+
+  const fechaReg = r.fecha && r.fecha.toDate ? r.fecha.toDate() : new Date();
+
+  // ── Título ──
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(0,60,100);
+  doc.text('Consentimiento Informado', M, y); 
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(84,110,122);
+  doc.text('Programa de Entregas Efectivas  ·  REG-'+fechaReg.getFullYear()+'-'+(r.id||'').slice(0,8).toUpperCase()+'  ·  '+fechaReg.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}), M, y+5);
+  y += 11; linea();
+
+  // ── Datos en dos columnas ──
+  seccion('DATOS DEL PACIENTE');
+  const col2 = M + CW/2 + 2;
+  const colW = CW/2 - 4;
+
+  function par(l1, v1, l2, v2) {
+    checkY(5);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(84,110,122);
+    doc.text(l1, M, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(26,44,43);
+    doc.text(doc.splitTextToSize(v1||'—', colW-22)[0], M+22, y);
+    if (l2) {
+      doc.setFont('helvetica','bold'); doc.setTextColor(84,110,122);
+      doc.text(l2, col2, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(26,44,43);
+      doc.text(doc.splitTextToSize(v2||'—', colW-18)[0], col2+18, y);
+    }
+    y += 5;
+  }
+
+  par('Nombre:', r.nombre, 'Documento:', (r.tipo_documento||'')+' '+(r.num_identificacion||''));
+  par('Ciudad:', r.ciudad, 'Contacto:', r.numero_contacto);
+  par('EPS:', r.eps, 'Rol:', r.rol);
+  par('Fecha registro:', formatFecha(r.fecha), '', '');
+  y += 1; linea();
+
+  // ── Declaración compacta ──
+  seccion('DECLARACIÓN DE CONSENTIMIENTO');
+  const cuerpo = 'Yo, '+(r.nombre||'___')+', identificado(a) con '+(r.tipo_documento||'documento')+' No. '+(r.num_identificacion||'___')+', en pleno uso de mis facultades mentales, de manera libre, voluntaria e informada, otorgo mi consentimiento a Grupo Helse SAS para realizar todas las gestiones administrativas, médicas y logísticas necesarias ante las entidades competentes, con el fin de garantizar el acceso oportuno a los productos de nutrición especializada prescritos por mi médico tratante. Estas gestiones incluyen trámites ante la EPS, seguimiento de autorizaciones MIPRES, coordinación de entregas, contacto por los canales autorizados y recopilación de información clínica. Declaro haber sido informado(a) sobre el tratamiento de mis datos conforme a la Ley 1581 de 2012 y la política de privacidad de Grupo Helse SAS en www.helse.com.co.';
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(26,44,43);
+  const lines = doc.splitTextToSize(cuerpo, CW);
+  checkY(lines.length*4+2);
+  doc.text(lines, M, y); y += lines.length*4+3; linea();
+
+  // ── Autorizaciones en 2 columnas ──
+  seccion('AUTORIZACIONES OTORGADAS');
+  const items = [
+    ['Acepta ser parte del programa de entregas efectivas', r.acepta_programa],
+    ['Contacto por WhatsApp: '+(r.contacto_whatsapp||'—'), r.contacto_whatsapp==='Sí'],
+    ['Contacto por llamada telefónica: '+(r.contacto_llamada||'—'), r.contacto_llamada==='Sí'],
+    ['Autoriza recopilación de información del programa', r.autoriza_recopilacion==='Sí'],
+  ];
+  if (r.menor_edad==='Sí') {
+    items.push(['Representa a paciente menor de edad', true]);
+    items.push(['Autoriza recopilación de datos del menor', r.acepta_menor]);
+  }
+  // Renderizar en 2 columnas
+  for (let i=0; i<items.length; i+=2) {
+    checkY(5.5);
+    const [t1,ok1] = items[i];
+    doc.setFillColor(ok1?0:198, ok1?137:40, ok1?123:40);
+    doc.roundedRect(M, y-3, 3.5, 3.5, 0.6, 0.6, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(5.5); doc.text(ok1?'✓':'✗', M+0.7, y-0.1);
+    doc.setTextColor(26,44,43); doc.setFontSize(7.5); doc.text(t1, M+6, y);
+    if (items[i+1]) {
+      const [t2,ok2] = items[i+1];
+      doc.setFillColor(ok2?0:198, ok2?137:40, ok2?123:40);
+      doc.roundedRect(col2, y-3, 3.5, 3.5, 0.6, 0.6, 'F');
+      doc.setTextColor(255,255,255); doc.setFontSize(5.5); doc.text(ok2?'✓':'✗', col2+0.7, y-0.1);
+      doc.setTextColor(26,44,43); doc.setFontSize(7.5); doc.text(t2, col2+6, y);
+    }
+    y += 5.5;
+  }
+  y += 2; linea();
+
+  // ── Firma ──
+  seccion('FIRMA DEL PACIENTE O ACUDIENTE');
+  if (r.firma_imagen) {
+    try {
+      checkY(32);
+      doc.addImage(r.firma_imagen,'PNG',M,y,70,28);
+      doc.setDrawColor(200,200,200); doc.setLineWidth(0.3); doc.rect(M,y,70,28);
+      // Datos al lado de la firma
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(26,44,43);
+      doc.text(r.nombre||'', M+75, y+8);
+      doc.setFont('helvetica','normal'); doc.setTextColor(84,110,122);
+      doc.setFontSize(7.5);
+      doc.text((r.tipo_documento||'')+' '+(r.num_identificacion||''), M+75, y+14);
+      doc.text('Firmado el '+fechaReg.toLocaleDateString('es-CO'), M+75, y+20);
+      doc.text('a las '+fechaReg.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}), M+75, y+26);
+      y += 32;
+    } catch(e){ y += 32; }
+  }
+
+  // ── Fórmula en página 2 (solo si existe) ──
+  if (r.formula_imagen) {
+    nuevaPagina();
+    doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(0,60,100);
+    doc.text('Fórmula Médica Adjunta', M, y); y+=6;
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(84,110,122);
+    doc.text('Paciente: '+(r.nombre||'')+'  ·  '+(r.num_identificacion||''), M, y); y+=8;
+    try {
+      const props = doc.getImageProperties(r.formula_imagen);
+      const ratio = props.width/props.height;
+      const iW=CW, iH=Math.min(iW/ratio, 190);
+      doc.addImage(r.formula_imagen,'JPEG',M,y,iW,iH);
+    } catch(e){
+      doc.setFontSize(9); doc.setTextColor(84,110,122);
+      doc.text('(No se pudo renderizar la imagen)',M,y+10);
+    }
+  }
+
+  doc.save('Consentimiento_Helse_'+(r.nombre||'paciente').replace(/\s+/g,'_')+'_'+(r.num_identificacion||'')+'.pdf');
+}
 
   function nuevaPagina() {
     doc.addPage();
