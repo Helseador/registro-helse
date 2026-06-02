@@ -363,6 +363,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
+// Capturar token del link si existe
+const urlParams = new URLSearchParams(window.location.search);
+const linkToken = urlParams.get('t') || '';
+
 // ── Menor condicional ──
 document.querySelectorAll('input[name="menor"]').forEach(r => {
   r.addEventListener('change', () => {
@@ -571,6 +575,7 @@ document.getElementById('form').addEventListener('submit', async e => {
       formula_nombre:     archivoFormula ? archivoFormula.name : '',
       formula_imagen:     formulaB64,
       firma_imagen:       document.getElementById('firmaPreview').src,
+      token:              linkToken,
     });
 
     btn.style.display = 'none';
