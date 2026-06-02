@@ -143,7 +143,7 @@ td.nombre{font-weight:600;}
 
   <div class="tabs">
     <div class="tab active" onclick="cambiarTab('registros',this)">📋 Registros</div>
-    <div class="tab sa-only" onclick="cambiarTab('links',this)">🔗 Links Temporales</div>
+    <div class="tab sa-only" id="tabLinks" onclick="cambiarTab('links',this)">🔗 Links Temporales</div>
     <div class="tab sa-only" onclick="cambiarTab('usuarios',this)">👥 Usuarios</div>
   </div>
 
@@ -160,7 +160,7 @@ td.nombre{font-weight:600;}
     <div class="table-wrap">
       <div class="loading" id="loadingMsg"><div class="spinner"></div>Cargando registros...</div>
       <table id="tablaRegistros" style="display:none;">
-        <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Documento</th><th>Ciudad</th><th>EPS</th><th>Rol</th><th>WhatsApp</th><th>Ver</th></tr></thead>
+        <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Documento</th><th>Ciudad</th><th>EPS</th><th>Rol</th><th>WhatsApp</th><th id="thOrigen"></th><th>Ver</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
       <div class="empty" id="emptyMsg" style="display:none;">No se encontraron registros.</div>
@@ -233,9 +233,12 @@ auth.onAuthStateChanged(async user=>{
       document.querySelectorAll('.sa-only').forEach(e=>e.style.display='block');
     } else {
       document.getElementById('btnCSV').style.display='none';
+      // Admin sí puede ver y generar links
+      document.getElementById('tabLinks').style.display='block';
     }
     cargarRegistros();
-    if(rolActual==='superadmin'){cargarLinks();cargarUsuarios();}
+    cargarLinks();
+    if(rolActual==='superadmin'){cargarUsuarios();}
   } else {
     document.getElementById('loginScreen').style.display='flex';
     document.getElementById('appScreen').style.display='none';
@@ -269,12 +272,36 @@ function cambiarTab(nombre,el){
 async function cargarRegistros(){
   try{
     const snap=await db.collection('registros_entrega_efectiva').get();
-    registros=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+    let todos=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
       const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
       const tb=b.fecha&&b.fecha.toDate?b.fecha.toDate().getTime():0;
       return tb-ta;
     });
-    renderTabla(registros);actualizarStats(registros);
+
+    // Admin solo ve los registros que llegaron por sus links
+    if(rolActual !== 'superadmin'){
+      const uid = auth.currentUser.uid;
+      // Buscar en historial permanente de links
+      const histSnap = await db.collection('links_historial').where('creadoPorUID','==',uid).get();
+      const misTokens = new Set(histSnap.docs.map(d=>d.data().token));
+      todos = todos.filter(r => r.token && misTokens.has(r.token));
+    }
+
+    // Enriquecer registros con email del admin que creó el link (solo superadmin)
+    if(rolActual === 'superadmin' && todos.length){
+      const histSnap = await db.collection('links_historial').get();
+      const tokenMap = {};
+      histSnap.docs.forEach(d=>{ tokenMap[d.data().token] = d.data().creadoPor; });
+      todos.forEach(r=>{ r.linkCreadoPor = r.token ? (tokenMap[r.token]||'directo') : 'directo'; });
+    }
+
+    registros = todos;
+    if(rolActual==='superadmin'){
+      const th = document.getElementById('thOrigen');
+      if(th) th.textContent = 'Origen';
+    }
+    renderTabla(registros);
+    actualizarStats(registros);
   }catch(e){document.getElementById('loadingMsg').innerHTML='❌ Error: '+e.message;}
 }
 
@@ -305,6 +332,7 @@ function renderTabla(lista){
       '<td>'+(r.eps||'—')+'</td>'+
       '<td><span class="badge badge-rol">'+(r.rol||'—')+'</span></td>'+
       '<td>'+badge(r.contacto_whatsapp)+'</td>'+
+      (rolActual==='superadmin'?'<td style="font-size:11px;color:var(--gris);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.linkCreadoPor||'—')+'</td>':'')+
       '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button></td>';
     tbody.appendChild(tr);
   });
@@ -388,7 +416,15 @@ async function generarLink(){
   const base=window.location.origin+'/registro-helse/';
   const url=base+'?t='+token;
   const ahora=Date.now();
-  await db.collection('links_temporales').add({token,url,creado:ahora,expira:ahora+12*60*60*1000,creadoPor:user.email});
+  const datos = {
+    token, url, creado:ahora,
+    expira:ahora+12*60*60*1000,
+    creadoPor:user.email,
+    creadoPorUID:user.uid
+  };
+  await db.collection('links_temporales').add(datos);
+  // Guardar en historial permanente para que los registros siempre se puedan asociar
+  await db.collection('links_historial').add(datos);
   cargarLinks();
 }
 
