@@ -330,7 +330,7 @@ function abrirModal(id){
   document.getElementById('modalNombre').textContent=r.nombre||'Detalle';
   const campos=[['Fecha registro',formatFecha(r.fecha)],['Rol',r.rol],['Nombre',r.nombre],['Tipo documento',r.tipo_documento],['N° identificación',r.num_identificacion],['Ciudad',r.ciudad],['Contacto',r.numero_contacto],['EPS',r.eps],['Acepta programa',r.acepta_programa?'✅ Sí':'❌ No'],['WhatsApp',r.contacto_whatsapp],['Llamada',r.contacto_llamada],['Autoriza recopilación',r.autoriza_recopilacion],['Menor de edad',r.menor_edad],['Acepta (tutor)',r.acepta_programa2?'✅ Sí':'❌ No'],['Acepta datos menor',r.acepta_menor?'✅ Sí':'❌ No']];
   let html='';
-  if(rolActual==='superadmin') html='<div style="text-align:right;margin-bottom:14px;"><button onclick="generarPDF()" style="background:var(--verde);color:white;border:none;border-radius:8px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">📄 Descargar PDF</button></div>';
+  if(rolActual==='superadmin') html='<div style="text-align:right;margin-bottom:14px;"><button onclick="generarPDF()" style="background:var(--verde);color:white;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;">📄 Descargar PDF</button></div>';
   html+=campos.map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
   if(r.firma_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma</span><img src="'+r.firma_imagen+'" class="firma-preview" alt="Firma"></div>';
   if(r.formula_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Fórmula médica</span><img src="'+r.formula_imagen+'" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border);" alt="Fórmula"></div>';
@@ -354,13 +354,18 @@ async function cargarLinks(){
 function renderLinks(links){
   const grid=document.getElementById('linksGrid');
   if(!links.length){grid.innerHTML='<div class="links-empty">No hay links activos. Genera uno nuevo.</div>';return;}
-  grid.innerHTML=links.map(l=>'<div class="link-card" id="lc-'+l.id+'">'+
-    '<div class="link-url"><div class="link-url-txt" onclick="copiarLink(''+l.url+'')" title="Click para copiar">'+l.url+'</div>'+
-    '<div class="link-meta">Creado: '+new Date(l.creado).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})+' · '+l.creadoPor+'</div></div>'+
-    '<div class="countdown" id="cd-'+l.id+'">--:--:--</div>'+
-    '<button class="btn-copiar" onclick="copiarLink(''+l.url+'')">📋 Copiar</button>'+
-    '<button class="btn-revocar" onclick="revocarLink(''+l.id+'')">🗑️ Revocar</button>'+
-  '</div>').join('');
+  grid.innerHTML=links.map(l=>{
+    const creado=new Date(l.creado).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="link-card" id="lc-${l.id}">
+      <div class="link-url">
+        <div class="link-url-txt" data-url="${l.url}" onclick="copiarLink(this.dataset.url)" title="Click para copiar">${l.url}</div>
+        <div class="link-meta">Creado: ${creado} · ${l.creadoPor}</div>
+      </div>
+      <div class="countdown" id="cd-${l.id}">--:--:--</div>
+      <button class="btn-copiar" data-url="${l.url}" onclick="copiarLink(this.dataset.url)">📋 Copiar</button>
+      <button class="btn-revocar" data-id="${l.id}" onclick="revocarLink(this.dataset.id)">🗑️ Revocar</button>
+    </div>`;
+  }).join('');
 
   if(cdInterval)clearInterval(cdInterval);
   cdInterval=setInterval(()=>{
@@ -404,12 +409,14 @@ async function cargarUsuarios(){
   grid.innerHTML=users.map(u=>{
     const ini=(u.email||'?').slice(0,2).toUpperCase();
     const esSA=u.rol==='superadmin';
-    return '<div class="usuario-card">'+
-      '<div class="usuario-avatar">'+ini+'</div>'+
-      '<div class="usuario-info"><div class="usuario-email">'+u.email+'</div>'+
-      '<div class="usuario-rol"><span class="badge '+(esSA?'badge-sa':'badge-adm')+'">'+(esSA?'👑 SuperAdmin':'👁️ Admin')+'</span></div></div>'+
-      (!esSA?'<button class="btn-revocar" onclick="eliminarUsuario(''+u.id+'',''+u.email+'')">Eliminar</button>':'')+
-    '</div>';
+    return `<div class="usuario-card">
+      <div class="usuario-avatar">${ini}</div>
+      <div class="usuario-info">
+        <div class="usuario-email">${u.email}</div>
+        <div class="usuario-rol"><span class="badge ${esSA?'badge-sa':'badge-adm'}">${esSA?'👑 SuperAdmin':'👁️ Admin'}</span></div>
+      </div>
+      ${!esSA?`<button class="btn-revocar" data-id="${u.id}" data-email="${u.email}" onclick="eliminarUsuario(this.dataset.id,this.dataset.email)">Eliminar</button>`:''}
+    </div>`;
   }).join('');
 }
 
