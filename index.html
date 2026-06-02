@@ -282,15 +282,44 @@ input::placeholder{color:#9EAFAD;}
       <!-- 16 Firma -->
       <div class="campo" id="c16">
         <label class="campo-label"><span class="num">16</span> Firma del paciente o acudiente <span class="req">*</span></label>
-        <div class="firma-wrap" id="firmaWrap">
-          <canvas id="firmaCanvas"></canvas>
-          <div class="firma-hint" id="firmaHint">✍️ Firme aquí con el dedo o el mouse</div>
+
+        <!-- Estado 1: Botón para abrir firma -->
+        <div id="firmaEstado1">
+          <button type="button" id="btnAbrirFirma" style="width:100%;padding:20px;border:2px dashed var(--border);border-radius:14px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--verde-dark);font-weight:600;transition:all 0.2s;">
+            ✍️ Toque aquí para firmar
+          </button>
         </div>
-        <div style="display:flex;gap:10px;margin-top:10px;align-items:center;">
-          <button type="button" id="btnLimpiarFirma" style="padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">🗑️ Limpiar</button>
-          <span style="font-size:12px;color:var(--gris);">Trazo en negro para documentos legales</span>
+
+        <!-- Estado 2: Canvas de firma -->
+        <div id="firmaEstado2" style="display:none;">
+          <div style="background:#f0f8ff;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+            <p style="font-size:13px;color:var(--gris);text-align:center;margin-bottom:10px;">✍️ Firme en el recuadro blanco de abajo</p>
+            <div class="firma-wrap" id="firmaWrap" style="border-radius:10px;overflow:hidden;">
+              <canvas id="firmaCanvas"></canvas>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <button type="button" id="btnLimpiarFirma" style="flex:1;padding:14px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+              🗑️ Limpiar y repetir
+            </button>
+            <button type="button" id="btnGuardarFirma" style="flex:2;padding:14px;border-radius:10px;border:none;background:var(--verde);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+              ✅ Guardar firma
+            </button>
+          </div>
         </div>
-        <div class="error-msg">Por favor firme antes de enviar.</div>
+
+        <!-- Estado 3: Firma guardada -->
+        <div id="firmaEstado3" style="display:none;">
+          <div style="border:2px solid var(--verde);border-radius:14px;padding:14px;background:var(--verde-light);">
+            <p style="font-size:12px;color:var(--verde-dark);font-weight:600;margin-bottom:8px;">✅ Firma guardada correctamente</p>
+            <img id="firmaPreview" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;background:white;border:1px solid var(--border);" alt="Firma guardada">
+          </div>
+          <button type="button" id="btnRehacerFirma" style="margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
+            🔄 Volver a firmar
+          </button>
+        </div>
+
+        <div class="error-msg">Por favor guarde su firma antes de enviar.</div>
       </div>
 
       <!-- Nota políticas -->
@@ -409,9 +438,9 @@ zona.addEventListener('drop', e => { e.preventDefault(); zona.classList.remove('
 // ── Canvas firma ──
 const canvas  = document.getElementById('firmaCanvas');
 const ctx     = canvas.getContext('2d');
-const hint    = document.getElementById('firmaHint');
-let dibujando = false;
-let firmaHecha = false;
+let dibujando    = false;
+let firmaHecha   = false;
+let firmaGuardada = false;
 
 function initCanvas() {
   const wrap = document.getElementById('firmaWrap');
@@ -424,14 +453,41 @@ function initCanvas() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, w, h);
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth   = 2;
+  ctx.lineWidth   = 2.5;
   ctx.lineCap     = 'round';
   ctx.lineJoin    = 'round';
+  firmaHecha = false;
 }
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', initCanvas);
-if (document.readyState !== 'loading') initCanvas();
-window.addEventListener('resize', () => { initCanvas(); firmaHecha = false; hint.style.display = 'block'; });
+
+function mostrarEstadoFirma(n) {
+  document.getElementById('firmaEstado1').style.display = n===1 ? 'block' : 'none';
+  document.getElementById('firmaEstado2').style.display = n===2 ? 'block' : 'none';
+  document.getElementById('firmaEstado3').style.display = n===3 ? 'block' : 'none';
+}
+
+document.getElementById('btnAbrirFirma').addEventListener('click', () => {
+  mostrarEstadoFirma(2);
+  setTimeout(initCanvas, 80);
+});
+
+document.getElementById('btnLimpiarFirma').addEventListener('click', () => {
+  initCanvas();
+  document.getElementById('c16').classList.remove('invalid');
+});
+
+document.getElementById('btnGuardarFirma').addEventListener('click', () => {
+  if (!firmaHecha) { alert('Por favor firme en el recuadro antes de guardar.'); return; }
+  document.getElementById('firmaPreview').src = canvas.toDataURL('image/png');
+  firmaGuardada = true;
+  mostrarEstadoFirma(3);
+  document.getElementById('c16').classList.remove('invalid');
+});
+
+document.getElementById('btnRehacerFirma').addEventListener('click', () => {
+  firmaGuardada = false;
+  mostrarEstadoFirma(2);
+  setTimeout(initCanvas, 80);
+});
 
 function xy(e) {
   const r = canvas.getBoundingClientRect();
@@ -439,31 +495,13 @@ function xy(e) {
   return { x: s.clientX - r.left, y: s.clientY - r.top };
 }
 
-canvas.addEventListener('mousedown', e => {
-  dibujando = true;
-  const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
-});
-canvas.addEventListener('mousemove', e => {
-  if (!dibujando) return;
-  const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke();
-  if (!firmaHecha) { firmaHecha = true; hint.style.display = 'none'; document.getElementById('c16').classList.remove('invalid'); }
-});
-canvas.addEventListener('mouseup',    () => dibujando = false);
-canvas.addEventListener('mouseleave', () => dibujando = false);
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault(); dibujando = true;
-  const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
-}, { passive: false });
-canvas.addEventListener('touchmove', e => {
-  e.preventDefault(); if (!dibujando) return;
-  const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke();
-  if (!firmaHecha) { firmaHecha = true; hint.style.display = 'none'; document.getElementById('c16').classList.remove('invalid'); }
-}, { passive: false });
-canvas.addEventListener('touchend', () => dibujando = false);
-document.getElementById('btnLimpiarFirma').addEventListener('click', () => {
-  initCanvas(); firmaHecha = false; hint.style.display = 'block';
-  document.getElementById('c16').classList.remove('invalid');
-});
+canvas.addEventListener('mousedown', e => { dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove', e => { if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmaHecha=true; });
+canvas.addEventListener('mouseup',    () => dibujando=false);
+canvas.addEventListener('mouseleave', () => dibujando=false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmaHecha=true; }, {passive:false});
+canvas.addEventListener('touchend',   () => dibujando=false);
 
 // ── Validación y envío ──
 const radio = (n) => document.querySelector(`input[name="${n}"]:checked`)?.value || '';
@@ -489,7 +527,7 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['contacto',  'c13',() => !txt('contacto')],
     ['eps',       'c14',() => !txt('eps')],
     ['formula',   'c15',() => !archivoFormula],
-    ['firma',     'c16',() => !firmaHecha],
+    ['firma',     'c16',() => !firmaGuardada],
   ];
 
   // Menor condicional
@@ -532,7 +570,7 @@ document.getElementById('form').addEventListener('submit', async e => {
       eps:                txt('eps'),
       formula_nombre:     archivoFormula ? archivoFormula.name : '',
       formula_imagen:     formulaB64,
-      firma_imagen:       canvas.toDataURL('image/png'),
+      firma_imagen:       document.getElementById('firmaPreview').src,
     });
 
     btn.style.display = 'none';
