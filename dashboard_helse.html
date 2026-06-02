@@ -305,7 +305,7 @@ function renderTabla(lista){
       '<td>'+(r.eps||'—')+'</td>'+
       '<td><span class="badge badge-rol">'+(r.rol||'—')+'</span></td>'+
       '<td>'+badge(r.contacto_whatsapp)+'</td>'+
-      '<td><button class="btn-ver" onclick="abrirModal(''+r.id+'')">Ver</button></td>';
+      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button></td>';
     tbody.appendChild(tr);
   });
 }
