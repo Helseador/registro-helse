@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro Médico – Programa Entregas Efectivas – Helse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;
+  --rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;
+  --border:#B0C4DE;--shadow:0 4px 24px rgba(27,58,107,0.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:40px 16px 80px;}
+body::before{content:'';position:fixed;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(27,58,107,0.10) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;bottom:-80px;left:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(27,58,107,0.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.wrapper{max-width:720px;margin:0 auto;position:relative;z-index:1;}
+
+/* Header */
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:36px 40px 28px;color:white;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.header-logo{margin-bottom:20px;}
+.header-logo img{height:60px;width:auto;background:white;border-radius:10px;padding:8px 14px;display:block;}
+.header-tag{font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;opacity:0.75;margin-bottom:10px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;line-height:1.2;}
+.header h1 span{display:block;font-size:18px;font-weight:300;opacity:0.85;font-family:'DM Sans',sans-serif;margin-top:4px;}
+.header-badge{display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.22);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;letter-spacing:0.5px;}
+
+/* Legal */
+.legal-box{background:white;border-left:4px solid var(--azul);padding:18px 22px;font-size:12.5px;color:var(--gris);line-height:1.65;}
+.legal-box a{color:var(--azul-dark);}
+
+/* Card */
+.card{background:white;border-radius:0 0 20px 20px;padding:32px 40px 40px;box-shadow:var(--shadow);}
+.obligatorio-note{font-size:12px;color:var(--rojo);margin-bottom:28px;}
+
+/* Sections */
+.section-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--azul);border-bottom:1px solid var(--azul-light);padding-bottom:8px;margin:36px 0 22px;}
+.section-title:first-of-type{margin-top:0;}
+
+/* Campo */
+.campo{margin-bottom:26px;}
+.campo-label{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;font-weight:500;color:var(--text);margin-bottom:10px;line-height:1.4;}
+.num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--azul-light);color:var(--azul-dark);border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0;}
+.req{color:var(--rojo);margin-left:2px;}
+
+/* Inputs */
+input[type="text"],input[type="tel"],input[type="email"],select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#FAFFFE;transition:border-color 0.2s;outline:none;appearance:none;}
+input[type="text"]:focus,input[type="tel"]:focus,input[type="email"]:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,0.10);background:white;}
+input::placeholder,select::placeholder{color:#9EAFAD;}
+.select-wrap{position:relative;}
+.select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gris);pointer-events:none;font-size:14px;}
+
+/* Radios */
+.opciones-radio{display:flex;flex-direction:column;gap:10px;}
+.opciones-radio.h{flex-direction:row;flex-wrap:wrap;gap:12px;}
+.radio-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s;user-select:none;background:#FAFFFE;font-size:14px;}
+.radio-item:hover{border-color:var(--azul);background:var(--azul-light);}
+.radio-item input[type="radio"]{display:none;}
+.rdot{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;background:white;}
+.rdot::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--azul);opacity:0;transform:scale(0);transition:all 0.2s;}
+.radio-item input:checked~.rdot{border-color:var(--azul);background:var(--azul-light);}
+.radio-item input:checked~.rdot::after{opacity:1;transform:scale(1);}
+.radio-item:has(input:checked){border-color:var(--azul);background:var(--azul-light);font-weight:500;}
+
+/* Checkboxes */
+.check-item{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;user-select:none;background:#FAFFFE;margin-bottom:10px;}
+.check-item:hover{border-color:var(--azul);background:var(--azul-light);}
+.check-item input[type="checkbox"]{display:none;}
+.cbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.2s;margin-top:1px;}
+.cbox svg{width:13px;height:13px;stroke:white;opacity:0;transform:scale(0);transition:all 0.2s;}
+.check-item input:checked~.cbox{background:var(--azul);border-color:var(--azul);}
+.check-item input:checked~.cbox svg{opacity:1;transform:scale(1);}
+.check-item:has(input:checked){border-color:var(--azul);background:var(--azul-light);}
+.check-text{font-size:14px;line-height:1.5;color:var(--text);padding-top:1px;}
+.check-item:has(input:checked) .check-text{font-weight:500;color:var(--azul-dark);}
+
+/* Grid 2 cols */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+
+/* Firma */
+.firma-wrap{border-radius:10px;overflow:hidden;}
+.firma-wrap canvas{display:block;cursor:crosshair;}
+
+/* Submit */
+.submit-area{margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.btn-submit{background:var(--azul);color:white;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(27,58,107,0.28);}
+.btn-submit:hover{background:var(--azul-dark);transform:translateY(-2px);}
+.btn-submit:disabled{opacity:0.7;cursor:not-allowed;transform:none;}
+.submit-note{font-size:12px;color:var(--gris);text-align:center;}
+.success-msg{display:none;background:var(--azul-light);border:1.5px solid var(--azul);border-radius:14px;padding:24px 28px;text-align:center;margin-top:24px;}
+.success-msg .icon{font-size:36px;margin-bottom:10px;}
+.success-msg p{font-size:15px;color:var(--azul-dark);font-weight:500;}
+
+/* Errores */
+.error-msg{display:none;color:var(--rojo);font-size:12px;margin-top:5px;}
+.campo.invalid .error-msg{display:block;}
+.campo.invalid input[type="text"],
+.campo.invalid input[type="tel"],
+.campo.invalid input[type="email"],
+.campo.invalid select{border-color:var(--rojo);}
+.campo.invalid .firma-wrap{border:2px solid var(--rojo);border-radius:10px;}
+.campo.invalid .radio-item,.campo.invalid .check-item{border-color:rgba(198,40,40,0.35);}
+
+@media(max-width:600px){
+  .card,.header{padding-left:20px;padding-right:20px;}
+  .header h1{font-size:22px;}
+  .opciones-radio.h{flex-direction:column;}
+  .grid2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">
+      <img src="data:image/png;base64,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" alt="Helse">
+    </div>
+    <div class="header-tag">Grupo Helse SAS &nbsp;·&nbsp; Programa de Entregas Efectivas</div>
+    <h1>Autorización y Firma <span>Médico Tratante</span></h1>
+    <div class="header-badge">🩺 Registro Profesional de Salud</div>
+  </div>
+
+  <!-- Aviso legal -->
+  <div class="legal-box">
+    En cumplimiento de la Ley 1581 de 2012 y demás normas concordantes sobre protección de datos personales en Colombia, le informamos que los datos suministrados serán recolectados, almacenados y administrados por GRUPO HELSE SAS, utilizados exclusivamente para la gestión, seguimiento y coordinación del programa de entregas efectivas en la ruta MIPRES con el cuerpo médico vinculado.<br><br>
+    El tiempo de conservación de la información será por máximo 2 años en nuestro sistema de información. A través del correo electrónico <a href="mailto:habeasdata@helse.com.co">habeasdata@helse.com.co</a> podrá ejercer su derecho a la privacidad o declinar compartir información con el programa.<br><br>
+    Al firmar este formulario, el profesional de la salud confirma que la información suministrada es veraz y da su consentimiento para el uso y tratamiento de sus datos personales conforme a la política de privacidad de Grupo Helse.
+    <a href="https://drive.google.com/file/d/1VPxTA-jH7pg36PaceGEgRqZfchJmNu0x/view?usp=sharing" target="_blank">Ver política de privacidad</a>
+  </div>
+
+  <div class="card">
+    <p class="obligatorio-note"><span class="req">*</span> Todos los campos marcados son obligatorios</p>
+    <form id="form" novalidate>
+
+      <!-- ── SECCIÓN 1: Autorizaciones ── -->
+      <div class="section-title">Consentimientos y Autorizaciones</div>
+
+      <!-- 1 Acepta programa -->
+      <div class="campo" id="c1">
+        <label class="campo-label"><span class="num">1</span> ¿Acepta vincularse al programa de entregas efectivas como médico tratante? <span class="req">*</span></label>
+        <label class="check-item">
+          <input type="checkbox" id="ch1">
+          <span class="cbox"><svg viewBox="0 0 14 14" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5.5,10.5 12,3"/></svg></span>
+          <span class="check-text">Acepto vincularme al programa de entregas efectivas como médico tratante</span>
+        </label>
+        <div class="error-msg">Debe aceptar para continuar.</div>
+      </div>
+
+      <!-- 2 WhatsApp -->
+      <div class="campo" id="c2">
+        <label class="campo-label"><span class="num">2</span> ¿Desea ser contactado por canal WhatsApp? <span class="req">*</span></label>
+        <div class="opciones-radio h">
+          <label class="radio-item"><input type="radio" name="whatsapp" value="Sí"><span class="rdot"></span>Sí</label>
+          <label class="radio-item"><input type="radio" name="whatsapp" value="No"><span class="rdot"></span>No</label>
+        </div>
+        <div class="error-msg">Por favor seleccione una opción.</div>
+      </div>
+
+      <!-- 3 Llamada -->
+      <div class="campo" id="c3">
+        <label class="campo-label"><span class="num">3</span> ¿Autoriza ser contactado por llamada telefónica? <span class="req">*</span></label>
+        <div class="opciones-radio h">
+          <label class="radio-item"><input type="radio" name="llamada" value="Sí"><span class="rdot"></span>Sí</label>
+          <label class="radio-item"><input type="radio" name="llamada" value="No"><span class="rdot"></span>No</label>
+        </div>
+        <div class="error-msg">Por favor seleccione una opción.</div>
+      </div>
+
+      <!-- 4 Recopilación datos -->
+      <div class="campo" id="c4">
+        <label class="campo-label"><span class="num">4</span> ¿Autoriza a Grupo Helse a recopilar y gestionar su información profesional en el marco del programa? <span class="req">*</span></label>
+        <div class="opciones-radio h">
+          <label class="radio-item"><input type="radio" name="recopilacion" value="Sí"><span class="rdot"></span>Sí</label>
+          <label class="radio-item"><input type="radio" name="recopilacion" value="No"><span class="rdot"></span>No</label>
+        </div>
+        <div class="error-msg">Por favor seleccione una opción.</div>
+      </div>
+
+      <!-- 5 Confirmación final -->
+      <div class="campo" id="c5">
+        <label class="campo-label"><span class="num">5</span> Confirmo que la información registrada es verídica y acepto los términos del programa <span class="req">*</span></label>
+        <label class="check-item">
+          <input type="checkbox" id="ch5">
+          <span class="cbox"><svg viewBox="0 0 14 14" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5.5,10.5 12,3"/></svg></span>
+          <span class="check-text">Confirmo que la información es verídica y acepto los términos del programa de entregas efectivas</span>
+        </label>
+        <div class="error-msg">Debe confirmar para continuar.</div>
+      </div>
+
+      <!-- ── SECCIÓN 2: Datos del médico ── -->
+      <div class="section-title">Datos del Médico Tratante</div>
+
+      <!-- 6 Nombre -->
+      <div class="campo" id="c6">
+        <label class="campo-label" for="nombre"><span class="num">6</span> Nombre y Apellido <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Escriba su nombre completo">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <!-- 7 Tipo doc + Número (grid) -->
+      <div class="grid2">
+        <div class="campo" id="c7">
+          <label class="campo-label"><span class="num">7</span> Tipo de Documento <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="tipodoc">
+              <option value="" disabled selected>Seleccione…</option>
+              <option>Cédula de Ciudadanía</option>
+              <option>Cédula de Extranjería</option>
+              <option>N. Pasaporte</option>
+              <option>Permiso de Protección Temporal</option>
+            </select>
+          </div>
+          <div class="error-msg">Seleccione el tipo de documento.</div>
+        </div>
+        <div class="campo" id="c8">
+          <label class="campo-label" for="numid"><span class="num">8</span> Número de Identificación <span class="req">*</span></label>
+          <input type="text" id="numid" placeholder="Ej. 79512345">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+      </div>
+
+      <!-- 9 Especialidad -->
+      <div class="campo" id="c9">
+        <label class="campo-label" for="especialidad"><span class="num">9</span> Especialidad Médica <span class="req">*</span></label>
+        <input type="text" id="especialidad" placeholder="Ej. Medicina Interna, Oncología, Pediatría…">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <!-- 10 IPS -->
+      <div class="campo" id="c10">
+        <label class="campo-label" for="ips"><span class="num">10</span> Institución / IPS donde ejerce <span class="req">*</span></label>
+        <input type="text" id="ips" placeholder="Nombre de la institución o clínica">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <!-- 11 Ciudad + Contacto (grid) -->
+      <div class="grid2">
+        <div class="campo" id="c11">
+          <label class="campo-label" for="ciudad"><span class="num">11</span> Ciudad <span class="req">*</span></label>
+          <input type="text" id="ciudad" placeholder="Ciudad de ejercicio">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="c12">
+          <label class="campo-label" for="contacto"><span class="num">12</span> Número de Contacto <span class="req">*</span></label>
+          <input type="tel" id="contacto" placeholder="Ej. 3001234567">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+      </div>
+
+      <!-- 13 Correo electrónico -->
+      <div class="campo" id="c13">
+        <label class="campo-label" for="correo"><span class="num">13</span> Correo Electrónico <span class="req">*</span></label>
+        <input type="email" id="correo" placeholder="correo@institución.com">
+        <div class="error-msg">Ingrese un correo electrónico válido.</div>
+      </div>
+
+      <!-- ── SECCIÓN 3: Firma ── -->
+      <div class="section-title">Firma del Profesional</div>
+
+      <div class="campo" id="c14">
+        <label class="campo-label"><span class="num">14</span> Firma del médico tratante <span class="req">*</span></label>
+
+        <!-- Estado 1: Botón inicial -->
+        <div id="firmaEstado1">
+          <button type="button" id="btnAbrirFirma" style="width:100%;padding:20px;border:2px dashed var(--border);border-radius:14px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--azul-dark);font-weight:600;transition:all 0.2s;">
+            ✍️ Toque aquí para firmar
+          </button>
+        </div>
+
+        <!-- Estado 2: Canvas -->
+        <div id="firmaEstado2" style="display:none;">
+          <div style="background:#f0f4fa;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+            <p style="font-size:13px;color:var(--gris);text-align:center;margin-bottom:10px;">✍️ Firme en el recuadro blanco de abajo</p>
+            <div class="firma-wrap" id="firmaWrap" style="border-radius:10px;overflow:hidden;">
+              <canvas id="firmaCanvas"></canvas>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <button type="button" id="btnLimpiarFirma" style="flex:1;padding:14px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+              🗑️ Limpiar y repetir
+            </button>
+            <button type="button" id="btnGuardarFirma" style="flex:2;padding:14px;border-radius:10px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+              ✅ Guardar firma
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado 3: Firma guardada -->
+        <div id="firmaEstado3" style="display:none;">
+          <div style="border:2px solid var(--azul);border-radius:14px;padding:14px;background:var(--azul-light);">
+            <p style="font-size:12px;color:var(--azul-dark);font-weight:600;margin-bottom:8px;">✅ Firma guardada correctamente</p>
+            <img id="firmaPreview" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;background:white;border:1px solid var(--border);" alt="Firma guardada">
+          </div>
+          <button type="button" id="btnRehacerFirma" style="margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
+            🔄 Volver a firmar
+          </button>
+        </div>
+
+        <div class="error-msg">Por favor guarde su firma antes de enviar.</div>
+      </div>
+
+      <!-- Nota políticas -->
+      <div style="margin-top:28px;padding:16px 20px;background:var(--azul-light);border-radius:12px;border-left:4px solid var(--azul);">
+        <p style="font-size:12.5px;color:var(--gris);line-height:1.7;">
+          Para consultar las políticas de tratamiento y protección de datos personales de Grupo Helse SAS, los procedimientos para ejercer sus derechos como titular de la información y los canales de atención disponibles, le invitamos a visitar nuestra página web:
+          <a href="https://www.helse.com.co" target="_blank" style="color:var(--azul-dark);font-weight:600;">www.helse.com.co</a>
+        </p>
+      </div>
+
+      <!-- Submit -->
+      <div class="submit-area">
+        <button type="submit" class="btn-submit" id="btnSubmit">Enviar Registro</button>
+        <p class="submit-note">Al enviar, confirma que la información proporcionada es verídica.</p>
+      </div>
+
+      <div class="success-msg" id="successMsg">
+        <div class="icon">✅</div>
+        <p>¡Registro enviado exitosamente!<br>El equipo de Helse se comunicará con usted pronto.</p>
+        <p style="margin-top:12px;font-size:13px;color:var(--azul-dark);">
+          Su firma quedó registrada correctamente junto con sus datos profesionales.
+        </p>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// Token del link si existe
+const urlParams = new URLSearchParams(window.location.search);
+const linkToken = urlParams.get('t') || '';
+
+// ── Canvas firma ──
+const canvas = document.getElementById('firmaCanvas');
+const ctx    = canvas.getContext('2d');
+let dibujando    = false;
+let firmaHecha   = false;
+let firmaGuardada = false;
+
+function initCanvas() {
+  const wrap = document.getElementById('firmaWrap');
+  const w = wrap.clientWidth || 600;
+  const h = 200;
+  canvas.width  = w;
+  canvas.height = h;
+  canvas.style.width  = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  firmaHecha = false;
+}
+
+function mostrarEstadoFirma(n) {
+  document.getElementById('firmaEstado1').style.display = n===1 ? 'block' : 'none';
+  document.getElementById('firmaEstado2').style.display = n===2 ? 'block' : 'none';
+  document.getElementById('firmaEstado3').style.display = n===3 ? 'block' : 'none';
+}
+
+document.getElementById('btnAbrirFirma').addEventListener('click', () => {
+  mostrarEstadoFirma(2);
+  setTimeout(initCanvas, 80);
+});
+document.getElementById('btnLimpiarFirma').addEventListener('click', () => {
+  initCanvas();
+  document.getElementById('c14').classList.remove('invalid');
+});
+document.getElementById('btnGuardarFirma').addEventListener('click', () => {
+  if (!firmaHecha) { alert('Por favor firme en el recuadro antes de guardar.'); return; }
+  document.getElementById('firmaPreview').src = canvas.toDataURL('image/png');
+  firmaGuardada = true;
+  mostrarEstadoFirma(3);
+  document.getElementById('c14').classList.remove('invalid');
+});
+document.getElementById('btnRehacerFirma').addEventListener('click', () => {
+  firmaGuardada = false;
+  mostrarEstadoFirma(2);
+  setTimeout(initCanvas, 80);
+});
+
+function xy(e) {
+  const r = canvas.getBoundingClientRect();
+  const s = e.touches ? e.touches[0] : e;
+  return { x: s.clientX - r.left, y: s.clientY - r.top };
+}
+canvas.addEventListener('mousedown', e => { dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove', e => { if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmaHecha=true; });
+canvas.addEventListener('mouseup',    () => dibujando=false);
+canvas.addEventListener('mouseleave', () => dibujando=false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmaHecha=true; }, {passive:false});
+canvas.addEventListener('touchend',   () => dibujando=false);
+
+// ── Validación y envío ──
+const radio = (n) => document.querySelector(`input[name="${n}"]:checked`)?.value || '';
+const txt   = (id) => document.getElementById(id).value.trim();
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
+  let ok = true;
+
+  const checks = [
+    ['ch1',         'c1',  () => !document.getElementById('ch1').checked],
+    ['whatsapp',    'c2',  () => !radio('whatsapp')],
+    ['llamada',     'c3',  () => !radio('llamada')],
+    ['recopilacion','c4',  () => !radio('recopilacion')],
+    ['ch5',         'c5',  () => !document.getElementById('ch5').checked],
+    ['nombre',      'c6',  () => !txt('nombre')],
+    ['tipodoc',     'c7',  () => !document.getElementById('tipodoc').value],
+    ['numid',       'c8',  () => !txt('numid')],
+    ['especialidad','c9',  () => !txt('especialidad')],
+    ['ips',         'c10', () => !txt('ips')],
+    ['ciudad',      'c11', () => !txt('ciudad')],
+    ['contacto',    'c12', () => !txt('contacto')],
+    ['correo',      'c13', () => {
+      const v = txt('correo');
+      return !v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    }],
+    ['firma',       'c14', () => !firmaGuardada],
+  ];
+
+  checks.forEach(([,cid,fn]) => { if(fn()) { document.getElementById(cid).classList.add('invalid'); ok = false; } });
+
+  if (!ok) {
+    document.querySelector('.campo.invalid')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  try {
+    await addDoc(collection(db, 'registros_entrega_efectiva'), {
+      tipo_registro:       'medico',
+      fecha:               serverTimestamp(),
+      acepta_programa:     document.getElementById('ch1').checked,
+      contacto_whatsapp:   radio('whatsapp'),
+      contacto_llamada:    radio('llamada'),
+      autoriza_recopilacion: radio('recopilacion'),
+      confirma_terminos:   document.getElementById('ch5').checked,
+      nombre:              txt('nombre'),
+      tipo_documento:      document.getElementById('tipodoc').value,
+      num_identificacion:  txt('numid'),
+      especialidad:        txt('especialidad'),
+      ips:                 txt('ips'),
+      ciudad:              txt('ciudad'),
+      numero_contacto:     txt('contacto'),
+      correo:              txt('correo'),
+      firma_imagen:        document.getElementById('firmaPreview').src,
+      token:               linkToken,
+    });
+
+    btn.style.display = 'none';
+    document.querySelector('.submit-note').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+    document.getElementById('successMsg').scrollIntoView({ behavior:'smooth', block:'center' });
+
+  } catch(err) {
+    btn.disabled = false; btn.textContent = 'Enviar Registro';
+    alert('❌ Error al enviar: ' + err.message);
+    console.error(err);
+  }
+});
+</script>
+</body>
+</html>
