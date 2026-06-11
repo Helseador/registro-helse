@@ -626,8 +626,8 @@ async function generarLink(tipoFormulario){
   const token=Math.random().toString(36).slice(2)+Date.now().toString(36);
   // Apunta al formulario correcto según el tipo
   const baseMap={
-    paciente: window.location.origin+'/registro-helse/',
-    medico:   window.location.origin+'/registro-medicos-helse/'
+    paciente: 'https://helseador.github.io/registro-helse/',
+    medico:   'https://helseador.github.io/registro-helse/medicos.html'
   };
   const base=baseMap[tipoFormulario]||baseMap.paciente;
   const url=base+'?t='+token;
