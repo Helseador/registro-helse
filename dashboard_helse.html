@@ -351,12 +351,10 @@ function badge(val){
 // ── PACIENTES ──
 async function cargarPacientes(){
   try{
-    const snap=await db.collection('registros_entrega_efectiva')
-      .where('tipo_registro','!=','medico').get();
-    // También incluir docs sin tipo_registro (registros viejos)
+    // Traemos todo y filtramos en cliente (evita index compuesto con !=)
     const snapSin=await db.collection('registros_entrega_efectiva').get();
-    const ids=new Set(snap.docs.map(d=>d.id));
-    const todos=snapSin.docs.filter(d=>!d.data().tipo_registro||d.data().tipo_registro!=='medico')
+    const todos=snapSin.docs
+      .filter(d=>!d.data().tipo_registro||d.data().tipo_registro!=='medico')
       .map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>{
         const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
@@ -728,7 +726,7 @@ function generarPDF(){
   function cY(n){if(y+n>250)nPag();}
   function sec(t){
     cY(10);
-    doc.setFillColor(...colorAccento);
+    doc.setFillColor(colorAccento[0],colorAccento[1],colorAccento[2]);
     doc.roundedRect(M,y-3.5,CW,6,1,1,'F');
     doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
     doc.text(t,M+2,y+0.5);y+=8;
@@ -754,7 +752,7 @@ function generarPDF(){
   const subtituloDoc=tipo==='medico'?'Programa de Entregas Efectivas  ·  Médico Tratante':'Programa de Entregas Efectivas  ·  REG-'+fR.getFullYear()+'-'+(r.id||'').slice(0,8).toUpperCase();
 
   // Cabecera
-  doc.setFillColor(...colorPrincipal);
+  doc.setFillColor(colorPrincipal[0],colorPrincipal[1],colorPrincipal[2]);
   doc.rect(0,0,210,30,'F');
   doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
   doc.text(tituloDoc,M,18);
@@ -820,13 +818,15 @@ function generarPDF(){
   for(let i=0;i<items.length;i+=2){
     cY(5.5);
     const[t1,ok1]=items[i];
-    doc.setFillColor(ok1?...colorAccento:[198,40,40]);
+    if(ok1) doc.setFillColor(colorAccento[0],colorAccento[1],colorAccento[2]);
+    else doc.setFillColor(198,40,40);
     doc.roundedRect(M,y-3,3.5,3.5,0.6,0.6,'F');
     doc.setTextColor(255,255,255);doc.setFontSize(5.5);doc.text(ok1?'✓':'✗',M+0.7,y-0.1);
     doc.setTextColor(26,44,43);doc.setFontSize(7.5);doc.text(t1,M+6,y);
     if(items[i+1]){
       const[t2,ok2]=items[i+1];
-      doc.setFillColor(ok2?...colorAccento:[198,40,40]);
+      if(ok2) doc.setFillColor(colorAccento[0],colorAccento[1],colorAccento[2]);
+      else doc.setFillColor(198,40,40);
       doc.roundedRect(C2,y-3,3.5,3.5,0.6,0.6,'F');
       doc.setTextColor(255,255,255);doc.setFontSize(5.5);doc.text(ok2?'✓':'✗',C2+0.7,y-0.1);
       doc.setTextColor(26,44,43);doc.setFontSize(7.5);doc.text(t2,C2+6,y);
@@ -854,7 +854,7 @@ function generarPDF(){
   // Fórmula (solo pacientes)
   if(tipo!=='medico'&&r.formula_imagen){
     nPag();
-    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(...colorPrincipal);
+    doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(colorPrincipal[0],colorPrincipal[1],colorPrincipal[2]);
     doc.text('Fórmula Médica Adjunta',M,y);y+=6;
     doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(84,110,122);
     doc.text('Paciente: '+(r.nombre||'')+'  ·  '+(r.num_identificacion||''),M,y);y+=8;
