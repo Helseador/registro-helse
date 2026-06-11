@@ -142,29 +142,19 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
       <!-- ── SECCIÓN 1: Autorizaciones ── -->
       <div class="section-title">Consentimientos y Autorizaciones</div>
 
-      <!-- 1 WhatsApp -->
+      <!-- 1 Contacto (WhatsApp + Llamada agrupados) -->
       <div class="campo" id="c1">
-        <label class="campo-label"><span class="num">1</span> ¿Desea ser contactado por canal WhatsApp? <span class="req">*</span></label>
+        <label class="campo-label"><span class="num">1</span> ¿Autoriza ser contactado por WhatsApp y/o llamada telefónica? <span class="req">*</span></label>
         <div class="opciones-radio h">
-          <label class="radio-item"><input type="radio" name="whatsapp" value="Sí"><span class="rdot"></span>Sí</label>
-          <label class="radio-item"><input type="radio" name="whatsapp" value="No"><span class="rdot"></span>No</label>
+          <label class="radio-item"><input type="radio" name="contacto" value="Sí"><span class="rdot"></span>Sí</label>
+          <label class="radio-item"><input type="radio" name="contacto" value="No"><span class="rdot"></span>No</label>
         </div>
         <div class="error-msg">Por favor seleccione una opción.</div>
       </div>
 
-      <!-- 3 Llamada -->
+      <!-- 2 Recopilación datos -->
       <div class="campo" id="c2">
-        <label class="campo-label"><span class="num">2</span> ¿Autoriza ser contactado por llamada telefónica? <span class="req">*</span></label>
-        <div class="opciones-radio h">
-          <label class="radio-item"><input type="radio" name="llamada" value="Sí"><span class="rdot"></span>Sí</label>
-          <label class="radio-item"><input type="radio" name="llamada" value="No"><span class="rdot"></span>No</label>
-        </div>
-        <div class="error-msg">Por favor seleccione una opción.</div>
-      </div>
-
-      <!-- 4 Recopilación datos -->
-      <div class="campo" id="c3">
-        <label class="campo-label"><span class="num">3</span> ¿Autoriza a Grupo Helse a recopilar y gestionar su información profesional? <span class="req">*</span></label>
+        <label class="campo-label"><span class="num">2</span> ¿Autoriza a Grupo Helse a recopilar y gestionar su información profesional? <span class="req">*</span></label>
         <div class="opciones-radio h">
           <label class="radio-item"><input type="radio" name="recopilacion" value="Sí"><span class="rdot"></span>Sí</label>
           <label class="radio-item"><input type="radio" name="recopilacion" value="No"><span class="rdot"></span>No</label>
@@ -172,23 +162,12 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
         <div class="error-msg">Por favor seleccione una opción.</div>
       </div>
 
-      <!-- 5 Confirmación final -->
-      <div class="campo" id="c4">
-        <label class="campo-label"><span class="num">4</span> Confirmo que la información registrada es verídica <span class="req">*</span></label>
-        <label class="check-item">
-          <input type="checkbox" id="ch5">
-          <span class="cbox"><svg viewBox="0 0 14 14" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 5.5,10.5 12,3"/></svg></span>
-          <span class="check-text">Confirmo que la información registrada es verídica y doy mi consentimiento para el tratamiento de mis datos personales</span>
-        </label>
-        <div class="error-msg">Debe confirmar para continuar.</div>
-      </div>
-
       <!-- ── SECCIÓN 2: Datos del profesional ── -->
       <div class="section-title">Datos del Profesional de la Salud</div>
 
-      <!-- 5 Nombre -->
+      <!-- 3 Nombre -->
       <div class="campo" id="c6">
-        <label class="campo-label" for="nombre"><span class="num">5</span> Nombre y Apellido <span class="req">*</span></label>
+        <label class="campo-label" for="nombre"><span class="num">3</span> Nombre y Apellido <span class="req">*</span></label>
         <input type="text" id="nombre" placeholder="Escriba su nombre completo">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
@@ -196,7 +175,7 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
       <!-- 7 Tipo doc + Número (grid) -->
       <div class="grid2">
         <div class="campo" id="c7">
-          <label class="campo-label"><span class="num">6</span> Tipo de Documento <span class="req">*</span></label>
+          <label class="campo-label"><span class="num">4</span> Tipo de Documento <span class="req">*</span></label>
           <div class="select-wrap">
             <select id="tipodoc">
               <option value="" disabled selected>Seleccione…</option>
@@ -209,7 +188,7 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
           <div class="error-msg">Seleccione el tipo de documento.</div>
         </div>
         <div class="campo" id="c8">
-          <label class="campo-label" for="numid"><span class="num">7</span> Número de Identificación <span class="req">*</span></label>
+          <label class="campo-label" for="numid"><span class="num">5</span> Número de Identificación <span class="req">*</span></label>
           <input type="text" id="numid" placeholder="Ej. 79512345">
           <div class="error-msg">Este campo es obligatorio.</div>
         </div>
@@ -217,14 +196,14 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
 
       <!-- 9 Especialidad -->
       <div class="campo" id="c9">
-        <label class="campo-label" for="especialidad"><span class="num">8</span> Especialidad Médica <span class="req">*</span></label>
+        <label class="campo-label" for="especialidad"><span class="num">6</span> Especialidad Médica <span class="req">*</span></label>
         <input type="text" id="especialidad" placeholder="Ej. Medicina Interna, Oncología, Pediatría…">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
       <!-- 10 IPS -->
       <div class="campo" id="c10">
-        <label class="campo-label" for="ips"><span class="num">9</span> Institución / IPS donde ejerce <span class="req">*</span></label>
+        <label class="campo-label" for="ips"><span class="num">7</span> Institución / IPS donde ejerce <span class="req">*</span></label>
         <input type="text" id="ips" placeholder="Nombre de la institución o clínica">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
@@ -232,12 +211,12 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
       <!-- 11 Ciudad + Contacto (grid) -->
       <div class="grid2">
         <div class="campo" id="c11">
-          <label class="campo-label" for="ciudad"><span class="num">10</span> Ciudad <span class="req">*</span></label>
+          <label class="campo-label" for="ciudad"><span class="num">8</span> Ciudad <span class="req">*</span></label>
           <input type="text" id="ciudad" placeholder="Ciudad de ejercicio">
           <div class="error-msg">Este campo es obligatorio.</div>
         </div>
         <div class="campo" id="c12">
-          <label class="campo-label" for="contacto"><span class="num">11</span> Número de Contacto <span class="req">*</span></label>
+          <label class="campo-label" for="contacto"><span class="num">9</span> Número de Contacto <span class="req">*</span></label>
           <input type="tel" id="contacto" placeholder="Ej. 3001234567">
           <div class="error-msg">Este campo es obligatorio.</div>
         </div>
@@ -245,7 +224,7 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
 
       <!-- 13 Correo electrónico -->
       <div class="campo" id="c13">
-        <label class="campo-label" for="correo"><span class="num">12</span> Correo Electrónico <span class="req">*</span></label>
+        <label class="campo-label" for="correo"><span class="num">10</span> Correo Electrónico <span class="req">*</span></label>
         <input type="email" id="correo" placeholder="correo@institución.com">
         <div class="error-msg">Ingrese un correo electrónico válido.</div>
       </div>
@@ -254,7 +233,7 @@ input::placeholder,select::placeholder{color:#9EAFAD;}
       <div class="section-title">Firma del Profesional</div>
 
       <div class="campo" id="c14">
-        <label class="campo-label"><span class="num">13</span> Firma del profesional de la salud <span class="req">*</span></label>
+        <label class="campo-label"><span class="num">11</span> Firma del profesional de la salud <span class="req">*</span></label>
 
         <!-- Estado 1: Botón inicial -->
         <div id="firmaEstado1">
@@ -414,17 +393,15 @@ document.getElementById('form').addEventListener('submit', async e => {
   let ok = true;
 
   const checks = [
-    ['whatsapp',    'c1',  () => !radio('whatsapp')],
-    ['llamada',     'c2',  () => !radio('llamada')],
-    ['recopilacion','c3',  () => !radio('recopilacion')],
-    ['ch5',         'c4',  () => !document.getElementById('ch5').checked],
+    ['contacto',    'c1',  () => !radio('contacto')],
+    ['recopilacion','c2',  () => !radio('recopilacion')],
     ['nombre',      'c6',  () => !txt('nombre')],
     ['tipodoc',     'c7',  () => !document.getElementById('tipodoc').value],
     ['numid',       'c8',  () => !txt('numid')],
     ['especialidad','c9',  () => !txt('especialidad')],
     ['ips',         'c10', () => !txt('ips')],
     ['ciudad',      'c11', () => !txt('ciudad')],
-    ['contacto',    'c12', () => !txt('contacto')],
+    ['contactoNum', 'c12', () => !txt('contacto')],
     ['correo',      'c13', () => {
       const v = txt('correo');
       return !v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -444,23 +421,22 @@ document.getElementById('form').addEventListener('submit', async e => {
 
   try {
     await addDoc(collection(db, 'registros_entrega_efectiva'), {
-      tipo_registro:       'medico',
-      fecha:               serverTimestamp(),
-      acepta_programa:     document.getElementById('ch1').checked,
-      contacto_whatsapp:   radio('whatsapp'),
-      contacto_llamada:    radio('llamada'),
+      tipo_registro:         'medico',
+      fecha:                 serverTimestamp(),
+      autoriza_contacto:     radio('contacto'),
+      contacto_whatsapp:     radio('contacto'),
+      contacto_llamada:      radio('contacto'),
       autoriza_recopilacion: radio('recopilacion'),
-      confirma_terminos:   document.getElementById('ch5').checked,
-      nombre:              txt('nombre'),
-      tipo_documento:      document.getElementById('tipodoc').value,
-      num_identificacion:  txt('numid'),
-      especialidad:        txt('especialidad'),
-      ips:                 txt('ips'),
-      ciudad:              txt('ciudad'),
-      numero_contacto:     txt('contacto'),
-      correo:              txt('correo'),
-      firma_imagen:        document.getElementById('firmaPreview').src,
-      token:               linkToken,
+      nombre:                txt('nombre'),
+      tipo_documento:        document.getElementById('tipodoc').value,
+      num_identificacion:    txt('numid'),
+      especialidad:          txt('especialidad'),
+      ips:                   txt('ips'),
+      ciudad:                txt('ciudad'),
+      numero_contacto:       txt('contacto'),
+      correo:                txt('correo'),
+      firma_imagen:          document.getElementById('firmaPreview').src,
+      token:                 linkToken,
     });
 
     btn.style.display = 'none';
