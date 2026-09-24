@@ -248,9 +248,16 @@ input::placeholder{color:#9EAFAD;}
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
-      <!-- 15 Fórmula -->
+      <!-- 15 Nutrición -->
       <div class="campo" id="c15">
-        <label class="campo-label"><span class="num">15</span> Cargue aquí su fórmula médica <span style="color:var(--gris);font-weight:400;font-size:12px;">(opcional)</span></label>
+        <label class="campo-label" for="nutricion"><span class="num">15</span> Nombre de la Nutrición <span class="req">*</span></label>
+        <input type="text" id="nutricion" placeholder="Escriba el nombre de la nutrición">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <!-- 16 Fórmula -->
+      <div class="campo" id="c16f">
+        <label class="campo-label"><span class="num">16</span> Cargue aquí su fórmula médica <span style="color:var(--gris);font-weight:400;font-size:12px;">(opcional)</span></label>
         <div class="upload-zona" id="uploadZona">
           <input type="file" id="formulaFile" accept=".pdf,image/jpeg,image/png,image/webp">
           <span class="upload-icono">📋</span>
@@ -279,9 +286,9 @@ input::placeholder{color:#9EAFAD;}
         <div class="error-msg">Por favor adjunte su fórmula médica.</div>
       </div>
 
-      <!-- 16 Firma -->
-      <div class="campo" id="c16">
-        <label class="campo-label"><span class="num">16</span> Firma del paciente o acudiente <span class="req">*</span></label>
+      <!-- 17 Firma -->
+      <div class="campo" id="c17">
+        <label class="campo-label"><span class="num">17</span> Firma del paciente o acudiente <span class="req">*</span></label>
 
         <!-- Estado 1: Botón para abrir firma -->
         <div id="firmaEstado1">
@@ -476,7 +483,7 @@ document.getElementById('btnAbrirFirma').addEventListener('click', () => {
 
 document.getElementById('btnLimpiarFirma').addEventListener('click', () => {
   initCanvas();
-  document.getElementById('c16').classList.remove('invalid');
+  document.getElementById('c17').classList.remove('invalid');
 });
 
 document.getElementById('btnGuardarFirma').addEventListener('click', () => {
@@ -484,7 +491,7 @@ document.getElementById('btnGuardarFirma').addEventListener('click', () => {
   document.getElementById('firmaPreview').src = canvas.toDataURL('image/png');
   firmaGuardada = true;
   mostrarEstadoFirma(3);
-  document.getElementById('c16').classList.remove('invalid');
+  document.getElementById('c17').classList.remove('invalid');
 });
 
 document.getElementById('btnRehacerFirma').addEventListener('click', () => {
@@ -530,8 +537,9 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['ciudad',    'c12',() => !txt('ciudad')],
     ['contacto',  'c13',() => !txt('contacto')],
     ['eps',       'c14',() => !txt('eps')],
-    // formula médica ahora es opcional (campo 15)
-    ['firma',     'c16',() => !firmaGuardada],
+    ['nutricion', 'c15',() => !txt('nutricion')],
+    // formula médica es opcional (campo 16)
+    ['firma',     'c17',() => !firmaGuardada],
   ];
 
   // Menor condicional
@@ -572,6 +580,7 @@ document.getElementById('form').addEventListener('submit', async e => {
       ciudad:             txt('ciudad'),
       numero_contacto:    txt('contacto'),
       eps:                txt('eps'),
+      nutricion:          txt('nutricion'),
       formula_nombre:     archivoFormula ? archivoFormula.name : '',
       formula_imagen:     formulaB64,
       firma_imagen:       document.getElementById('firmaPreview').src,
