@@ -192,7 +192,7 @@ td.nombre{font-weight:600;}
     <div class="table-wrap">
       <div class="loading" id="loadingPac"><div class="spinner"></div>Cargando...</div>
       <table id="tablaPac" style="display:none;">
-        <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Documento</th><th>Ciudad</th><th>EPS</th><th>Rol</th><th>WhatsApp</th><th id="thOrigenPac"></th><th>Ver</th></tr></thead>
+        <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Documento</th><th>Ciudad</th><th>EPS</th><th>Nutrición</th><th>Rol</th><th>WhatsApp</th><th id="thOrigenPac"></th><th>Ver</th></tr></thead>
         <tbody id="tbodyPac"></tbody>
       </table>
       <div class="empty" id="emptyPac" style="display:none;">No se encontraron registros.</div>
@@ -401,6 +401,7 @@ function renderTablaPac(lista){
       '<td>'+(r.tipo_documento||'')+' '+(r.num_identificacion||'')+'</td>'+
       '<td>'+(r.ciudad||'—')+'</td>'+
       '<td>'+(r.eps||'—')+'</td>'+
+      '<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.nutricion||'—')+'</td>'+
       '<td><span class="badge badge-rol">'+(r.rol||'—')+'</span></td>'+
       '<td>'+badge(r.contacto_whatsapp)+'</td>'+
       (rolActual==='superadmin'?'<td style="font-size:11px;color:var(--gris);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.linkCreadoPor||'—')+'</td>':'')+
@@ -542,6 +543,7 @@ function abrirModal(id,tipo){
       ['Ciudad',r.ciudad],
       ['Contacto',r.numero_contacto],
       ['EPS',r.eps],
+      ['Nutrición',r.nutricion],
       ['Acepta programa',r.acepta_programa?'✅ Sí':'❌ No'],
       ['WhatsApp',r.contacto_whatsapp],
       ['Llamada',r.contacto_llamada],
@@ -702,7 +704,7 @@ function exportarCSV(tipo){
   if(tipo==='medicos'){
     cols=['fecha','nombre','tipo_documento','num_identificacion','especialidad','ips','ciudad','numero_contacto','correo','contacto_whatsapp','contacto_llamada','autoriza_recopilacion'];
   } else {
-    cols=['fecha','nombre','tipo_documento','num_identificacion','ciudad','numero_contacto','eps','rol','contacto_whatsapp','contacto_llamada','autoriza_recopilacion','menor_edad'];
+    cols=['fecha','nombre','tipo_documento','num_identificacion','ciudad','numero_contacto','eps','nutricion','rol','contacto_whatsapp','contacto_llamada','autoriza_recopilacion','menor_edad'];
   }
   const rows=lista.map(r=>cols.map(c=>'"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(','));
   const blob=new Blob(['\ufeff'+[cols.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
