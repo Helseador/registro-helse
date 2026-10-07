@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autorización Uso de Imagen – Helse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B0C4DE;--shadow:0 4px 24px rgba(27,58,107,0.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:40px 16px 80px;}
+body::before{content:'';position:fixed;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(27,58,107,0.10) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;bottom:-80px;left:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(27,58,107,0.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.wrapper{max-width:760px;margin:0 auto;position:relative;z-index:1;}
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:36px 40px 28px;color:white;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.header-logo{margin-bottom:20px;}
+.header-logo img{height:60px;width:auto;background:white;border-radius:10px;padding:8px 14px;display:block;}
+.header-tag{font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;opacity:0.75;margin-bottom:10px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;line-height:1.2;}
+.header h1 span{display:block;font-size:18px;font-weight:300;opacity:0.85;font-family:'DM Sans',sans-serif;margin-top:4px;}
+.header-badge{display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.22);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;letter-spacing:0.5px;}
+.legal-box{background:white;border-left:4px solid var(--azul);padding:18px 22px;font-size:12.5px;color:var(--gris);line-height:1.65;}
+.legal-box a{color:var(--azul-dark);}
+.card{background:white;border-radius:0 0 20px 20px;padding:32px 40px 40px;box-shadow:var(--shadow);}
+.obligatorio-note{font-size:12px;color:var(--rojo);margin-bottom:28px;}
+.section-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--azul);border-bottom:1px solid var(--azul-light);padding-bottom:8px;margin:36px 0 22px;}
+.section-title:first-of-type{margin-top:0;}
+.campo{margin-bottom:22px;}
+.campo-label{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;font-weight:500;color:var(--text);margin-bottom:10px;line-height:1.4;}
+.num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--azul-light);color:var(--azul-dark);border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0;}
+.req{color:var(--rojo);margin-left:2px;}
+input[type="text"],input[type="email"],input[type="number"],select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#FAFFFE;transition:border-color 0.2s;outline:none;appearance:none;}
+input[type="text"]:focus,input[type="email"]:focus,input[type="number"]:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,0.10);background:white;}
+input::placeholder{color:#9EAFAD;}
+.select-wrap{position:relative;}
+.select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gris);pointer-events:none;font-size:14px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* Documento legal preview */
+.doc-preview{background:#FAFFFE;border:1.5px solid var(--border);border-radius:14px;padding:28px 32px;font-size:13.5px;line-height:1.85;color:var(--text);margin-bottom:28px;}
+.doc-preview h2{font-family:'DM Serif Display',serif;font-size:17px;color:var(--azul);text-align:center;margin-bottom:6px;}
+.doc-preview h3{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gris);text-align:center;margin-bottom:20px;}
+.doc-preview p{margin-bottom:12px;}
+.doc-preview .clausula{margin-bottom:16px;}
+.doc-preview .clausula strong{color:var(--azul-dark);}
+.campo-inline{display:inline-block;border-bottom:1.5px solid var(--azul);min-width:140px;color:var(--azul-dark);font-weight:600;padding:0 4px;font-size:13.5px;background:none;outline:none;font-family:'DM Sans',sans-serif;}
+.campo-inline.sm{min-width:60px;}
+.campo-inline.md{min-width:100px;}
+.campo-inline::placeholder{color:#B0C4DE;font-weight:400;}
+
+/* Firma */
+.firma-wrap{border-radius:10px;overflow:hidden;}
+.firma-wrap canvas{display:block;cursor:crosshair;}
+
+/* Submit */
+.submit-area{margin-top:36px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.btn-submit{background:var(--azul);color:white;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(27,58,107,0.28);}
+.btn-submit:hover{background:var(--azul-dark);transform:translateY(-2px);}
+.btn-submit:disabled{opacity:0.7;cursor:not-allowed;transform:none;}
+.submit-note{font-size:12px;color:var(--gris);text-align:center;}
+.success-msg{display:none;background:var(--azul-light);border:1.5px solid var(--azul);border-radius:14px;padding:24px 28px;text-align:center;margin-top:24px;}
+.success-msg .icon{font-size:36px;margin-bottom:10px;}
+.success-msg p{font-size:15px;color:var(--azul-dark);font-weight:500;}
+.error-msg{display:none;color:var(--rojo);font-size:12px;margin-top:5px;}
+.campo.invalid .error-msg{display:block;}
+.campo.invalid input[type="text"],
+.campo.invalid input[type="email"],
+.campo.invalid input[type="number"],
+.campo.invalid select{border-color:var(--rojo);}
+.campo.invalid .firma-wrap{border:2px solid var(--rojo);border-radius:10px;}
+
+@media(max-width:600px){
+  .card,.header{padding-left:20px;padding-right:20px;}
+  .header h1{font-size:22px;}
+  .grid2{grid-template-columns:1fr;}
+  .grid3{grid-template-columns:1fr 1fr;}
+  .doc-preview{padding:18px 16px;}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="header-logo">
+      <img src="https://helseador.github.io/registro-helse/logo.png"
+           onerror="this.style.display='none';document.getElementById('logoFallback').style.display='block';"
+           alt="Helse">
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:white;font-weight:400;letter-spacing:2px;display:none;" id="logoFallback">Helse</div>
+    </div>
+    <div class="header-tag">Grupo Helse SAS &nbsp;·&nbsp; NIT 901.401.880-4</div>
+    <h1>Autorización de Uso de Imagen <span>y Datos Personales</span></h1>
+    <div class="header-badge">📸 Colaborador / Visitador Médico</div>
+  </div>
+
+  <div class="legal-box">
+    En cumplimiento de la Ley 1581 de 2012 y demás normas concordantes sobre protección de datos personales en Colombia, le informamos que los datos e imagen suministrados serán recolectados, almacenados y administrados por GRUPO HELSE SAS, utilizados exclusivamente para los fines institucionales y de estrategia de imagen descritos en este documento.<br><br>
+    A través del correo <a href="mailto:laboratorioshelse@gmail.com">laboratorioshelse@gmail.com</a> podrá ejercer su derecho a revocar esta autorización en cualquier momento.
+    <a href="https://drive.google.com/file/d/1VPxTA-jH7pg36PaceGEgRqZfchJmNu0x/view?usp=sharing" target="_blank">Ver política de privacidad</a>
+  </div>
+
+  <div class="card">
+    <p class="obligatorio-note"><span class="req">*</span> Todos los campos marcados son obligatorios</p>
+    <form id="form" novalidate>
+
+      <!-- DATOS -->
+      <div class="section-title">Datos del Colaborador</div>
+
+      <div class="campo" id="c1">
+        <label class="campo-label" for="nombre"><span class="num">1</span> Nombre y Apellido completo <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Escriba su nombre completo">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="c2">
+          <label class="campo-label" for="cedula"><span class="num">2</span> Cédula de ciudadanía No. <span class="req">*</span></label>
+          <input type="text" id="cedula" placeholder="Número de cédula">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="c3">
+          <label class="campo-label" for="ciudadCedula"><span class="num">3</span> Expedida en (ciudad) <span class="req">*</span></label>
+          <input type="text" id="ciudadCedula" placeholder="Ciudad de expedición">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+      </div>
+
+      <div class="campo" id="c4">
+        <label class="campo-label" for="correo"><span class="num">4</span> Correo electrónico <span class="req">*</span></label>
+        <input type="email" id="correo" placeholder="correo@ejemplo.com">
+        <div class="error-msg">Ingrese un correo electrónico válido.</div>
+      </div>
+
+      <!-- LUGAR Y FECHA -->
+      <div class="section-title">Lugar y Fecha de Firma</div>
+
+      <div class="campo" id="c5">
+        <label class="campo-label" for="ciudadFirma"><span class="num">5</span> Dado en (ciudad) <span class="req">*</span></label>
+        <input type="text" id="ciudadFirma" placeholder="Ciudad donde firma el documento">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="grid3">
+        <div class="campo" id="c6">
+          <label class="campo-label" for="dia"><span class="num">6</span> Día <span class="req">*</span></label>
+          <input type="text" id="dia" placeholder="DD" maxlength="2">
+          <div class="error-msg">Requerido.</div>
+        </div>
+        <div class="campo" id="c7">
+          <label class="campo-label" for="mes"><span class="num">7</span> Mes <span class="req">*</span></label>
+          <div class="select-wrap">
+            <select id="mes">
+              <option value="" disabled selected>Seleccione…</option>
+              <option>enero</option><option>febrero</option><option>marzo</option>
+              <option>abril</option><option>mayo</option><option>junio</option>
+              <option>julio</option><option>agosto</option><option>septiembre</option>
+              <option>octubre</option><option>noviembre</option><option>diciembre</option>
+            </select>
+          </div>
+          <div class="error-msg">Requerido.</div>
+        </div>
+        <div class="campo" id="c8">
+          <label class="campo-label" for="anio"><span class="num">8</span> Año <span class="req">*</span></label>
+          <input type="text" id="anio" placeholder="Ej. 2025" maxlength="4">
+          <div class="error-msg">Requerido.</div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTO PREVIEW -->
+      <div class="section-title">Vista previa del documento</div>
+
+      <div class="doc-preview" id="docPreview">
+        <h2>AUTORIZACIÓN DE USO DE IMAGEN Y DATOS PERSONALES</h2>
+        <h3>Colaborador / Visitador Médico · Grupo Helse SAS</h3>
+
+        <p>
+          Yo, <strong id="pNombre">______________________________</strong>, mayor de edad, identificado(a) con cédula de ciudadanía No.
+          <strong id="pCedula">________________</strong> de <strong id="pCiudadCedula">____________</strong>,
+          en mi calidad de colaborador/visitador médico, autorizo de manera libre, previa, expresa e informada a
+          <strong>GRUPO HELSE SAS (NIT 901.401.880-4)</strong> para:
+        </p>
+
+        <div class="clausula">
+          <strong>1. Uso de imagen:</strong> Captar, reproducir, publicar y utilizar mi imagen (fotografías y videos) en medios internos y externos
+          (páginas web, redes sociales, presentaciones corporativas, material promocional), con fines institucionales y de estrategia de imagen.
+        </div>
+
+        <div class="clausula">
+          <strong>2. Tratamiento de datos:</strong> Tratar mis datos personales (nombre, cédula, imagen, voz) conforme a la política de privacidad
+          de la empresa y la Ley 1581 de 2012.
+        </div>
+
+        <div class="clausula">
+          <strong>3. Cesión de derechos:</strong> Ceder los derechos patrimoniales de imagen y audiovisuales de manera gratuita, sin exclusividad
+          y sin límite territorial, manteniendo mis derechos morales irrenunciables.
+        </div>
+
+        <div class="clausula">
+          <strong>4. Vigencia:</strong> Esta autorización tiene vigencia indefinida, salvo que solicite su revocatoria por escrito al correo
+          <a href="mailto:laboratorioshelse@gmail.com" style="color:var(--azul-dark);">laboratorioshelse@gmail.com</a>.
+        </div>
+
+        <p>
+          Declaro que he sido informado(a) sobre mis derechos a conocer, actualizar, rectificar y suprimir mis datos, y que firmo este documento
+          de manera voluntaria, sin coerción alguna.
+        </p>
+
+        <p>
+          Dado en <strong id="pCiudadFirma">__________</strong>, a los <strong id="pDia">___</strong> días del mes de
+          <strong id="pMes">________</strong> de <strong id="pAnio">202_</strong>.
+        </p>
+      </div>
+
+      <!-- FIRMA -->
+      <div class="section-title">Firma del Colaborador</div>
+
+      <div class="campo" id="c9">
+        <label class="campo-label"><span class="num">9</span> Firma <span class="req">*</span></label>
+
+        <div id="firmaEstado1">
+          <button type="button" id="btnAbrirFirma" style="width:100%;padding:20px;border:2px dashed var(--border);border-radius:14px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--azul-dark);font-weight:600;transition:all 0.2s;">
+            ✍️ Toque aquí para firmar
+          </button>
+        </div>
+
+        <div id="firmaEstado2" style="display:none;">
+          <div style="background:#f0f4fa;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+            <p style="font-size:13px;color:var(--gris);text-align:center;margin-bottom:10px;">✍️ Firme en el recuadro blanco de abajo</p>
+            <div class="firma-wrap" id="firmaWrap">
+              <canvas id="firmaCanvas"></canvas>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <button type="button" id="btnLimpiarFirma" style="flex:1;padding:14px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+              🗑️ Limpiar y repetir
+            </button>
+            <button type="button" id="btnGuardarFirma" style="flex:2;padding:14px;border-radius:10px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+              ✅ Guardar firma
+            </button>
+          </div>
+        </div>
+
+        <div id="firmaEstado3" style="display:none;">
+          <div style="border:2px solid var(--azul);border-radius:14px;padding:14px;background:var(--azul-light);">
+            <p style="font-size:12px;color:var(--azul-dark);font-weight:600;margin-bottom:8px;">✅ Firma guardada correctamente</p>
+            <img id="firmaPreview" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;background:white;border:1px solid var(--border);" alt="Firma guardada">
+          </div>
+          <button type="button" id="btnRehacerFirma" style="margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">
+            🔄 Volver a firmar
+          </button>
+        </div>
+
+        <div class="error-msg">Por favor guarde su firma antes de enviar.</div>
+      </div>
+
+      <div style="margin-top:28px;padding:16px 20px;background:var(--azul-light);border-radius:12px;border-left:4px solid var(--azul);">
+        <p style="font-size:12.5px;color:var(--gris);line-height:1.7;">
+          Para consultar las políticas de tratamiento y protección de datos personales de Grupo Helse SAS, visite:
+          <a href="https://www.helse.com.co" target="_blank" style="color:var(--azul-dark);font-weight:600;">www.helse.com.co</a>
+        </p>
+      </div>
+
+      <div class="submit-area">
+        <button type="submit" class="btn-submit" id="btnSubmit">Enviar Autorización</button>
+        <p class="submit-note">Al enviar, confirma que la información proporcionada es verídica y que firma voluntariamente.</p>
+      </div>
+
+      <div class="success-msg" id="successMsg">
+        <div class="icon">✅</div>
+        <p>¡Autorización enviada exitosamente!<br>Gracias, su registro quedó guardado correctamente.</p>
+        <p style="margin-top:12px;font-size:13px;color:var(--azul-dark);">
+          Su firma y datos quedaron almacenados en el sistema de Grupo Helse SAS.
+        </p>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp }                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const urlParams = new URLSearchParams(window.location.search);
+const linkToken = urlParams.get('t') || '';
+
+// ── Preview en tiempo real ──
+const campos = {
+  nombre:       { el: document.getElementById('nombre'),       prev: 'pNombre',       def: '______________________________' },
+  cedula:       { el: document.getElementById('cedula'),       prev: 'pCedula',       def: '________________' },
+  ciudadCedula: { el: document.getElementById('ciudadCedula'), prev: 'pCiudadCedula', def: '____________' },
+  ciudadFirma:  { el: document.getElementById('ciudadFirma'),  prev: 'pCiudadFirma',  def: '__________' },
+  dia:          { el: document.getElementById('dia'),          prev: 'pDia',          def: '___' },
+  mes:          { el: document.getElementById('mes'),          prev: 'pMes',          def: '________' },
+  anio:         { el: document.getElementById('anio'),         prev: 'pAnio',         def: '202_' },
+};
+Object.entries(campos).forEach(([, cfg]) => {
+  cfg.el.addEventListener('input', () => {
+    const v = cfg.el.value.trim();
+    document.getElementById(cfg.prev).textContent = v || cfg.def;
+  });
+  cfg.el.addEventListener('change', () => {
+    const v = cfg.el.value.trim();
+    document.getElementById(cfg.prev).textContent = v || cfg.def;
+  });
+});
+
+// Pre-rellenar año actual
+document.getElementById('anio').value = new Date().getFullYear();
+document.getElementById('pAnio').textContent = new Date().getFullYear();
+
+// ── Canvas firma ──
+const canvas = document.getElementById('firmaCanvas');
+const ctx    = canvas.getContext('2d');
+let dibujando = false, firmaHecha = false, firmaGuardada = false;
+
+function initCanvas() {
+  const wrap = document.getElementById('firmaWrap');
+  const w = wrap.clientWidth || 600;
+  const h = 200;
+  canvas.width = w; canvas.height = h;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  firmaHecha = false;
+}
+
+function mostrarEstadoFirma(n) {
+  document.getElementById('firmaEstado1').style.display = n===1 ? 'block' : 'none';
+  document.getElementById('firmaEstado2').style.display = n===2 ? 'block' : 'none';
+  document.getElementById('firmaEstado3').style.display = n===3 ? 'block' : 'none';
+}
+
+document.getElementById('btnAbrirFirma').addEventListener('click', () => { mostrarEstadoFirma(2); setTimeout(initCanvas, 80); });
+document.getElementById('btnLimpiarFirma').addEventListener('click', () => { initCanvas(); document.getElementById('c9').classList.remove('invalid'); });
+document.getElementById('btnGuardarFirma').addEventListener('click', () => {
+  if (!firmaHecha) { alert('Por favor firme en el recuadro antes de guardar.'); return; }
+  document.getElementById('firmaPreview').src = canvas.toDataURL('image/png');
+  firmaGuardada = true; mostrarEstadoFirma(3);
+  document.getElementById('c9').classList.remove('invalid');
+});
+document.getElementById('btnRehacerFirma').addEventListener('click', () => { firmaGuardada = false; mostrarEstadoFirma(2); setTimeout(initCanvas, 80); });
+
+function xy(e) {
+  const r = canvas.getBoundingClientRect();
+  const s = e.touches ? e.touches[0] : e;
+  return { x: s.clientX - r.left, y: s.clientY - r.top };
+}
+canvas.addEventListener('mousedown', e => { dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove', e => { if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmaHecha=true; });
+canvas.addEventListener('mouseup',    () => dibujando=false);
+canvas.addEventListener('mouseleave', () => dibujando=false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmaHecha=true; }, {passive:false});
+canvas.addEventListener('touchend',   () => dibujando=false);
+
+// ── Validación y envío ──
+const txt = (id) => document.getElementById(id).value.trim();
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
+  let ok = true;
+
+  const checks = [
+    ['nombre',      'c1', () => !txt('nombre')],
+    ['cedula',      'c2', () => !txt('cedula')],
+    ['ciudadCedula','c3', () => !txt('ciudadCedula')],
+    ['correo',      'c4', () => { const v=txt('correo'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
+    ['ciudadFirma', 'c5', () => !txt('ciudadFirma')],
+    ['dia',         'c6', () => !txt('dia')],
+    ['mes',         'c7', () => !document.getElementById('mes').value],
+    ['anio',        'c8', () => !txt('anio')],
+    ['firma',       'c9', () => !firmaGuardada],
+  ];
+
+  checks.forEach(([,cid,fn]) => { if(fn()) { document.getElementById(cid).classList.add('invalid'); ok = false; } });
+
+  if (!ok) {
+    document.querySelector('.campo.invalid')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  try {
+    await addDoc(collection(db, 'registros_entrega_efectiva'), {
+      tipo_registro:   'uso_imagen',
+      fecha:           serverTimestamp(),
+      nombre:          txt('nombre'),
+      cedula:          txt('cedula'),
+      ciudad_cedula:   txt('ciudadCedula'),
+      correo:          txt('correo'),
+      ciudad_firma:    txt('ciudadFirma'),
+      dia_firma:       txt('dia'),
+      mes_firma:       document.getElementById('mes').value,
+      anio_firma:      txt('anio'),
+      firma_imagen:    document.getElementById('firmaPreview').src,
+      token:           linkToken,
+    });
+
+    btn.style.display = 'none';
+    document.querySelector('.submit-note').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+    document.getElementById('successMsg').scrollIntoView({ behavior:'smooth', block:'center' });
+
+  } catch(err) {
+    btn.disabled = false; btn.textContent = 'Enviar Autorización';
+    alert('❌ Error al enviar: ' + err.message);
+    console.error(err);
+  }
+});
+</script>
+</body>
+</html>

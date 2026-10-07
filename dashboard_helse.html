@@ -98,6 +98,7 @@ td.nombre{font-weight:600;}
 .links-tipo-label{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:6px;}
 .lt-pac{background:#E3EAF5;color:#1B3A6B;}
 .lt-med{background:#E8EAF6;color:#3949AB;}
+.lt-img{background:#F3E5F5;color:#6A1B9A;}
 
 /* USUARIOS */
 .usuarios-section{padding:20px 28px 40px;}
@@ -121,6 +122,7 @@ td.nombre{font-weight:600;}
 .modal-header{background:var(--verde);color:white;padding:18px 22px;border-radius:18px 18px 0 0;display:flex;justify-content:space-between;align-items:center;}
 .modal-header h2{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;}
 .modal-header.medico{background:#3949AB;}
+.modal-header.imagen{background:#6A1B9A;}
 .btn-cerrar{background:none;border:none;color:white;font-size:22px;cursor:pointer;}
 .modal-body{padding:22px;}
 .detalle-fila{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--gris-light);font-size:13px;}
@@ -166,6 +168,7 @@ td.nombre{font-weight:600;}
       <span id="userEmail" style="font-size:12px;opacity:0.8;"></span>
       <button class="btn-top" id="btnCSV" onclick="exportarCSV('pacientes')">⬇️ CSV Pacientes</button>
       <button class="btn-top" id="btnCSVMed" onclick="exportarCSV('medicos')">⬇️ CSV Médicos</button>
+      <button class="btn-top" id="btnCSVImg" onclick="exportarCSV('imagen')">⬇️ CSV Imagen</button>
       <button class="btn-top danger" onclick="cerrarSesion()">Salir</button>
     </div>
   </div>
@@ -174,6 +177,7 @@ td.nombre{font-weight:600;}
   <div class="tabs">
     <div class="tab active" onclick="cambiarTab('pacientes',this)">🧑‍⚕️ Pacientes</div>
     <div class="tab" onclick="cambiarTab('medicos',this)">👨‍⚕️ Médicos</div>
+    <div class="tab" onclick="cambiarTab('imagen',this)">📸 Uso de Imagen</div>
     <div class="tab" id="tabLinks" onclick="cambiarTab('links',this)">🔗 Links</div>
     <div class="tab sa-only" onclick="cambiarTab('usuarios',this)">👥 Usuarios</div>
   </div>
@@ -218,6 +222,25 @@ td.nombre{font-weight:600;}
     </div>
   </div>
 
+  <!-- TAB: USO DE IMAGEN -->
+  <div class="tab-content" id="tc-imagen">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="statImgTotal">—</div><div class="stat-label">Total autorizaciones</div></div>
+      <div class="stat-card"><div class="stat-num" id="statImgHoy">—</div><div class="stat-label">Hoy</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="search-box" id="buscadorImg" placeholder="🔍 Buscar por nombre, cédula, ciudad, correo...">
+    </div>
+    <div class="table-wrap">
+      <div class="loading" id="loadingImg"><div class="spinner"></div>Cargando...</div>
+      <table id="tablaImg" style="display:none;">
+        <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Ciudad Firma</th><th>Correo</th><th id="thOrigenImg"></th><th>Ver</th></tr></thead>
+        <tbody id="tbodyImg"></tbody>
+      </table>
+      <div class="empty" id="emptyImg" style="display:none;">No se encontraron autorizaciones.</div>
+    </div>
+  </div>
+
   <!-- TAB: LINKS -->
   <div class="tab-content" id="tc-links">
     <div class="links-section">
@@ -229,6 +252,7 @@ td.nombre{font-weight:600;}
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn-generar" onclick="generarLink('paciente')">+ Link Paciente</button>
           <button class="btn-generar" style="background:#3949AB;" onclick="generarLink('medico')">+ Link Médico</button>
+          <button class="btn-generar" style="background:#6A1B9A;" onclick="generarLink('imagen')">+ Link Uso Imagen</button>
         </div>
       </div>
       <div class="links-grid" id="linksGrid">
@@ -280,7 +304,7 @@ firebase.initializeApp({
 const db=firebase.firestore(), auth=firebase.auth();
 
 // ── Estado global ──
-let registrosPac=[], registrosMed=[], registroActual=null, tipoRegistroActual=null;
+let registrosPac=[], registrosMed=[], registrosImg=[], registroActual=null, tipoRegistroActual=null;
 let rolActual=null, cdInterval=null;
 
 // ── Base64 logo para PDF ──
@@ -301,10 +325,12 @@ auth.onAuthStateChanged(async user=>{
     } else {
       document.getElementById('btnCSV').style.display='none';
       document.getElementById('btnCSVMed').style.display='none';
+      document.getElementById('btnCSVImg').style.display='none';
     }
     cargarPacientes();
     cargarMedicos();
     cargarLinks();
+    cargarImagen();
     if(rolActual==='superadmin') cargarUsuarios();
   } else {
     document.getElementById('loginScreen').style.display='flex';
@@ -507,16 +533,26 @@ document.getElementById('buscadorMed').addEventListener('input',function(){
 
 // ── MODAL ──
 function abrirModal(id,tipo){
-  const lista=tipo==='medico'?registrosMed:registrosPac;
+  const lista=tipo==='medico'?registrosMed:tipo==='imagen'?registrosImg:registrosPac;
   const r=lista.find(x=>x.id===id);
   if(!r)return;
   registroActual=r; tipoRegistroActual=tipo;
   document.getElementById('modalNombre').textContent=r.nombre||'Detalle';
   const hdr=document.getElementById('modalHeader');
-  hdr.className='modal-header'+(tipo==='medico'?' medico':'');
+  hdr.className='modal-header'+(tipo==='medico'?' medico':tipo==='imagen'?' imagen':'');
 
   let campos;
-  if(tipo==='medico'){
+  if(tipo==='imagen'){
+    campos=[
+      ['Fecha registro',formatFecha(r.fecha)],
+      ['Nombre',r.nombre],
+      ['Cédula',r.cedula],
+      ['Ciudad expedición cédula',r.ciudad_cedula],
+      ['Correo',r.correo],
+      ['Ciudad de firma',r.ciudad_firma],
+      ['Fecha del documento',r.dia_firma+' de '+(r.mes_firma||'')+(r.anio_firma?' de '+r.anio_firma:'')],
+    ];
+  } else if(tipo==='medico'){
     campos=[
       ['Fecha registro',formatFecha(r.fecha)],
       ['Nombre',r.nombre],
@@ -570,6 +606,79 @@ function abrirModal(id,tipo){
 
 function cerrarModal(){document.getElementById('modalOverlay').classList.remove('open');}
 
+// ── USO DE IMAGEN ──
+async function cargarImagen(){
+  try{
+    const snap=await db.collection('registros_entrega_efectiva')
+      .where('tipo_registro','==','uso_imagen').get();
+    let lista=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+      const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
+      const tb=b.fecha&&b.fecha.toDate?b.fecha.toDate().getTime():0;
+      return tb-ta;
+    });
+    if(rolActual!=='superadmin'){
+      const uid=auth.currentUser.uid;
+      const histSnap=await db.collection('links_historial').where('creadoPorUID','==',uid).get();
+      const misTokens=new Set(histSnap.docs.map(d=>d.data().token));
+      lista=lista.filter(r=>r.token&&misTokens.has(r.token));
+    }
+    if(rolActual==='superadmin'&&lista.length){
+      const histSnap=await db.collection('links_historial').get();
+      const tokenMap={};
+      histSnap.docs.forEach(d=>{tokenMap[d.data().token]=d.data().creadoPor;});
+      lista.forEach(r=>{r.linkCreadoPor=r.token?(tokenMap[r.token]||'directo'):'directo';});
+      document.getElementById('thOrigenImg').textContent='Origen';
+    }
+    registrosImg=lista;
+    renderTablaImg(lista);
+    actualizarStatsImg(lista);
+    document.getElementById('loadingImg').style.display='none';
+  }catch(e){document.getElementById('loadingImg').innerHTML='❌ Error: '+e.message;}
+}
+
+function renderTablaImg(lista){
+  const tbody=document.getElementById('tbodyImg');
+  tbody.innerHTML='';
+  if(!lista.length){
+    document.getElementById('tablaImg').style.display='none';
+    document.getElementById('emptyImg').style.display='block';
+    return;
+  }
+  document.getElementById('tablaImg').style.display='table';
+  document.getElementById('emptyImg').style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.ciudad_firma||'—')+'</td>'+
+      '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.correo||'—')+'</td>'+
+      (rolActual==='superadmin'?'<td style="font-size:11px;color:var(--gris);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.linkCreadoPor||'—')+'</td>':'')+
+      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\',\'imagen\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function actualizarStatsImg(lista){
+  const hoy=new Date().toDateString();
+  document.getElementById('statImgTotal').textContent=lista.length;
+  document.getElementById('statImgHoy').textContent=lista.filter(r=>{
+    const d=r.fecha&&r.fecha.toDate?r.fecha.toDate():null;
+    return d&&d.toDateString()===hoy;
+  }).length;
+}
+
+document.getElementById('buscadorImg').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderTablaImg(registrosImg.filter(r=>
+    (r.nombre||'').toLowerCase().includes(q)||
+    (r.cedula||'').toLowerCase().includes(q)||
+    (r.ciudad_firma||'').toLowerCase().includes(q)||
+    (r.correo||'').toLowerCase().includes(q)
+  ));
+});
+
 // ── LINKS ──
 async function cargarLinks(){
   const ahora=Date.now();
@@ -589,12 +698,12 @@ function renderLinks(links){
   if(!links.length){grid.innerHTML='<div class="links-empty">No hay links activos. Genera uno nuevo.</div>';return;}
   grid.innerHTML=links.map(l=>{
     const tipo=l.tipoFormulario||'paciente';
-    const esMed=tipo==='medico';
+    const esMed=tipo==='medico', esImg=tipo==='imagen';
     const creado=new Date(l.creado).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
     return `<div class="link-card" id="lc-${l.id}">
       <div class="link-url">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-          <span class="links-tipo-label ${esMed?'lt-med':'lt-pac'}">${esMed?'👨‍⚕️ Médico':'🧑‍⚕️ Paciente'}</span>
+          <span class="links-tipo-label ${esMed?'lt-med':esImg?'lt-img':'lt-pac'}">${esMed?'👨‍⚕️ Médico':esImg?'📸 Uso Imagen':'🧑‍⚕️ Paciente'}</span>
         </div>
         <div class="link-url-txt" data-url="${l.url}" onclick="copiarLink(this.dataset.url)" title="Click para copiar">${l.url}</div>
         <div class="link-meta">Creado: ${creado} · ${l.creadoPor}</div>
@@ -629,7 +738,8 @@ async function generarLink(tipoFormulario){
   // Apunta al formulario correcto según el tipo
   const baseMap={
     paciente: 'https://helseador.github.io/registro-helse/',
-    medico:   'https://helseador.github.io/registro-helse/medicos.html'
+    medico:   'https://helseador.github.io/registro-helse/registro_medicos_helse.html',
+    imagen:   'https://helseador.github.io/registro-helse/uso_imagen_medicos.html'
   };
   const base=baseMap[tipoFormulario]||baseMap.paciente;
   const url=base+'?t='+token;
@@ -698,11 +808,13 @@ async function eliminarUsuario(id,email){
 
 // ── CSV ──
 function exportarCSV(tipo){
-  const lista=tipo==='medicos'?registrosMed:registrosPac;
+  const lista=tipo==='medicos'?registrosMed:tipo==='imagen'?registrosImg:registrosPac;
   if(!lista.length)return alert('No hay registros.');
   let cols;
   if(tipo==='medicos'){
     cols=['fecha','nombre','tipo_documento','num_identificacion','especialidad','ips','ciudad','numero_contacto','correo','contacto_whatsapp','contacto_llamada','autoriza_recopilacion'];
+  } else if(tipo==='imagen'){
+    cols=['fecha','nombre','cedula','ciudad_cedula','correo','ciudad_firma','dia_firma','mes_firma','anio_firma'];
   } else {
     cols=['fecha','nombre','tipo_documento','num_identificacion','ciudad','numero_contacto','eps','nutricion','rol','contacto_whatsapp','contacto_llamada','autoriza_recopilacion','menor_edad'];
   }
@@ -750,10 +862,12 @@ function generarPDF(){
   }
 
   const fR=r.fecha&&r.fecha.toDate?r.fecha.toDate():new Date();
-  const tituloDoc=tipo==='medico'?'Autorización Médico Tratante':'Consentimiento Informado';
-  const subtituloDoc=tipo==='medico'?'Programa de Entregas Efectivas  ·  Médico Tratante':'Programa de Entregas Efectivas  ·  REG-'+fR.getFullYear()+'-'+(r.id||'').slice(0,8).toUpperCase();
+  const tituloDoc=tipo==='medico'?'Autorización Médico Tratante':tipo==='imagen'?'Autorización Uso de Imagen':'Consentimiento Informado';
+  const subtituloDoc=tipo==='medico'?'Programa de Entregas Efectivas  ·  Médico Tratante':tipo==='imagen'?'Colaborador / Visitador Médico  ·  Grupo Helse SAS':'Programa de Entregas Efectivas  ·  REG-'+fR.getFullYear()+'-'+(r.id||'').slice(0,8).toUpperCase();
 
-  // Cabecera
+  // Cabecera PDF – color según tipo
+  if(tipo==='imagen') { colorPrincipal=[106,27,154]; colorAccento=[106,27,154]; }
+
   doc.setFillColor(colorPrincipal[0],colorPrincipal[1],colorPrincipal[2]);
   doc.rect(0,0,210,30,'F');
   doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
@@ -763,8 +877,13 @@ function generarPDF(){
   y=42; lin();
 
   // Datos principales
-  sec(tipo==='medico'?'DATOS DEL MÉDICO TRATANTE':'DATOS DEL PACIENTE');
-  if(tipo==='medico'){
+  sec(tipo==='medico'?'DATOS DEL MÉDICO TRATANTE':tipo==='imagen'?'DATOS DEL COLABORADOR':'DATOS DEL PACIENTE');
+  if(tipo==='imagen'){
+    par('Nombre:',r.nombre,'Cédula:',r.cedula);
+    par('Ciudad cédula:',r.ciudad_cedula,'Correo:',r.correo);
+    par('Ciudad firma:',r.ciudad_firma,'Fecha:',(r.dia_firma||'')+(r.mes_firma?' de '+r.mes_firma:'')+(r.anio_firma?' de '+r.anio_firma:''));
+    par('Registro:',formatFecha(r.fecha),'','');
+  } else if(tipo==='medico'){
     par('Nombre:',r.nombre,'Documento:',(r.tipo_documento||'')+' '+(r.num_identificacion||''));
     par('Especialidad:',r.especialidad,'IPS:',r.ips);
     par('Ciudad:',r.ciudad,'Contacto:',r.numero_contacto);
@@ -780,7 +899,15 @@ function generarPDF(){
   // Declaración
   sec('DECLARACIÓN DE CONSENTIMIENTO');
   let txt='';
-  if(tipo==='medico'){
+  if(tipo==='imagen'){
+    txt='Yo, '+(r.nombre||'___')+', mayor de edad, identificado(a) con cédula de ciudadanía No. '+(r.cedula||'___')+
+      ' de '+(r.ciudad_cedula||'___')+', en mi calidad de colaborador/visitador médico, autorizo de manera libre, previa, '+
+      'expresa e informada a GRUPO HELSE SAS (NIT 901.401.880-4) para: (1) Captar, reproducir, publicar y utilizar mi imagen '+
+      '(fotografías y videos) en medios internos y externos con fines institucionales. (2) Tratar mis datos personales conforme a '+
+      'la Ley 1581 de 2012. (3) Ceder los derechos patrimoniales de imagen de manera gratuita, sin exclusividad y sin límite territorial. '+
+      'Esta autorización tiene vigencia indefinida. Declaro haber sido informado(a) sobre mis derechos y que firmo voluntariamente.\n\n'+
+      'Dado en '+(r.ciudad_firma||'___')+', a los '+(r.dia_firma||'___')+' días del mes de '+(r.mes_firma||'___')+' de '+(r.anio_firma||'___')+'.';
+  } else if(tipo==='medico'){
     txt='Yo, '+(r.nombre||'___')+', identificado(a) con '+(r.tipo_documento||'documento')+' No. '+(r.num_identificacion||'___')+
       ', profesional de la salud en '+(r.especialidad||'___')+', vinculado(a) a '+(r.ips||'___')+
       ', autorizo a Grupo Helse SAS a gestionar la información profesional necesaria para coordinar el programa de entregas efectivas en la ruta MIPRES. '+
@@ -800,7 +927,14 @@ function generarPDF(){
   sec('AUTORIZACIONES OTORGADAS');
   const C2=M+CW/2+2;
   let items=[];
-  if(tipo==='medico'){
+  if(tipo==='imagen'){
+    items=[
+      ['Autoriza uso de imagen (fotos/videos)',true],
+      ['Autoriza tratamiento de datos personales',true],
+      ['Cede derechos patrimoniales de imagen',true],
+      ['Firma voluntaria sin coerción',true],
+    ];
+  } else if(tipo==='medico'){
     items=[
       ['Acepta vincularse al programa',r.acepta_programa],
       ['Contacto WhatsApp: '+(r.contacto_whatsapp||'—'),r.contacto_whatsapp==='Sí'],
@@ -838,7 +972,7 @@ function generarPDF(){
   y+=2; lin();
 
   // Firma
-  sec('FIRMA DEL '+(tipo==='medico'?'MÉDICO TRATANTE':'PACIENTE O ACUDIENTE'));
+  sec('FIRMA DEL '+(tipo==='medico'?'MÉDICO TRATANTE':tipo==='imagen'?'COLABORADOR':'PACIENTE O ACUDIENTE'));
   if(r.firma_imagen){
     try{
       cY(32);
@@ -847,14 +981,15 @@ function generarPDF(){
       doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(26,44,43);
       doc.text(r.nombre||'',M+75,y+8);
       doc.setFont('helvetica','normal');doc.setTextColor(84,110,122);doc.setFontSize(7.5);
-      doc.text((r.tipo_documento||'')+' '+(r.num_identificacion||''),M+75,y+14);
+      const idDoc=tipo==='imagen'?('C.C. '+(r.cedula||'')):((r.tipo_documento||'')+' '+(r.num_identificacion||''));
+      doc.text(idDoc,M+75,y+14);
       doc.text('Firmado el '+fR.toLocaleDateString('es-CO')+' a las '+fR.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),M+75,y+20);
       y+=32;
     }catch(e){y+=32;}
   }
 
-  // Fórmula (solo pacientes)
-  if(tipo!=='medico'&&r.formula_imagen){
+  // Fórmula (solo pacientes, no médico ni imagen)
+  if(tipo!=='medico'&&tipo!=='imagen'&&r.formula_imagen){
     nPag();
     doc.setFontSize(12);doc.setFont('helvetica','bold');doc.setTextColor(colorPrincipal[0],colorPrincipal[1],colorPrincipal[2]);
     doc.text('Fórmula Médica Adjunta',M,y);y+=6;
@@ -867,7 +1002,9 @@ function generarPDF(){
     }catch(e){}
   }
 
-  doc.save((tipo==='medico'?'Autorizacion_Medico_':'Consentimiento_Helse_')+(r.nombre||'').replace(/\s+/g,'_')+'_'+(r.num_identificacion||'')+'.pdf');
+  const prefijo=tipo==='medico'?'Autorizacion_Medico_':tipo==='imagen'?'Autorizacion_Imagen_':'Consentimiento_Helse_';
+  const idSufijo=tipo==='imagen'?(r.cedula||''):(r.num_identificacion||'');
+  doc.save(prefijo+(r.nombre||'').replace(/\s+/g,'_')+'_'+idSufijo+'.pdf');
 }
 </script>
 </body>
