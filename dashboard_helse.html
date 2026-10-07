@@ -405,8 +405,9 @@ async function cargarPacientes(){
   try{
     // Traemos todo y filtramos en cliente (evita index compuesto con !=)
     const snapSin=await db.collection('registros_entrega_efectiva').get();
+    const tiposExcluidos=new Set(['medico','uso_imagen','dotacion']);
     const todos=snapSin.docs
-      .filter(d=>!d.data().tipo_registro||d.data().tipo_registro!=='medico')
+      .filter(d=>!tiposExcluidos.has(d.data().tipo_registro))
       .map(d=>({id:d.id,...d.data()}))
       .sort((a,b)=>{
         const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
