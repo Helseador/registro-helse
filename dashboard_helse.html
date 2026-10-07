@@ -953,6 +953,7 @@ function generarPDF(){
 
   // PDF especial para Uso de Imagen
   if(tipo==='imagen'){ generarPDFImagen(r); return; }
+  if(tipo==='dotacion'){ generarPDFDotacion(r); return; }
 
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
@@ -1330,6 +1331,237 @@ function printJustified(doc,txt,x,y,w,sz){
 function calcLines(doc,txt,w,sz){
   doc.setFontSize(sz);
   return doc.splitTextToSize(txt,w).length;
+}
+
+// ── PDF ACTA DE DOTACIÓN (documento oficial completo) ──
+function generarPDFDotacion(r){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=14,CW=W-M*2;
+  const CP=[27,58,107]; // azul Helse
+  const fR=r.fecha&&r.fecha.toDate?r.fecha.toDate():new Date();
+  let y=0;
+
+  function nPag(){ piePDF(); doc.addPage(); y=0; cabPDF(); }
+  function cY(n){ if(y+n>272) nPag(); }
+
+  function cabPDF(){
+    // Banda azul superior
+    doc.setFillColor(CP[0],CP[1],CP[2]); doc.rect(0,0,W,18,'F');
+    // Logo
+    try{ doc.addImage(MB64,'PNG',M,2,22,14); }catch(e){}
+    // Nombre empresa
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+    doc.text('GRUPO HELSE SAS',M+25,9);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(200,215,240);
+    doc.text('NIT 901.401.880-4',M+25,14);
+    // Título del documento centrado
+    doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+    doc.text('PROCEDIMIENTO DE OPERACIÓN ESTÁNDAR (POS)',W/2,8,'center');
+    doc.setFontSize(9.5);doc.text('ACTA DE ENTREGA DE DOTACIÓN',W/2,14,'center');
+    // Código/Versión derecha
+    doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(200,215,240);
+    doc.text('Código: CO-SSG-15-V02',W-M,8,'right');
+    doc.text('Versión: 02 · 17-06-2025',W-M,13,'right');
+    y=22;
+  }
+
+  function piePDF(){
+    doc.setDrawColor(180,195,220);doc.setLineWidth(0.2);doc.line(M,283,W-M,283);
+    doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(130,140,160);
+    doc.text('Grupo Helse SAS · NIT 901.401.880-4 · Este documento es propiedad de GRUPO HELSE SAS. Prohibida su reproducción sin autorización.',M,287);
+    doc.text('Pág. '+doc.internal.getNumberOfPages(),W-M,287,'right');
+  }
+
+  // ── PÁGINA 1 ──
+  cabPDF();
+
+  // Tabla de encabezado con elaboró/revisó/aprobó
+  const colW=CW/3;
+  // Fila superior – títulos
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.rect(M,y,colW,7,'F'); doc.rect(M+colW,y,colW,7,'F'); doc.rect(M+colW*2,y,colW,7,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('Elaboró:',M+2,y+4.5);
+  doc.text('Revisó:',M+colW+2,y+4.5);
+  doc.text('Aprobó:',M+colW*2+2,y+4.5);
+  y+=7;
+  // Fila nombre
+  doc.setDrawColor(CP[0],CP[1],CP[2]);doc.setLineWidth(0.3);
+  doc.rect(M,y,colW,6); doc.rect(M+colW,y,colW,6); doc.rect(M+colW*2,y,colW,6);
+  doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(26,44,43);
+  doc.text('Yuli Betancur',M+2,y+4);
+  doc.text('Yorman Monroy',M+colW+2,y+4);
+  doc.text('Yorman Monroy',M+colW*2+2,y+4);
+  y+=6;
+  // Fila cargo
+  doc.rect(M,y,colW,5.5); doc.rect(M+colW,y,colW,5.5); doc.rect(M+colW*2,y,colW,5.5);
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(84,110,122);
+  doc.text('Coordinadora SST',M+2,y+3.8);
+  doc.text('Gerente General',M+colW+2,y+3.8);
+  doc.text('Gerente General',M+colW*2+2,y+3.8);
+  y+=5.5;
+  // Fila firma (espacio)
+  doc.rect(M,y,colW,12); doc.rect(M+colW,y,colW,12); doc.rect(M+colW*2,y,colW,12);
+  doc.setFontSize(6.5);doc.setTextColor(180,180,180);
+  doc.text('Firma:',M+2,y+4);
+  doc.text('Firma:',M+colW+2,y+4);
+  doc.text('Firma:',M+colW*2+2,y+4);
+  y+=14;
+
+  // Datos del colaborador
+  y+=3;
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.roundedRect(M,y,CW,6,1,1,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('DATOS DEL COLABORADOR',M+3,y+4); y+=8;
+
+  const lw=38;
+  function datoPar(l1,v1,l2,v2){
+    cY(6);
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(84,110,122);
+    doc.text(l1,M,y); doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+    doc.text(v1||'—',M+lw,y);
+    if(l2){
+      doc.setFont('helvetica','bold');doc.setTextColor(84,110,122);
+      doc.text(l2,W/2+2,y); doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+      doc.text(v2||'—',W/2+2+lw,y);
+    }
+    y+=5.5;
+  }
+  datoPar('Nombre y Apellidos:',r.nombre,'Fecha de Entrega:',r.fecha_entrega||'');
+  datoPar('Cargo:',r.cargo,'Área:',r.area);
+  datoPar('N° Identificación:',r.cedula,'','');
+  y+=2;
+
+  // Tabla de dotación
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.roundedRect(M,y,CW,6,1,1,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('DOTACIÓN ENTREGADA',M+3,y+4); y+=8;
+
+  doc.setFontSize(7.5);doc.setTextColor(255,255,255);
+  const cw1=22,cw2=CW-cw1-60,cw3=60;
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.rect(M,y,cw1,6,'F');doc.rect(M+cw1,y,cw2,6,'F');doc.rect(M+cw1+cw2,y,cw3,6,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');
+  doc.text('Cantidad',M+2,y+4);
+  doc.text('Descripción del elemento',M+cw1+2,y+4);
+  doc.text('Observaciones',M+cw1+cw2+2,y+4);
+  y+=6;
+
+  const items=r.dotacion||[];
+  items.forEach((item,i)=>{
+    cY(8);
+    const bg=i%2===0?[245,248,252]:[255,255,255];
+    doc.setFillColor(bg[0],bg[1],bg[2]);
+    doc.rect(M,y,cw1,7,'F');doc.rect(M+cw1,y,cw2,7,'F');doc.rect(M+cw1+cw2,y,cw3,7,'F');
+    doc.setDrawColor(180,200,220);doc.setLineWidth(0.2);
+    doc.rect(M,y,cw1,7);doc.rect(M+cw1,y,cw2,7);doc.rect(M+cw1+cw2,y,cw3,7);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+    doc.text(item.cantidad||'',M+2,y+4.5);
+    doc.text(doc.splitTextToSize(item.descripcion||'',cw2-4)[0],M+cw1+2,y+4.5);
+    doc.text(doc.splitTextToSize(item.observaciones||'',cw3-4)[0],M+cw1+cw2+2,y+4.5);
+    y+=7;
+  });
+  y+=4;
+
+  // Declaración
+  cY(40);
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.roundedRect(M,y,CW,6,1,1,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('EL COLABORADOR QUE FIRMA LA PRESENTE ACTA MANIFIESTA QUE:',M+3,y+4); y+=8;
+
+  const decls=[
+    'La dotación que aquí se entrega es y será de la empresa en todo momento. En caso de terminación del contrato de trabajo o entrega de una nueva dotación, me comprometo a hacer la devolución de forma inmediata cuando la misma contenga elementos distintivos que lo identifiquen como colaborador de la empresa.',
+    'En caso de daño de la dotación o parte de ella, el trabajador debe devolverla a la empresa.',
+    'Comprende que es una obligación el uso de la dotación de calzado y vestido de labor que se le está suministrando, que deberá cuidar de esta y destinar su uso exclusivo a la ejecución de labores contratadas.',
+    'Es consciente que la indebida utilización de la dotación de calzado y vestido de labor es un incumplimiento a sus obligaciones y podrá conllevar una sanción disciplinaria.',
+  ];
+  decls.forEach((d,i)=>{
+    const ls=doc.splitTextToSize((i+1)+'. '+d,CW-6);
+    cY(ls.length*4.5+2);
+    doc.setFillColor(235,241,250);doc.roundedRect(M,y-3,CW,ls.length*4.5+4,1,1,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+    doc.text(ls,M+3,y); y+=ls.length*4.5+5;
+  });
+  y+=4;
+
+  // Firmas finales
+  cY(45);
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.roundedRect(M,y,CW,6,1,1,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('FIRMAS',M+3,y+4); y+=8;
+
+  const fw=(CW-10)/2;
+  // Caja entregado por (vacía para firma del gestor en físico)
+  doc.setDrawColor(CP[0],CP[1],CP[2]);doc.setLineWidth(0.4);
+  doc.rect(M,y,fw,28);
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(84,110,122);
+  doc.text('Entregado por:',M+2,y+5);
+  doc.setFont('helvetica','normal');doc.setTextColor(160,170,185);
+  doc.text('(Firma)',M+fw/2,y+18,'center');
+  doc.setFontSize(7);doc.setTextColor(84,110,122);
+  doc.text('C.C.',M+2,y+25);
+
+  // Caja recibido por (firma del colaborador)
+  doc.rect(M+fw+10,y,fw,28);
+  doc.setFont('helvetica','bold');doc.setTextColor(84,110,122);
+  doc.text('Recibido por:',M+fw+12,y+5);
+  if(r.firma_recibo){
+    try{
+      doc.addImage(r.firma_recibo,'PNG',M+fw+12,y+6,fw-14,18);
+    }catch(e){}
+  }
+  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+  doc.text(r.nombre||'',M+fw+12,y+26);
+  doc.text('C.C. '+(r.cedula||''),M+fw+12+fw-14,y+26,'right');
+  y+=32;
+
+  // ── Pág 2 – Revisión histórica ──
+  nPag();
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  doc.roundedRect(M,y,CW,6,1,1,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text('REVISIÓN HISTÓRICA',M+3,y+4); y+=8;
+
+  const rev=[
+    ['01','13-01-2022','Versión Inicial','N/A'],
+    ['02','17-06-2025','Tabla de Descripción Elementos de Dotación','Versión Inicial'],
+  ];
+  const rw=[14,28,CW-14-28-30,30];
+  doc.setFillColor(CP[0],CP[1],CP[2]);
+  let rx=M;
+  ['Versión #','Fecha de Efectividad','Descripción del cambio','Reemplaza a'].forEach((h,i)=>{
+    doc.rect(rx,y,rw[i],6,'F');
+    doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+    doc.text(h,rx+2,y+4); rx+=rw[i];
+  });
+  y+=6;
+  rev.forEach((row,ri)=>{
+    rx=M;
+    const bg=ri%2===0?[245,248,252]:[255,255,255];
+    doc.setFillColor(bg[0],bg[1],bg[2]);
+    row.forEach((cell,ci)=>{
+      doc.rect(rx,y,rw[ci],7,'F');
+      doc.setDrawColor(180,200,220);doc.rect(rx,y,rw[ci],7);
+      doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+      doc.text(doc.splitTextToSize(cell,rw[ci]-4)[0],rx+2,y+4.5);
+      rx+=rw[ci];
+    });
+    y+=7;
+  });
+
+  y+=10;
+  doc.setFontSize(7.5);doc.setFont('helvetica','italic');doc.setTextColor(84,110,122);
+  const nota='Este documento es propiedad de GRUPO HELSE SAS y no está permitida su reproducción total o parcial; salvo autorización de esta empresa. Toda copia impresa autorizada debe llevar el sello húmedo de color rojo "Copia Controlada".';
+  const nls=doc.splitTextToSize(nota,CW);
+  doc.text(nls,M,y);
+
+  piePDF();
+  doc.save('Acta_Dotacion_'+(r.nombre||'').replace(/\s+/g,'_')+'_'+(r.cedula||'')+'.pdf');
 }
 </script>
 </body>

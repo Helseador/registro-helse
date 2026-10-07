@@ -10,8 +10,6 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:40px 16px 80px;}
 .wrapper{max-width:820px;margin:0 auto;}
-
-/* Membrete estilo documento oficial */
 .membrete{background:white;border-radius:16px 16px 0 0;border:1.5px solid var(--border);border-bottom:none;overflow:hidden;}
 .membrete-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:12px 20px;border-bottom:2px solid var(--azul);gap:16px;}
 .membrete-logo img{height:52px;width:auto;}
@@ -20,28 +18,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text
 .membrete-titulo p{font-size:10px;color:var(--gris);margin-top:3px;}
 .membrete-codigo{text-align:right;font-size:9.5px;color:var(--gris);line-height:1.8;}
 .membrete-codigo strong{color:var(--azul);font-size:10px;}
-
-/* Card principal */
 .card{background:white;border:1.5px solid var(--border);border-top:none;border-radius:0 0 16px 16px;padding:28px 32px 40px;box-shadow:var(--shadow);}
-
-/* Sección datos colaborador */
 .section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:white;background:var(--azul);padding:6px 14px;border-radius:6px;margin:24px 0 16px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
 .campo{margin-bottom:16px;}
 .campo-label{font-size:12px;font-weight:600;color:var(--gris);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px;}
-input[type="text"],input[type="date"],select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:#FAFFFE;transition:border-color 0.2s;outline:none;appearance:none;}
-input:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,0.10);}
+input[type="text"],input[type="date"]{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:#FAFFFE;transition:border-color 0.2s;outline:none;}
+input:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,0.10);}
 input::placeholder{color:#aab;}
-.select-wrap{position:relative;}
-.select-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gris);pointer-events:none;}
 .req{color:var(--rojo);}
-
-/* Tabla dotación */
 .tabla-dotacion{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;}
 .tabla-dotacion thead th{background:var(--azul);color:white;padding:9px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.5px;}
 .tabla-dotacion tbody tr{border-bottom:1px solid var(--azul-light);}
-.tabla-dotacion tbody tr:last-child{border-bottom:none;}
 .tabla-dotacion td{padding:6px 8px;vertical-align:middle;}
 .tabla-dotacion td input{border:1px solid var(--border);border-radius:6px;padding:6px 10px;width:100%;font-size:13px;font-family:'DM Sans',sans-serif;background:#FAFFFE;}
 .tabla-dotacion td input:focus{outline:none;border-color:var(--azul);}
@@ -49,25 +37,12 @@ input::placeholder{color:#aab;}
 .btn-fila:hover{color:var(--rojo);}
 .btn-add{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;background:var(--azul-light);color:var(--azul-dark);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
 .btn-add:hover{background:var(--azul);color:white;}
-
-/* Declaraciones */
-.declaracion-box{background:var(--azul-light);border-left:4px solid var(--azul);border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:10px;font-size:12.5px;line-height:1.7;color:var(--text);}
-.declaracion-box p{margin-bottom:6px;}
+.declaracion-box{background:var(--azul-light);border-left:4px solid var(--azul);border-radius:0 10px 10px 0;padding:16px 20px;font-size:12.5px;line-height:1.75;color:var(--text);}
+.declaracion-box p{margin-bottom:8px;}
 .declaracion-box p:last-child{margin-bottom:0;}
-
-/* Firmas */
-.firmas-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;}
-.firma-bloque label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gris);margin-bottom:8px;display:block;}
-.firma-wrap canvas{display:block;cursor:crosshair;border-radius:8px;}
+.firma-bloque{margin-top:8px;}
+.firma-bloque .campo-label{margin-bottom:8px;}
 .firma-box{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:white;}
-
-/* Tabla responsable SST */
-.tabla-sst{width:100%;border-collapse:collapse;font-size:12px;}
-.tabla-sst th{background:var(--azul);color:white;padding:7px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;}
-.tabla-sst td{border:1px solid var(--border);padding:8px 10px;vertical-align:middle;}
-.tabla-sst td input{border:none;width:100%;font-size:12.5px;font-family:'DM Sans',sans-serif;background:transparent;outline:none;}
-
-/* Submit */
 .submit-area{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:10px;}
 .btn-submit{background:var(--azul);color:white;border:none;border-radius:12px;padding:14px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(27,58,107,0.28);}
 .btn-submit:hover{background:var(--azul-dark);transform:translateY(-2px);}
@@ -77,17 +52,15 @@ input::placeholder{color:#aab;}
 .success-msg p{font-size:15px;color:var(--azul-dark);font-weight:500;}
 .error-msg{display:none;color:var(--rojo);font-size:11.5px;margin-top:4px;}
 .campo.invalid .error-msg{display:block;}
-.campo.invalid input,.campo.invalid select{border-color:var(--rojo);}
+.campo.invalid input{border-color:var(--rojo);}
 .campo.invalid .firma-box{border-color:var(--rojo);}
 .nota-pie{font-size:11px;color:var(--gris);border-top:1px solid var(--border);padding-top:16px;margin-top:24px;font-style:italic;line-height:1.6;}
-
-@media(max-width:620px){.grid2,.grid3{grid-template-columns:1fr;}.firmas-grid{grid-template-columns:1fr;}.membrete-top{grid-template-columns:auto 1fr;}.membrete-codigo{display:none;}}
+@media(max-width:620px){.grid3{grid-template-columns:1fr;}.membrete-top{grid-template-columns:auto 1fr;}.membrete-codigo{display:none;}}
 </style>
 </head>
 <body>
 <div class="wrapper">
 
-  <!-- MEMBRETE OFICIAL -->
   <div class="membrete">
     <div class="membrete-top">
       <div class="membrete-logo">
@@ -99,7 +72,7 @@ input::placeholder{color:#aab;}
       </div>
       <div class="membrete-codigo">
         <div><strong>Código:</strong> CO-SSG-15-V02</div>
-        <div><strong>Fecha:</strong> 17-06-2025</div>
+        <div><strong>Versión:</strong> 02 · 17-06-2025</div>
         <div><strong>Páginas:</strong> 2</div>
       </div>
     </div>
@@ -108,7 +81,6 @@ input::placeholder{color:#aab;}
   <div class="card">
     <form id="form" novalidate>
 
-      <!-- DATOS DEL COLABORADOR -->
       <div class="section-title">Datos del Colaborador</div>
 
       <div class="campo" id="cNombre">
@@ -129,8 +101,8 @@ input::placeholder{color:#aab;}
           <div class="error-msg">Requerido.</div>
         </div>
         <div class="campo" id="cCedula">
-          <label class="campo-label">Número de Identificación <span class="req">*</span></label>
-          <input type="text" id="cedula" placeholder="Cédula de ciudadanía">
+          <label class="campo-label">N° de Identificación <span class="req">*</span></label>
+          <input type="text" id="cedula" placeholder="Cédula">
           <div class="error-msg">Requerido.</div>
         </div>
       </div>
@@ -141,16 +113,15 @@ input::placeholder{color:#aab;}
         <div class="error-msg">Seleccione la fecha.</div>
       </div>
 
-      <!-- TABLA DE DOTACIÓN -->
-      <div class="section-title">Dotación Entregada</div>
+      <div class="section-title">Dotación Recibida</div>
 
-      <p style="font-size:12.5px;color:var(--gris);margin-bottom:12px;">De conformidad con los artículos 230 al 235 del Código Sustantivo de Trabajo y en cumplimiento de las obligaciones de <strong>GRUPO HELSE S.A.S</strong>, se deja constancia de la dotación entregada, así:</p>
+      <p style="font-size:12.5px;color:var(--gris);margin-bottom:14px;">De conformidad con los artículos 230 al 235 del Código Sustantivo de Trabajo, indique los elementos de dotación que está recibiendo:</p>
 
       <table class="tabla-dotacion" id="tablaDotacion">
         <thead>
           <tr>
-            <th style="width:70px;">Cantidad</th>
-            <th>Descripción</th>
+            <th style="width:80px;">Cantidad</th>
+            <th>Descripción del elemento</th>
             <th>Observaciones</th>
             <th style="width:36px;"></th>
           </tr>
@@ -159,15 +130,14 @@ input::placeholder{color:#aab;}
           <tr>
             <td><input type="text" placeholder="Ej. 2" class="cant"></td>
             <td><input type="text" placeholder="Ej. Camisa manga larga talla M" class="desc"></td>
-            <td><input type="text" placeholder="Estado / color / talla" class="obs"></td>
-            <td><button type="button" class="btn-fila" onclick="eliminarFila(this)" title="Eliminar">✕</button></td>
+            <td><input type="text" placeholder="Color / talla / estado" class="obs"></td>
+            <td><button type="button" class="btn-fila" onclick="eliminarFila(this)">✕</button></td>
           </tr>
         </tbody>
       </table>
       <button type="button" class="btn-add" onclick="agregarFila()">＋ Agregar ítem</button>
 
-      <!-- DECLARACIONES -->
-      <div class="section-title" style="margin-top:28px;">El Colaborador Declara</div>
+      <div class="section-title" style="margin-top:28px;">Declaración del Colaborador</div>
 
       <div class="declaracion-box">
         <p>✔ La dotación que aquí se entrega es y será de la empresa en todo momento. En caso de terminación del contrato de trabajo o entrega de una nueva dotación, me comprometo a hacer la devolución de forma inmediata cuando la misma contenga elementos distintivos que lo identifiquen como colaborador de la empresa.</p>
@@ -176,78 +146,34 @@ input::placeholder{color:#aab;}
         <p>✔ Es consciente que la indebida utilización de la dotación de calzado y vestido de labor es un incumplimiento a sus obligaciones y podrá conllevar una sanción disciplinaria.</p>
       </div>
 
-      <!-- FIRMAS -->
-      <div class="section-title">Firmas</div>
+      <div class="section-title">Firma de Recibido</div>
 
-      <div class="firmas-grid">
-        <!-- Firma entrega -->
-        <div>
-          <div class="campo" id="cFirmaEntrega">
-            <label class="campo-label">Entregado por <span class="req">*</span></label>
-            <div id="fe1">
-              <button type="button" onclick="abrirFirma('entrega')" style="width:100%;padding:16px;border:2px dashed var(--border);border-radius:10px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--azul-dark);font-weight:600;">✍️ Toque para firmar</button>
-            </div>
-            <div id="fe2" style="display:none;">
-              <div class="firma-box" id="fwEntrega"><canvas id="canvasEntrega"></canvas></div>
-              <div style="display:flex;gap:8px;margin-top:8px;">
-                <button type="button" onclick="limpiarFirma('entrega')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🗑️ Limpiar</button>
-                <button type="button" onclick="guardarFirma('entrega')" style="flex:2;padding:10px;border-radius:8px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">✅ Guardar</button>
-              </div>
-            </div>
-            <div id="fe3" style="display:none;">
-              <div style="border:2px solid var(--azul);border-radius:10px;padding:10px;background:var(--azul-light);">
-                <p style="font-size:11px;color:var(--azul-dark);font-weight:600;margin-bottom:6px;">✅ Firma guardada</p>
-                <img id="previewEntrega" style="width:100%;max-height:90px;object-fit:contain;background:white;border-radius:6px;" alt="">
-              </div>
-              <button type="button" onclick="rehacerFirma('entrega')" style="margin-top:6px;width:100%;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">🔄 Volver a firmar</button>
-            </div>
-            <div class="error-msg">Firma requerida.</div>
-            <div style="margin-top:10px;">
-              <input type="text" id="ccEntrega" placeholder="C.C. de quien entrega">
-            </div>
+      <div class="firma-bloque">
+        <label class="campo-label">Firma del colaborador <span class="req">*</span></label>
+        <div class="campo" id="cFirmaRecibo">
+          <div id="fr1">
+            <button type="button" onclick="abrirFirma()" style="width:100%;padding:18px;border:2px dashed var(--border);border-radius:10px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--azul-dark);font-weight:600;">✍️ Toque aquí para firmar</button>
           </div>
-        </div>
-
-        <!-- Firma recibo -->
-        <div>
-          <div class="campo" id="cFirmaRecibo">
-            <label class="campo-label">Recibido por (Colaborador) <span class="req">*</span></label>
-            <div id="fr1">
-              <button type="button" onclick="abrirFirma('recibo')" style="width:100%;padding:16px;border:2px dashed var(--border);border-radius:10px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--azul-dark);font-weight:600;">✍️ Toque para firmar</button>
-            </div>
-            <div id="fr2" style="display:none;">
+          <div id="fr2" style="display:none;">
+            <div style="background:#f0f4fa;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+              <p style="font-size:13px;color:var(--gris);text-align:center;margin-bottom:10px;">✍️ Firme en el recuadro blanco de abajo</p>
               <div class="firma-box" id="fwRecibo"><canvas id="canvasRecibo"></canvas></div>
-              <div style="display:flex;gap:8px;margin-top:8px;">
-                <button type="button" onclick="limpiarFirma('recibo')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🗑️ Limpiar</button>
-                <button type="button" onclick="guardarFirma('recibo')" style="flex:2;padding:10px;border-radius:8px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">✅ Guardar</button>
-              </div>
             </div>
-            <div id="fr3" style="display:none;">
-              <div style="border:2px solid var(--azul);border-radius:10px;padding:10px;background:var(--azul-light);">
-                <p style="font-size:11px;color:var(--azul-dark);font-weight:600;margin-bottom:6px;">✅ Firma guardada</p>
-                <img id="previewRecibo" style="width:100%;max-height:90px;object-fit:contain;background:white;border-radius:6px;" alt="">
-              </div>
-              <button type="button" onclick="rehacerFirma('recibo')" style="margin-top:6px;width:100%;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">🔄 Volver a firmar</button>
-            </div>
-            <div class="error-msg">Firma requerida.</div>
-            <div style="margin-top:10px;">
-              <input type="text" id="ccRecibo" placeholder="C.C. del colaborador">
+            <div style="display:flex;gap:8px;">
+              <button type="button" onclick="limpiarFirma()" style="flex:1;padding:12px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">🗑️ Limpiar</button>
+              <button type="button" onclick="guardarFirma()" style="flex:2;padding:12px;border-radius:8px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">✅ Guardar firma</button>
             </div>
           </div>
+          <div id="fr3" style="display:none;">
+            <div style="border:2px solid var(--azul);border-radius:10px;padding:12px;background:var(--azul-light);">
+              <p style="font-size:12px;color:var(--azul-dark);font-weight:600;margin-bottom:8px;">✅ Firma guardada correctamente</p>
+              <img id="previewRecibo" style="width:100%;max-height:110px;object-fit:contain;background:white;border-radius:6px;border:1px solid var(--border);" alt="">
+            </div>
+            <button type="button" onclick="rehacerFirma()" style="margin-top:8px;width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🔄 Volver a firmar</button>
+          </div>
+          <div class="error-msg">La firma es obligatoria.</div>
         </div>
       </div>
-
-      <!-- RESPONSABLE SST -->
-      <div class="section-title">Datos del Responsable en SST</div>
-      <table class="tabla-sst">
-        <thead><tr><th>Gerente General</th><th>Cargo</th><th>Nombre y Apellidos</th><th>Cédula</th></tr></thead>
-        <tbody><tr>
-          <td style="font-size:12px;color:var(--gris);">Responsable SST</td>
-          <td><input type="text" id="sstCargo" placeholder="Cargo SST" value="Gerente General"></td>
-          <td><input type="text" id="sstNombre" placeholder="Nombre responsable SST"></td>
-          <td><input type="text" id="sstCedula" placeholder="Cédula"></td>
-        </tr></tbody>
-      </table>
 
       <div class="nota-pie">
         Este documento es propiedad de GRUPO HELSE SAS y no está permitida su reproducción total o parcial; salvo autorización de esta empresa. Toda copia impresa autorizada debe llevar el sello húmedo de color rojo "Copia Controlada".
@@ -255,12 +181,12 @@ input::placeholder{color:#aab;}
 
       <div class="submit-area">
         <button type="submit" class="btn-submit" id="btnSubmit">Enviar Acta</button>
-        <p style="font-size:12px;color:var(--gris);text-align:center;">Al enviar confirma que la información es verídica.</p>
+        <p style="font-size:12px;color:var(--gris);text-align:center;">Al enviar, confirma que la información es verídica y que recibió los elementos indicados.</p>
       </div>
 
       <div class="success-msg" id="successMsg">
         <div class="icon">✅</div>
-        <p>¡Acta enviada exitosamente!<br>El registro quedó guardado correctamente en el sistema de Grupo Helse SAS.</p>
+        <p>¡Acta enviada exitosamente!<br>El registro quedó guardado en el sistema de Grupo Helse SAS.</p>
       </div>
 
     </form>
@@ -281,10 +207,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
-const urlParams = new URLSearchParams(window.location.search);
-const linkToken = urlParams.get('t') || '';
+const linkToken = new URLSearchParams(window.location.search).get('t') || '';
 
-// Fecha default hoy
 document.getElementById('fechaEntrega').value = new Date().toISOString().slice(0,10);
 
 // ── Tabla dotación ──
@@ -297,113 +221,90 @@ window.agregarFila = function(){
   document.getElementById('tbodyDotacion').appendChild(tr);
 };
 window.eliminarFila = function(btn){
-  const tbody = document.getElementById('tbodyDotacion');
-  if(tbody.rows.length > 1) btn.closest('tr').remove();
+  if(document.getElementById('tbodyDotacion').rows.length > 1) btn.closest('tr').remove();
 };
 
-// ── Canvas firmas ──
-const firmas = { entrega: { guardada: false }, recibo: { guardada: false } };
+// ── Firma ──
+let firmaHecha=false, firmaGuardada=false, canvas, ctx;
 
-function initCanvas(tipo){
-  const wrap = document.getElementById('fw'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
-  const canvas = document.getElementById('canvas'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
-  const w = wrap.clientWidth || 340;
-  canvas.width = w; canvas.height = 150;
-  canvas.style.width = w+'px'; canvas.style.height = '150px';
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,150);
+function initCanvas(){
+  const wrap = document.getElementById('fwRecibo');
+  canvas = document.getElementById('canvasRecibo');
+  const w = wrap.clientWidth || 500;
+  canvas.width=w; canvas.height=160;
+  canvas.style.width=w+'px'; canvas.style.height='160px';
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,160);
   ctx.strokeStyle='#000'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
-  firmas[tipo].ctx = ctx; firmas[tipo].canvas = canvas; firmas[tipo].hecha = false;
-  let dibujando = false;
-  function xy(e){ const r=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e; return{x:s.clientX-r.left,y:s.clientY-r.top}; }
-  canvas.onmousedown = e=>{ dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
-  canvas.onmousemove = e=>{ if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmas[tipo].hecha=true; };
-  canvas.onmouseup = canvas.onmouseleave = ()=>dibujando=false;
-  canvas.addEventListener('touchstart',e=>{e.preventDefault();dibujando=true;const p=xy(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
-  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!dibujando)return;const p=xy(e);ctx.lineTo(p.x,p.y);ctx.stroke();firmas[tipo].hecha=true;},{passive:false});
-  canvas.addEventListener('touchend',()=>dibujando=false);
+  firmaHecha=false;
+  let draw=false;
+  const xy=e=>{const r=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
+  canvas.onmousedown=e=>{draw=true;const p=xy(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  canvas.onmousemove=e=>{if(!draw)return;const p=xy(e);ctx.lineTo(p.x,p.y);ctx.stroke();firmaHecha=true;};
+  canvas.onmouseup=canvas.onmouseleave=()=>draw=false;
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();draw=true;const p=xy(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!draw)return;const p=xy(e);ctx.lineTo(p.x,p.y);ctx.stroke();firmaHecha=true;},{passive:false});
+  canvas.addEventListener('touchend',()=>draw=false);
 }
 
-function estadoFirma(tipo, n){
-  const T = tipo.charAt(0).toUpperCase()+tipo.slice(1);
-  const pref = tipo==='entrega'?'fe':'fr';
-  document.getElementById(pref+'1').style.display = n===1?'block':'none';
-  document.getElementById(pref+'2').style.display = n===2?'block':'none';
-  document.getElementById(pref+'3').style.display = n===3?'block':'none';
+function estado(n){
+  document.getElementById('fr1').style.display=n===1?'block':'none';
+  document.getElementById('fr2').style.display=n===2?'block':'none';
+  document.getElementById('fr3').style.display=n===3?'block':'none';
 }
 
-window.abrirFirma  = t=>{ estadoFirma(t,2); setTimeout(()=>initCanvas(t),80); };
-window.limpiarFirma= t=>{ initCanvas(t); };
-window.guardarFirma= t=>{
-  if(!firmas[t].hecha){ alert('Por favor firme antes de guardar.'); return; }
-  const T=t.charAt(0).toUpperCase()+t.slice(1);
-  document.getElementById('preview'+T).src = firmas[t].canvas.toDataURL('image/png');
-  firmas[t].guardada=true; estadoFirma(t,3);
-  document.getElementById('cFirma'+T).classList.remove('invalid');
+window.abrirFirma  = ()=>{ estado(2); setTimeout(initCanvas,80); };
+window.limpiarFirma= ()=>{ initCanvas(); };
+window.guardarFirma= ()=>{
+  if(!firmaHecha){alert('Por favor firme antes de guardar.');return;}
+  document.getElementById('previewRecibo').src=canvas.toDataURL('image/png');
+  firmaGuardada=true; estado(3);
+  document.getElementById('cFirmaRecibo').classList.remove('invalid');
 };
-window.rehacerFirma= t=>{ firmas[t].guardada=false; estadoFirma(t,2); setTimeout(()=>initCanvas(t),80); };
+window.rehacerFirma= ()=>{ firmaGuardada=false; estado(2); setTimeout(initCanvas,80); };
 
-// ── Validación y envío ──
-const txt = id => document.getElementById(id).value.trim();
-
-document.getElementById('form').addEventListener('submit', async e=>{
+// ── Envío ──
+const txt=id=>document.getElementById(id).value.trim();
+document.getElementById('form').addEventListener('submit',async e=>{
   e.preventDefault();
   document.querySelectorAll('.campo').forEach(c=>c.classList.remove('invalid'));
   let ok=true;
+  [['cNombre',()=>!txt('nombre')],['cCargo',()=>!txt('cargo')],['cArea',()=>!txt('area')],
+   ['cCedula',()=>!txt('cedula')],['cFecha',()=>!txt('fechaEntrega')],
+   ['cFirmaRecibo',()=>!firmaGuardada]
+  ].forEach(([id,fn])=>{if(fn()){document.getElementById(id).classList.add('invalid');ok=false;}});
 
-  const checks=[
-    ['cNombre',    ()=>!txt('nombre')],
-    ['cCargo',     ()=>!txt('cargo')],
-    ['cArea',      ()=>!txt('area')],
-    ['cCedula',    ()=>!txt('cedula')],
-    ['cFecha',     ()=>!txt('fechaEntrega')],
-    ['cFirmaEntrega',()=>!firmas.entrega.guardada],
-    ['cFirmaRecibo', ()=>!firmas.recibo.guardada],
-  ];
-  checks.forEach(([id,fn])=>{ if(fn()){ document.getElementById(id).classList.add('invalid'); ok=false; } });
-
-  // Validar al menos 1 ítem de dotación con descripción
   const items=[...document.querySelectorAll('#tbodyDotacion .desc')].map(i=>i.value.trim()).filter(Boolean);
-  if(!items.length){ alert('Agregue al menos un ítem de dotación.'); ok=false; }
-
-  if(!ok){ document.querySelector('.campo.invalid')?.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(!items.length){alert('Agregue al menos un ítem de dotación.');ok=false;}
+  if(!ok){document.querySelector('.campo.invalid')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
 
   const btn=document.getElementById('btnSubmit');
   btn.disabled=true; btn.textContent='Enviando...';
-
   try{
-    // Recolectar items dotación
     const dotacion=[...document.querySelectorAll('#tbodyDotacion tr')].map(tr=>({
-      cantidad: tr.querySelector('.cant')?.value.trim()||'',
-      descripcion: tr.querySelector('.desc')?.value.trim()||'',
-      observaciones: tr.querySelector('.obs')?.value.trim()||'',
+      cantidad:tr.querySelector('.cant')?.value.trim()||'',
+      descripcion:tr.querySelector('.desc')?.value.trim()||'',
+      observaciones:tr.querySelector('.obs')?.value.trim()||'',
     })).filter(i=>i.descripcion);
 
     await addDoc(collection(db,'registros_entrega_efectiva'),{
-      tipo_registro:   'dotacion',
-      fecha:           serverTimestamp(),
-      nombre:          txt('nombre'),
-      cargo:           txt('cargo'),
-      area:            txt('area'),
-      cedula:          txt('cedula'),
-      fecha_entrega:   txt('fechaEntrega'),
+      tipo_registro:'dotacion',
+      fecha:serverTimestamp(),
+      nombre:txt('nombre'),
+      cargo:txt('cargo'),
+      area:txt('area'),
+      cedula:txt('cedula'),
+      fecha_entrega:txt('fechaEntrega'),
       dotacion,
-      cc_entrega:      txt('ccEntrega'),
-      cc_recibo:       txt('ccRecibo'),
-      sst_cargo:       txt('sstCargo'),
-      sst_nombre:      txt('sstNombre'),
-      sst_cedula:      txt('sstCedula'),
-      firma_entrega:   document.getElementById('previewEntrega').src,
-      firma_recibo:    document.getElementById('previewRecibo').src,
-      token:           linkToken,
+      firma_recibo:document.getElementById('previewRecibo').src,
+      token:linkToken,
     });
-
     btn.style.display='none';
     document.getElementById('successMsg').style.display='block';
     document.getElementById('successMsg').scrollIntoView({behavior:'smooth',block:'center'});
   }catch(err){
     btn.disabled=false; btn.textContent='Enviar Acta';
-    alert('❌ Error al enviar: '+err.message);
+    alert('Error al enviar: '+err.message);
   }
 });
 </script>
