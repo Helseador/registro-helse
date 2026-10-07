@@ -830,11 +830,15 @@ function exportarCSV(tipo){
 function generarPDF(){
   const r=registroActual; if(!r)return;
   const tipo=tipoRegistroActual;
+
+  // PDF especial para Uso de Imagen
+  if(tipo==='imagen'){ generarPDFImagen(r); return; }
+
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const W=210,M=20,CW=W-M*2; let y=48;
-  const colorPrincipal=tipo==='medico'?[57,73,171]:[0,60,100];
-  const colorAccento=tipo==='medico'?[57,73,171]:[0,137,123];
+  let colorPrincipal=tipo==='medico'?[57,73,171]:[0,60,100];
+  let colorAccento=tipo==='medico'?[57,73,171]:[0,137,123];
 
   function nPag(){doc.addPage();y=48;}
   function cY(n){if(y+n>250)nPag();}
@@ -864,9 +868,6 @@ function generarPDF(){
   const fR=r.fecha&&r.fecha.toDate?r.fecha.toDate():new Date();
   const tituloDoc=tipo==='medico'?'Autorización Médico Tratante':tipo==='imagen'?'Autorización Uso de Imagen':'Consentimiento Informado';
   const subtituloDoc=tipo==='medico'?'Programa de Entregas Efectivas  ·  Médico Tratante':tipo==='imagen'?'Colaborador / Visitador Médico  ·  Grupo Helse SAS':'Programa de Entregas Efectivas  ·  REG-'+fR.getFullYear()+'-'+(r.id||'').slice(0,8).toUpperCase();
-
-  // Cabecera PDF – color según tipo
-  if(tipo==='imagen') { colorPrincipal=[106,27,154]; colorAccento=[106,27,154]; }
 
   doc.setFillColor(colorPrincipal[0],colorPrincipal[1],colorPrincipal[2]);
   doc.rect(0,0,210,30,'F');
@@ -1002,9 +1003,215 @@ function generarPDF(){
     }catch(e){}
   }
 
-  const prefijo=tipo==='medico'?'Autorizacion_Medico_':tipo==='imagen'?'Autorizacion_Imagen_':'Consentimiento_Helse_';
-  const idSufijo=tipo==='imagen'?(r.cedula||''):(r.num_identificacion||'');
-  doc.save(prefijo+(r.nombre||'').replace(/\s+/g,'_')+'_'+idSufijo+'.pdf');
+  const prefijo=tipo==='medico'?'Autorizacion_Medico_':'Consentimiento_Helse_';
+  doc.save(prefijo+(r.nombre||'').replace(/\s+/g,'_')+'_'+(r.num_identificacion||'')+'.pdf');
+}
+
+// ── PDF USO DE IMAGEN (documento legal completo) ──
+function generarPDFImagen(r){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210, M=18, CW=W-M*2;
+  const CP=[106,27,154];   // morado principal
+  const CA=[106,27,154];   // morado acento
+  const fR=r.fecha&&r.fecha.toDate?r.fecha.toDate():new Date();
+  let y=0;
+
+  function nPag(){
+    piePagina();
+    doc.addPage();
+    y=0;
+    cabeceraPagina();
+  }
+  function cY(n){ if(y+n>270) nPag(); }
+
+  function cabeceraPagina(){
+    // Banda superior morada
+    doc.setFillColor(CP[0],CP[1],CP[2]);
+    doc.rect(0,0,W,22,'F');
+    // Logo Helse (texto si imagen no disponible)
+    try{
+      doc.addImage(MB64,'PNG',M,3,28,16);
+    }catch(e){
+      doc.setFontSize(16);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+      doc.text('HELSE',M,14);
+    }
+    // Info empresa derecha
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(220,200,240);
+    doc.text('GRUPO HELSE SAS  ·  NIT 901.401.880-4',W-M,8,'right');
+    doc.text('www.helse.com.co  ·  laboratorioshelse@gmail.com',W-M,13,'right');
+    // Línea bajo cabecera
+    doc.setDrawColor(CA[0],CA[1],CA[2]);doc.setLineWidth(0.8);
+    doc.line(0,22,W,22);
+    y=30;
+  }
+
+  function piePagina(){
+    doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(160,160,160);
+    doc.line(M,285,W-M,285);
+    doc.text('Grupo Helse SAS  ·  NIT 901.401.880-4  ·  Ley 1581 de 2012',M,289);
+    doc.text('Pág. '+doc.internal.getNumberOfPages(),W-M,289,'right');
+  }
+
+  // ── PÁGINA 1 ──
+  cabeceraPagina();
+
+  // Título del documento
+  doc.setFontSize(14);doc.setFont('helvetica','bold');doc.setTextColor(CP[0],CP[1],CP[2]);
+  doc.text('AUTORIZACIÓN DE USO DE IMAGEN Y DATOS PERSONALES',W/2,y,'center');
+  y+=6;
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,80,160);
+  doc.text('Colaborador / Visitador Médico',W/2,y,'center');
+  y+=8;
+
+  // Línea divisora
+  doc.setDrawColor(CA[0],CA[1],CA[2]);doc.setLineWidth(0.5);
+  doc.line(M,y,W-M,y); y+=6;
+
+  // Párrafo de autorización principal
+  doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+  const p0='Yo, ';
+  const parrafo0Lines=(txt,fw)=>{
+    const ls=doc.splitTextToSize(txt,CW);
+    cY(ls.length*5+2);
+    doc.text(ls,M,y);
+    y+=ls.length*5+2;
+  };
+
+  // Texto principal
+  const intro='Yo, '+bold(r.nombre||'_________________________')+
+    ', mayor de edad, identificado(a) con cédula de ciudadanía No. '+bold(r.cedula||'________________')+
+    ' de '+bold(r.ciudad_cedula||'____________')+
+    ', en mi calidad de colaborador/visitador médico, autorizo de manera libre, previa, expresa e informada a '+
+    bold('GRUPO HELSE SAS (NIT 901.401.880-4)')+' para:';
+
+  printJustified(doc,intro,M,y,CW,9.5); y+=calcLines(doc,intro,CW,9.5)*5+2;
+
+  // Cláusulas numeradas
+  const clausulas=[
+    ['1. Uso de imagen:','Captar, reproducir, publicar y utilizar mi imagen (fotografías y videos) en medios internos y externos (páginas web, redes sociales, presentaciones corporativas, material promocional), con fines institucionales y de estrategia de imagen.'],
+    ['2. Tratamiento de datos:','Tratar mis datos personales (nombre, cédula, imagen, voz) conforme a la política de privacidad de la empresa y la Ley 1581 de 2012.'],
+    ['3. Cesión de derechos:','Ceder los derechos patrimoniales de imagen y audiovisuales de manera gratuita, sin exclusividad y sin límite territorial, manteniendo mis derechos morales irrenunciables.'],
+    ['4. Vigencia:','Esta autorización tiene vigencia indefinida, salvo que solicite su revocatoria por escrito al correo laboratorioshelse@gmail.com.'],
+  ];
+
+  clausulas.forEach(([titulo,texto])=>{
+    cY(14);
+    // Caja de cláusula
+    const fullText=titulo+' '+texto;
+    const lines=doc.splitTextToSize(fullText,CW-8);
+    const boxH=lines.length*5+8;
+    doc.setFillColor(248,240,255);
+    doc.setDrawColor(CA[0],CA[1],CA[2]);doc.setLineWidth(0.3);
+    doc.roundedRect(M,y-4,CW,boxH,2,2,'FD');
+    // Título negrita
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(CP[0],CP[1],CP[2]);
+    const tLines=doc.splitTextToSize(titulo,CW-8);
+    doc.text(tLines,M+4,y+0.5);
+    const tH=tLines.length*5;
+    // Texto normal
+    doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+    const bodyLines=doc.splitTextToSize(texto,CW-8);
+    doc.text(bodyLines,M+4,y+tH+0.5);
+    y+=boxH+4;
+  });
+
+  // Párrafo final
+  cY(14);
+  const pfinal='Declaro que he sido informado(a) sobre mis derechos a conocer, actualizar, rectificar y suprimir mis datos, y que firmo este documento de manera voluntaria, sin coerción alguna.';
+  const pfLines=doc.splitTextToSize(pfinal,CW);
+  doc.setFontSize(9.5);doc.setFont('helvetica','italic');doc.setTextColor(60,60,60);
+  doc.text(pfLines,M,y); y+=pfLines.length*5+6;
+
+  // Lugar y fecha
+  cY(10);
+  const fechaTexto='Dado en '+bold(r.ciudad_firma||'__________')+
+    ', a los '+bold(r.dia_firma||'___')+' días del mes de '+
+    bold(r.mes_firma||'________')+' de '+bold(r.anio_firma||'202_')+'.';
+  doc.setFontSize(9.5);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+  // Imprimir simple (sin bold inline en jsPDF básico)
+  doc.text('Dado en '+( r.ciudad_firma||'__________')+', a los '+(r.dia_firma||'___')+' días del mes de '+(r.mes_firma||'________')+' de '+(r.anio_firma||'202_')+'.',M,y);
+  y+=10;
+
+  // ── SECCIÓN FIRMA ──
+  cY(50);
+  doc.setDrawColor(CA[0],CA[1],CA[2]);doc.setLineWidth(0.4);
+  doc.line(M,y,W-M,y); y+=5;
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(CP[0],CP[1],CP[2]);
+  doc.text('FIRMA DEL COLABORADOR',M,y); y+=5;
+
+  if(r.firma_imagen){
+    try{
+      // Imagen de firma
+      doc.addImage(r.firma_imagen,'PNG',M,y,80,32);
+      doc.setDrawColor(200,200,200);doc.setLineWidth(0.25);
+      doc.rect(M,y,80,32);
+      // Datos al lado
+      doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(26,44,43);
+      doc.text(r.nombre||'',M+86,y+8);
+      doc.setFont('helvetica','normal');doc.setTextColor(84,110,122);doc.setFontSize(8.5);
+      doc.text('C.C. '+(r.cedula||''),M+86,y+15);
+      doc.text('Correo: '+(r.correo||''),M+86,y+21);
+      doc.text('Firmado: '+fR.toLocaleDateString('es-CO')+' '+fR.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),M+86,y+28);
+      y+=38;
+    }catch(e){ y+=38; }
+  }
+
+  // ── DATOS COMPLETOS DEL COLABORADOR ──
+  cY(40);
+  doc.setDrawColor(CA[0],CA[1],CA[2]);doc.setLineWidth(0.4);
+  doc.line(M,y,W-M,y); y+=5;
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(CP[0],CP[1],CP[2]);
+  doc.text('DATOS DEL COLABORADOR',M,y); y+=5;
+
+  const filas=[
+    ['Nombre completo:',r.nombre||'—','Cédula de ciudadanía:',r.cedula||'—'],
+    ['Ciudad de expedición:',r.ciudad_cedula||'—','Correo electrónico:',r.correo||'—'],
+    ['Ciudad de firma:',r.ciudad_firma||'—','Fecha del documento:',(r.dia_firma||'')+(r.mes_firma?' / '+r.mes_firma:'')+(r.anio_firma?' / '+r.anio_firma:'')],
+    ['Registro en sistema:',formatFecha(r.fecha),'',''],
+  ];
+  filas.forEach(([l1,v1,l2,v2])=>{
+    cY(6);
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(84,110,122);
+    doc.text(l1,M,y);
+    doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+    doc.text(v1,M+42,y);
+    if(l2){
+      doc.setFont('helvetica','bold');doc.setTextColor(84,110,122);
+      doc.text(l2,W/2+2,y);
+      doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+      doc.text(v2,W/2+44,y);
+    }
+    y+=5.5;
+  });
+
+  // ── PIE LEGAL ──
+  cY(20);
+  y+=4;
+  doc.setFillColor(248,240,255);
+  doc.roundedRect(M,y,CW,16,2,2,'F');
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(100,60,130);
+  const pie='Este documento fue firmado digitalmente a través de la plataforma de Grupo Helse SAS. '+
+    'Los datos personales son tratados conforme a la Ley 1581 de 2012 y la política de privacidad disponible en www.helse.com.co. '+
+    'Para ejercer derechos de habeas data escriba a: laboratorioshelse@gmail.com';
+  const pieLines=doc.splitTextToSize(pie,CW-6);
+  doc.text(pieLines,M+3,y+5);
+  y+=20;
+
+  piePagina();
+  doc.save('Autorizacion_Imagen_'+(r.nombre||'').replace(/\s+/g,'_')+'_'+(r.cedula||'')+'.pdf');
+}
+
+// helpers internos de texto
+function bold(t){return t;} // placeholder — jsPDF básico no soporta inline bold en splitTextToSize
+function printJustified(doc,txt,x,y,w,sz){
+  doc.setFontSize(sz);doc.setFont('helvetica','normal');doc.setTextColor(26,44,43);
+  const ls=doc.splitTextToSize(txt,w);
+  doc.text(ls,x,y);
+}
+function calcLines(doc,txt,w,sz){
+  doc.setFontSize(sz);
+  return doc.splitTextToSize(txt,w).length;
 }
 </script>
 </body>
