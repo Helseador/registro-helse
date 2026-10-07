@@ -1,0 +1,411 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acta de Entrega de Dotación – Helse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--rojo:#C62828;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;--shadow:0 4px 24px rgba(27,58,107,0.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:40px 16px 80px;}
+.wrapper{max-width:820px;margin:0 auto;}
+
+/* Membrete estilo documento oficial */
+.membrete{background:white;border-radius:16px 16px 0 0;border:1.5px solid var(--border);border-bottom:none;overflow:hidden;}
+.membrete-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:12px 20px;border-bottom:2px solid var(--azul);gap:16px;}
+.membrete-logo img{height:52px;width:auto;}
+.membrete-titulo{text-align:center;}
+.membrete-titulo h2{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--azul);line-height:1.4;}
+.membrete-titulo p{font-size:10px;color:var(--gris);margin-top:3px;}
+.membrete-codigo{text-align:right;font-size:9.5px;color:var(--gris);line-height:1.8;}
+.membrete-codigo strong{color:var(--azul);font-size:10px;}
+
+/* Card principal */
+.card{background:white;border:1.5px solid var(--border);border-top:none;border-radius:0 0 16px 16px;padding:28px 32px 40px;box-shadow:var(--shadow);}
+
+/* Sección datos colaborador */
+.section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:white;background:var(--azul);padding:6px 14px;border-radius:6px;margin:24px 0 16px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.campo{margin-bottom:16px;}
+.campo-label{font-size:12px;font-weight:600;color:var(--gris);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px;}
+input[type="text"],input[type="date"],select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:#FAFFFE;transition:border-color 0.2s;outline:none;appearance:none;}
+input:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,0.10);}
+input::placeholder{color:#aab;}
+.select-wrap{position:relative;}
+.select-wrap::after{content:'▾';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gris);pointer-events:none;}
+.req{color:var(--rojo);}
+
+/* Tabla dotación */
+.tabla-dotacion{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;}
+.tabla-dotacion thead th{background:var(--azul);color:white;padding:9px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:0.5px;}
+.tabla-dotacion tbody tr{border-bottom:1px solid var(--azul-light);}
+.tabla-dotacion tbody tr:last-child{border-bottom:none;}
+.tabla-dotacion td{padding:6px 8px;vertical-align:middle;}
+.tabla-dotacion td input{border:1px solid var(--border);border-radius:6px;padding:6px 10px;width:100%;font-size:13px;font-family:'DM Sans',sans-serif;background:#FAFFFE;}
+.tabla-dotacion td input:focus{outline:none;border-color:var(--azul);}
+.btn-fila{background:none;border:none;cursor:pointer;font-size:18px;color:var(--gris);padding:4px 6px;border-radius:5px;}
+.btn-fila:hover{color:var(--rojo);}
+.btn-add{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;background:var(--azul-light);color:var(--azul-dark);border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-add:hover{background:var(--azul);color:white;}
+
+/* Declaraciones */
+.declaracion-box{background:var(--azul-light);border-left:4px solid var(--azul);border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:10px;font-size:12.5px;line-height:1.7;color:var(--text);}
+.declaracion-box p{margin-bottom:6px;}
+.declaracion-box p:last-child{margin-bottom:0;}
+
+/* Firmas */
+.firmas-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px;}
+.firma-bloque label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gris);margin-bottom:8px;display:block;}
+.firma-wrap canvas{display:block;cursor:crosshair;border-radius:8px;}
+.firma-box{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:white;}
+
+/* Tabla responsable SST */
+.tabla-sst{width:100%;border-collapse:collapse;font-size:12px;}
+.tabla-sst th{background:var(--azul);color:white;padding:7px 10px;font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;}
+.tabla-sst td{border:1px solid var(--border);padding:8px 10px;vertical-align:middle;}
+.tabla-sst td input{border:none;width:100%;font-size:12.5px;font-family:'DM Sans',sans-serif;background:transparent;outline:none;}
+
+/* Submit */
+.submit-area{margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+.btn-submit{background:var(--azul);color:white;border:none;border-radius:12px;padding:14px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(27,58,107,0.28);}
+.btn-submit:hover{background:var(--azul-dark);transform:translateY(-2px);}
+.btn-submit:disabled{opacity:0.7;cursor:not-allowed;transform:none;}
+.success-msg{display:none;background:var(--azul-light);border:1.5px solid var(--azul);border-radius:14px;padding:24px 28px;text-align:center;margin-top:20px;}
+.success-msg .icon{font-size:36px;margin-bottom:8px;}
+.success-msg p{font-size:15px;color:var(--azul-dark);font-weight:500;}
+.error-msg{display:none;color:var(--rojo);font-size:11.5px;margin-top:4px;}
+.campo.invalid .error-msg{display:block;}
+.campo.invalid input,.campo.invalid select{border-color:var(--rojo);}
+.campo.invalid .firma-box{border-color:var(--rojo);}
+.nota-pie{font-size:11px;color:var(--gris);border-top:1px solid var(--border);padding-top:16px;margin-top:24px;font-style:italic;line-height:1.6;}
+
+@media(max-width:620px){.grid2,.grid3{grid-template-columns:1fr;}.firmas-grid{grid-template-columns:1fr;}.membrete-top{grid-template-columns:auto 1fr;}.membrete-codigo{display:none;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- MEMBRETE OFICIAL -->
+  <div class="membrete">
+    <div class="membrete-top">
+      <div class="membrete-logo">
+        <img src="data:image/png;base64,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" alt="Grupo Helse SAS">
+      </div>
+      <div class="membrete-titulo">
+        <h2>Procedimiento de Operación Estándar (POS)<br>Acta de Entrega de Dotación</h2>
+        <p>Grupo Helse SAS · NIT 901.401.880-4</p>
+      </div>
+      <div class="membrete-codigo">
+        <div><strong>Código:</strong> CO-SSG-15-V02</div>
+        <div><strong>Fecha:</strong> 17-06-2025</div>
+        <div><strong>Páginas:</strong> 2</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <form id="form" novalidate>
+
+      <!-- DATOS DEL COLABORADOR -->
+      <div class="section-title">Datos del Colaborador</div>
+
+      <div class="campo" id="cNombre">
+        <label class="campo-label">Nombre y Apellidos <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Nombre completo del colaborador">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="grid3">
+        <div class="campo" id="cCargo">
+          <label class="campo-label">Cargo <span class="req">*</span></label>
+          <input type="text" id="cargo" placeholder="Cargo">
+          <div class="error-msg">Requerido.</div>
+        </div>
+        <div class="campo" id="cArea">
+          <label class="campo-label">Área <span class="req">*</span></label>
+          <input type="text" id="area" placeholder="Área o departamento">
+          <div class="error-msg">Requerido.</div>
+        </div>
+        <div class="campo" id="cCedula">
+          <label class="campo-label">Número de Identificación <span class="req">*</span></label>
+          <input type="text" id="cedula" placeholder="Cédula de ciudadanía">
+          <div class="error-msg">Requerido.</div>
+        </div>
+      </div>
+
+      <div class="campo" id="cFecha">
+        <label class="campo-label">Fecha de Entrega <span class="req">*</span></label>
+        <input type="date" id="fechaEntrega">
+        <div class="error-msg">Seleccione la fecha.</div>
+      </div>
+
+      <!-- TABLA DE DOTACIÓN -->
+      <div class="section-title">Dotación Entregada</div>
+
+      <p style="font-size:12.5px;color:var(--gris);margin-bottom:12px;">De conformidad con los artículos 230 al 235 del Código Sustantivo de Trabajo y en cumplimiento de las obligaciones de <strong>GRUPO HELSE S.A.S</strong>, se deja constancia de la dotación entregada, así:</p>
+
+      <table class="tabla-dotacion" id="tablaDotacion">
+        <thead>
+          <tr>
+            <th style="width:70px;">Cantidad</th>
+            <th>Descripción</th>
+            <th>Observaciones</th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="tbodyDotacion">
+          <tr>
+            <td><input type="text" placeholder="Ej. 2" class="cant"></td>
+            <td><input type="text" placeholder="Ej. Camisa manga larga talla M" class="desc"></td>
+            <td><input type="text" placeholder="Estado / color / talla" class="obs"></td>
+            <td><button type="button" class="btn-fila" onclick="eliminarFila(this)" title="Eliminar">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn-add" onclick="agregarFila()">＋ Agregar ítem</button>
+
+      <!-- DECLARACIONES -->
+      <div class="section-title" style="margin-top:28px;">El Colaborador Declara</div>
+
+      <div class="declaracion-box">
+        <p>✔ La dotación que aquí se entrega es y será de la empresa en todo momento. En caso de terminación del contrato de trabajo o entrega de una nueva dotación, me comprometo a hacer la devolución de forma inmediata cuando la misma contenga elementos distintivos que lo identifiquen como colaborador de la empresa.</p>
+        <p>✔ En caso de daño de la dotación o parte de ella, el trabajador debe devolverla a la empresa.</p>
+        <p>✔ Comprende que es una obligación el uso de la dotación de calzado y vestido de labor que se le está suministrando, que deberá cuidar de esta y destinar su uso exclusivo a la ejecución de labores contratadas.</p>
+        <p>✔ Es consciente que la indebida utilización de la dotación de calzado y vestido de labor es un incumplimiento a sus obligaciones y podrá conllevar una sanción disciplinaria.</p>
+      </div>
+
+      <!-- FIRMAS -->
+      <div class="section-title">Firmas</div>
+
+      <div class="firmas-grid">
+        <!-- Firma entrega -->
+        <div>
+          <div class="campo" id="cFirmaEntrega">
+            <label class="campo-label">Entregado por <span class="req">*</span></label>
+            <div id="fe1">
+              <button type="button" onclick="abrirFirma('entrega')" style="width:100%;padding:16px;border:2px dashed var(--border);border-radius:10px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--azul-dark);font-weight:600;">✍️ Toque para firmar</button>
+            </div>
+            <div id="fe2" style="display:none;">
+              <div class="firma-box" id="fwEntrega"><canvas id="canvasEntrega"></canvas></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button type="button" onclick="limpiarFirma('entrega')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🗑️ Limpiar</button>
+                <button type="button" onclick="guardarFirma('entrega')" style="flex:2;padding:10px;border-radius:8px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">✅ Guardar</button>
+              </div>
+            </div>
+            <div id="fe3" style="display:none;">
+              <div style="border:2px solid var(--azul);border-radius:10px;padding:10px;background:var(--azul-light);">
+                <p style="font-size:11px;color:var(--azul-dark);font-weight:600;margin-bottom:6px;">✅ Firma guardada</p>
+                <img id="previewEntrega" style="width:100%;max-height:90px;object-fit:contain;background:white;border-radius:6px;" alt="">
+              </div>
+              <button type="button" onclick="rehacerFirma('entrega')" style="margin-top:6px;width:100%;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">🔄 Volver a firmar</button>
+            </div>
+            <div class="error-msg">Firma requerida.</div>
+            <div style="margin-top:10px;">
+              <input type="text" id="ccEntrega" placeholder="C.C. de quien entrega">
+            </div>
+          </div>
+        </div>
+
+        <!-- Firma recibo -->
+        <div>
+          <div class="campo" id="cFirmaRecibo">
+            <label class="campo-label">Recibido por (Colaborador) <span class="req">*</span></label>
+            <div id="fr1">
+              <button type="button" onclick="abrirFirma('recibo')" style="width:100%;padding:16px;border:2px dashed var(--border);border-radius:10px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--azul-dark);font-weight:600;">✍️ Toque para firmar</button>
+            </div>
+            <div id="fr2" style="display:none;">
+              <div class="firma-box" id="fwRecibo"><canvas id="canvasRecibo"></canvas></div>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button type="button" onclick="limpiarFirma('recibo')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🗑️ Limpiar</button>
+                <button type="button" onclick="guardarFirma('recibo')" style="flex:2;padding:10px;border-radius:8px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">✅ Guardar</button>
+              </div>
+            </div>
+            <div id="fr3" style="display:none;">
+              <div style="border:2px solid var(--azul);border-radius:10px;padding:10px;background:var(--azul-light);">
+                <p style="font-size:11px;color:var(--azul-dark);font-weight:600;margin-bottom:6px;">✅ Firma guardada</p>
+                <img id="previewRecibo" style="width:100%;max-height:90px;object-fit:contain;background:white;border-radius:6px;" alt="">
+              </div>
+              <button type="button" onclick="rehacerFirma('recibo')" style="margin-top:6px;width:100%;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">🔄 Volver a firmar</button>
+            </div>
+            <div class="error-msg">Firma requerida.</div>
+            <div style="margin-top:10px;">
+              <input type="text" id="ccRecibo" placeholder="C.C. del colaborador">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESPONSABLE SST -->
+      <div class="section-title">Datos del Responsable en SST</div>
+      <table class="tabla-sst">
+        <thead><tr><th>Gerente General</th><th>Cargo</th><th>Nombre y Apellidos</th><th>Cédula</th></tr></thead>
+        <tbody><tr>
+          <td style="font-size:12px;color:var(--gris);">Responsable SST</td>
+          <td><input type="text" id="sstCargo" placeholder="Cargo SST" value="Gerente General"></td>
+          <td><input type="text" id="sstNombre" placeholder="Nombre responsable SST"></td>
+          <td><input type="text" id="sstCedula" placeholder="Cédula"></td>
+        </tr></tbody>
+      </table>
+
+      <div class="nota-pie">
+        Este documento es propiedad de GRUPO HELSE SAS y no está permitida su reproducción total o parcial; salvo autorización de esta empresa. Toda copia impresa autorizada debe llevar el sello húmedo de color rojo "Copia Controlada".
+      </div>
+
+      <div class="submit-area">
+        <button type="submit" class="btn-submit" id="btnSubmit">Enviar Acta</button>
+        <p style="font-size:12px;color:var(--gris);text-align:center;">Al enviar confirma que la información es verídica.</p>
+      </div>
+
+      <div class="success-msg" id="successMsg">
+        <div class="icon">✅</div>
+        <p>¡Acta enviada exitosamente!<br>El registro quedó guardado correctamente en el sistema de Grupo Helse SAS.</p>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const urlParams = new URLSearchParams(window.location.search);
+const linkToken = urlParams.get('t') || '';
+
+// Fecha default hoy
+document.getElementById('fechaEntrega').value = new Date().toISOString().slice(0,10);
+
+// ── Tabla dotación ──
+window.agregarFila = function(){
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="text" placeholder="Cant." class="cant"></td>'+
+    '<td><input type="text" placeholder="Descripción del elemento" class="desc"></td>'+
+    '<td><input type="text" placeholder="Observaciones" class="obs"></td>'+
+    '<td><button type="button" class="btn-fila" onclick="eliminarFila(this)">✕</button></td>';
+  document.getElementById('tbodyDotacion').appendChild(tr);
+};
+window.eliminarFila = function(btn){
+  const tbody = document.getElementById('tbodyDotacion');
+  if(tbody.rows.length > 1) btn.closest('tr').remove();
+};
+
+// ── Canvas firmas ──
+const firmas = { entrega: { guardada: false }, recibo: { guardada: false } };
+
+function initCanvas(tipo){
+  const wrap = document.getElementById('fw'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  const canvas = document.getElementById('canvas'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  const w = wrap.clientWidth || 340;
+  canvas.width = w; canvas.height = 150;
+  canvas.style.width = w+'px'; canvas.style.height = '150px';
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,150);
+  ctx.strokeStyle='#000'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
+  firmas[tipo].ctx = ctx; firmas[tipo].canvas = canvas; firmas[tipo].hecha = false;
+  let dibujando = false;
+  function xy(e){ const r=canvas.getBoundingClientRect(),s=e.touches?e.touches[0]:e; return{x:s.clientX-r.left,y:s.clientY-r.top}; }
+  canvas.onmousedown = e=>{ dibujando=true; const p=xy(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  canvas.onmousemove = e=>{ if(!dibujando)return; const p=xy(e); ctx.lineTo(p.x,p.y); ctx.stroke(); firmas[tipo].hecha=true; };
+  canvas.onmouseup = canvas.onmouseleave = ()=>dibujando=false;
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();dibujando=true;const p=xy(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!dibujando)return;const p=xy(e);ctx.lineTo(p.x,p.y);ctx.stroke();firmas[tipo].hecha=true;},{passive:false});
+  canvas.addEventListener('touchend',()=>dibujando=false);
+}
+
+function estadoFirma(tipo, n){
+  const T = tipo.charAt(0).toUpperCase()+tipo.slice(1);
+  const pref = tipo==='entrega'?'fe':'fr';
+  document.getElementById(pref+'1').style.display = n===1?'block':'none';
+  document.getElementById(pref+'2').style.display = n===2?'block':'none';
+  document.getElementById(pref+'3').style.display = n===3?'block':'none';
+}
+
+window.abrirFirma  = t=>{ estadoFirma(t,2); setTimeout(()=>initCanvas(t),80); };
+window.limpiarFirma= t=>{ initCanvas(t); };
+window.guardarFirma= t=>{
+  if(!firmas[t].hecha){ alert('Por favor firme antes de guardar.'); return; }
+  const T=t.charAt(0).toUpperCase()+t.slice(1);
+  document.getElementById('preview'+T).src = firmas[t].canvas.toDataURL('image/png');
+  firmas[t].guardada=true; estadoFirma(t,3);
+  document.getElementById('cFirma'+T).classList.remove('invalid');
+};
+window.rehacerFirma= t=>{ firmas[t].guardada=false; estadoFirma(t,2); setTimeout(()=>initCanvas(t),80); };
+
+// ── Validación y envío ──
+const txt = id => document.getElementById(id).value.trim();
+
+document.getElementById('form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  document.querySelectorAll('.campo').forEach(c=>c.classList.remove('invalid'));
+  let ok=true;
+
+  const checks=[
+    ['cNombre',    ()=>!txt('nombre')],
+    ['cCargo',     ()=>!txt('cargo')],
+    ['cArea',      ()=>!txt('area')],
+    ['cCedula',    ()=>!txt('cedula')],
+    ['cFecha',     ()=>!txt('fechaEntrega')],
+    ['cFirmaEntrega',()=>!firmas.entrega.guardada],
+    ['cFirmaRecibo', ()=>!firmas.recibo.guardada],
+  ];
+  checks.forEach(([id,fn])=>{ if(fn()){ document.getElementById(id).classList.add('invalid'); ok=false; } });
+
+  // Validar al menos 1 ítem de dotación con descripción
+  const items=[...document.querySelectorAll('#tbodyDotacion .desc')].map(i=>i.value.trim()).filter(Boolean);
+  if(!items.length){ alert('Agregue al menos un ítem de dotación.'); ok=false; }
+
+  if(!ok){ document.querySelector('.campo.invalid')?.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+
+  const btn=document.getElementById('btnSubmit');
+  btn.disabled=true; btn.textContent='Enviando...';
+
+  try{
+    // Recolectar items dotación
+    const dotacion=[...document.querySelectorAll('#tbodyDotacion tr')].map(tr=>({
+      cantidad: tr.querySelector('.cant')?.value.trim()||'',
+      descripcion: tr.querySelector('.desc')?.value.trim()||'',
+      observaciones: tr.querySelector('.obs')?.value.trim()||'',
+    })).filter(i=>i.descripcion);
+
+    await addDoc(collection(db,'registros_entrega_efectiva'),{
+      tipo_registro:   'dotacion',
+      fecha:           serverTimestamp(),
+      nombre:          txt('nombre'),
+      cargo:           txt('cargo'),
+      area:            txt('area'),
+      cedula:          txt('cedula'),
+      fecha_entrega:   txt('fechaEntrega'),
+      dotacion,
+      cc_entrega:      txt('ccEntrega'),
+      cc_recibo:       txt('ccRecibo'),
+      sst_cargo:       txt('sstCargo'),
+      sst_nombre:      txt('sstNombre'),
+      sst_cedula:      txt('sstCedula'),
+      firma_entrega:   document.getElementById('previewEntrega').src,
+      firma_recibo:    document.getElementById('previewRecibo').src,
+      token:           linkToken,
+    });
+
+    btn.style.display='none';
+    document.getElementById('successMsg').style.display='block';
+    document.getElementById('successMsg').scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(err){
+    btn.disabled=false; btn.textContent='Enviar Acta';
+    alert('❌ Error al enviar: '+err.message);
+  }
+});
+</script>
+</body>
+</html>
