@@ -99,6 +99,8 @@ td.nombre{font-weight:600;}
 .lt-pac{background:#E3EAF5;color:#1B3A6B;}
 .lt-med{background:#E8EAF6;color:#3949AB;}
 .lt-img{background:#F3E5F5;color:#6A1B9A;}
+.lt-dot{background:#E8F5E9;color:#2E7D32;}
+.modal-header.dotacion{background:#2E7D32;}
 
 /* USUARIOS */
 .usuarios-section{padding:20px 28px 40px;}
@@ -169,6 +171,7 @@ td.nombre{font-weight:600;}
       <button class="btn-top" id="btnCSV" onclick="exportarCSV('pacientes')">⬇️ CSV Pacientes</button>
       <button class="btn-top" id="btnCSVMed" onclick="exportarCSV('medicos')">⬇️ CSV Médicos</button>
       <button class="btn-top" id="btnCSVImg" onclick="exportarCSV('imagen')">⬇️ CSV Imagen</button>
+      <button class="btn-top" id="btnCSVDot" onclick="exportarCSV('dotacion')">⬇️ CSV Dotación</button>
       <button class="btn-top danger" onclick="cerrarSesion()">Salir</button>
     </div>
   </div>
@@ -178,6 +181,7 @@ td.nombre{font-weight:600;}
     <div class="tab active" onclick="cambiarTab('pacientes',this)">🧑‍⚕️ Pacientes</div>
     <div class="tab" onclick="cambiarTab('medicos',this)">👨‍⚕️ Médicos</div>
     <div class="tab" onclick="cambiarTab('imagen',this)">📸 Uso de Imagen</div>
+    <div class="tab" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
     <div class="tab" id="tabLinks" onclick="cambiarTab('links',this)">🔗 Links</div>
     <div class="tab sa-only" onclick="cambiarTab('usuarios',this)">👥 Usuarios</div>
   </div>
@@ -241,6 +245,25 @@ td.nombre{font-weight:600;}
     </div>
   </div>
 
+  <!-- TAB: DOTACIÓN -->
+  <div class="tab-content" id="tc-dotacion">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="statDotTotal">—</div><div class="stat-label">Total actas</div></div>
+      <div class="stat-card"><div class="stat-num" id="statDotHoy">—</div><div class="stat-label">Hoy</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="search-box" id="buscadorDot" placeholder="🔍 Buscar por nombre, cédula, cargo, área...">
+    </div>
+    <div class="table-wrap">
+      <div class="loading" id="loadingDot"><div class="spinner"></div>Cargando...</div>
+      <table id="tablaDot" style="display:none;">
+        <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th id="thOrigenDot"></th><th>Ver</th></tr></thead>
+        <tbody id="tbodyDot"></tbody>
+      </table>
+      <div class="empty" id="emptyDot" style="display:none;">No se encontraron actas de dotación.</div>
+    </div>
+  </div>
+
   <!-- TAB: LINKS -->
   <div class="tab-content" id="tc-links">
     <div class="links-section">
@@ -253,6 +276,7 @@ td.nombre{font-weight:600;}
           <button class="btn-generar" onclick="generarLink('paciente')">+ Link Paciente</button>
           <button class="btn-generar" style="background:#3949AB;" onclick="generarLink('medico')">+ Link Médico</button>
           <button class="btn-generar" style="background:#6A1B9A;" onclick="generarLink('imagen')">+ Link Uso Imagen</button>
+          <button class="btn-generar" style="background:#2E7D32;" onclick="generarLink('dotacion')">+ Link Dotación</button>
         </div>
       </div>
       <div class="links-grid" id="linksGrid">
@@ -304,7 +328,7 @@ firebase.initializeApp({
 const db=firebase.firestore(), auth=firebase.auth();
 
 // ── Estado global ──
-let registrosPac=[], registrosMed=[], registrosImg=[], registroActual=null, tipoRegistroActual=null;
+let registrosPac=[], registrosMed=[], registrosImg=[], registrosDot=[], registroActual=null, tipoRegistroActual=null;
 let rolActual=null, cdInterval=null;
 
 // ── Base64 logo para PDF ──
@@ -326,11 +350,13 @@ auth.onAuthStateChanged(async user=>{
       document.getElementById('btnCSV').style.display='none';
       document.getElementById('btnCSVMed').style.display='none';
       document.getElementById('btnCSVImg').style.display='none';
+      document.getElementById('btnCSVDot').style.display='none';
     }
     cargarPacientes();
     cargarMedicos();
     cargarLinks();
     cargarImagen();
+    cargarDotacion();
     if(rolActual==='superadmin') cargarUsuarios();
   } else {
     document.getElementById('loginScreen').style.display='flex';
@@ -533,16 +559,31 @@ document.getElementById('buscadorMed').addEventListener('input',function(){
 
 // ── MODAL ──
 function abrirModal(id,tipo){
-  const lista=tipo==='medico'?registrosMed:tipo==='imagen'?registrosImg:registrosPac;
+  const lista=tipo==='medico'?registrosMed:tipo==='imagen'?registrosImg:tipo==='dotacion'?registrosDot:registrosPac;
   const r=lista.find(x=>x.id===id);
   if(!r)return;
   registroActual=r; tipoRegistroActual=tipo;
   document.getElementById('modalNombre').textContent=r.nombre||'Detalle';
   const hdr=document.getElementById('modalHeader');
-  hdr.className='modal-header'+(tipo==='medico'?' medico':tipo==='imagen'?' imagen':'');
+  hdr.className='modal-header'+(tipo==='medico'?' medico':tipo==='imagen'?' imagen':tipo==='dotacion'?' dotacion':'');
 
   let campos;
-  if(tipo==='imagen'){
+  if(tipo==='dotacion'){
+    const items=(r.dotacion||[]).map(i=>i.cantidad+' × '+i.descripcion+(i.observaciones?' ('+i.observaciones+')':'')).join(' | ')||'—';
+    campos=[
+      ['Fecha registro',formatFecha(r.fecha)],
+      ['Nombre',r.nombre],
+      ['Cédula',r.cedula],
+      ['Cargo',r.cargo],
+      ['Área',r.area],
+      ['Fecha de entrega',r.fecha_entrega],
+      ['Dotación entregada',items],
+      ['C.C. quien entrega',r.cc_entrega],
+      ['C.C. quien recibe',r.cc_recibo],
+      ['Responsable SST',r.sst_nombre],
+      ['Cédula SST',r.sst_cedula],
+    ];
+  } else if(tipo==='imagen'){
     campos=[
       ['Fecha registro',formatFecha(r.fecha)],
       ['Nombre',r.nombre],
@@ -597,7 +638,10 @@ function abrirModal(id,tipo){
       '</div>';
   }
   html+=campos.map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
-  if(r.firma_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma</span><img src="'+r.firma_imagen+'" class="firma-preview" alt="Firma"></div>';
+  if(tipo==='dotacion'){
+    if(r.firma_entrega) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma – Entregado por</span><img src="'+r.firma_entrega+'" class="firma-preview" alt="Firma entrega"></div>';
+    if(r.firma_recibo)  html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma – Recibido por</span><img src="'+r.firma_recibo+'" class="firma-preview" alt="Firma recibo"></div>';
+  } else if(r.firma_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma</span><img src="'+r.firma_imagen+'" class="firma-preview" alt="Firma"></div>';
   if(r.formula_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Fórmula médica</span><img src="'+r.formula_imagen+'" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border);" alt="Fórmula"></div>';
 
   document.getElementById('modalBody').innerHTML=html;
@@ -679,6 +723,79 @@ document.getElementById('buscadorImg').addEventListener('input',function(){
   ));
 });
 
+// ── DOTACIÓN ──
+async function cargarDotacion(){
+  try{
+    const snap=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','dotacion').get();
+    let lista=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+      const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
+      const tb=b.fecha&&b.fecha.toDate?b.fecha.toDate().getTime():0;
+      return tb-ta;
+    });
+    if(rolActual!=='superadmin'){
+      const uid=auth.currentUser.uid;
+      const histSnap=await db.collection('links_historial').where('creadoPorUID','==',uid).get();
+      const misTokens=new Set(histSnap.docs.map(d=>d.data().token));
+      lista=lista.filter(r=>r.token&&misTokens.has(r.token));
+    }
+    if(rolActual==='superadmin'&&lista.length){
+      const histSnap=await db.collection('links_historial').get();
+      const tokenMap={};
+      histSnap.docs.forEach(d=>{tokenMap[d.data().token]=d.data().creadoPor;});
+      lista.forEach(r=>{r.linkCreadoPor=r.token?(tokenMap[r.token]||'directo'):'directo';});
+      document.getElementById('thOrigenDot').textContent='Origen';
+    }
+    registrosDot=lista;
+    renderTablaDot(lista);
+    actualizarStatsDot(lista);
+    document.getElementById('loadingDot').style.display='none';
+  }catch(e){document.getElementById('loadingDot').innerHTML='❌ Error: '+e.message;}
+}
+
+function renderTablaDot(lista){
+  const tbody=document.getElementById('tbodyDot');
+  tbody.innerHTML='';
+  if(!lista.length){
+    document.getElementById('tablaDot').style.display='none';
+    document.getElementById('emptyDot').style.display='block';
+    return;
+  }
+  document.getElementById('tablaDot').style.display='table';
+  document.getElementById('emptyDot').style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.cargo||'—')+'</td>'+
+      '<td>'+(r.area||'—')+'</td>'+
+      '<td style="white-space:nowrap;">'+(r.fecha_entrega||'—')+'</td>'+
+      (rolActual==='superadmin'?'<td style="font-size:11px;color:var(--gris);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.linkCreadoPor||'—')+'</td>':'')+
+      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\',\'dotacion\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function actualizarStatsDot(lista){
+  const hoy=new Date().toDateString();
+  document.getElementById('statDotTotal').textContent=lista.length;
+  document.getElementById('statDotHoy').textContent=lista.filter(r=>{
+    const d=r.fecha&&r.fecha.toDate?r.fecha.toDate():null;
+    return d&&d.toDateString()===hoy;
+  }).length;
+}
+
+document.getElementById('buscadorDot').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderTablaDot(registrosDot.filter(r=>
+    (r.nombre||'').toLowerCase().includes(q)||
+    (r.cedula||'').toLowerCase().includes(q)||
+    (r.cargo||'').toLowerCase().includes(q)||
+    (r.area||'').toLowerCase().includes(q)
+  ));
+});
+
 // ── LINKS ──
 async function cargarLinks(){
   const ahora=Date.now();
@@ -698,12 +815,12 @@ function renderLinks(links){
   if(!links.length){grid.innerHTML='<div class="links-empty">No hay links activos. Genera uno nuevo.</div>';return;}
   grid.innerHTML=links.map(l=>{
     const tipo=l.tipoFormulario||'paciente';
-    const esMed=tipo==='medico', esImg=tipo==='imagen';
+    const esMed=tipo==='medico', esImg=tipo==='imagen', esDot=tipo==='dotacion';
     const creado=new Date(l.creado).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
     return `<div class="link-card" id="lc-${l.id}">
       <div class="link-url">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-          <span class="links-tipo-label ${esMed?'lt-med':esImg?'lt-img':'lt-pac'}">${esMed?'👨‍⚕️ Médico':esImg?'📸 Uso Imagen':'🧑‍⚕️ Paciente'}</span>
+          <span class="links-tipo-label ${esMed?'lt-med':esImg?'lt-img':esDot?'lt-dot':'lt-pac'}">${esMed?'👨‍⚕️ Médico':esImg?'📸 Uso Imagen':esDot?'👕 Dotación':'🧑‍⚕️ Paciente'}</span>
         </div>
         <div class="link-url-txt" data-url="${l.url}" onclick="copiarLink(this.dataset.url)" title="Click para copiar">${l.url}</div>
         <div class="link-meta">Creado: ${creado} · ${l.creadoPor}</div>
@@ -739,7 +856,8 @@ async function generarLink(tipoFormulario){
   const baseMap={
     paciente: 'https://helseador.github.io/registro-helse/',
     medico:   'https://helseador.github.io/registro-helse/registro_medicos_helse.html',
-    imagen:   'https://helseador.github.io/registro-helse/uso_imagen_medicos.html'
+    imagen:   'https://helseador.github.io/registro-helse/uso_imagen_medicos.html',
+    dotacion: 'https://helseador.github.io/registro-helse/acta_dotacion.html'
   };
   const base=baseMap[tipoFormulario]||baseMap.paciente;
   const url=base+'?t='+token;
@@ -813,6 +931,8 @@ function exportarCSV(tipo){
   let cols;
   if(tipo==='medicos'){
     cols=['fecha','nombre','tipo_documento','num_identificacion','especialidad','ips','ciudad','numero_contacto','correo','contacto_whatsapp','contacto_llamada','autoriza_recopilacion'];
+  } else if(tipo==='dotacion'){
+    cols=['fecha','nombre','cedula','cargo','area','fecha_entrega','cc_entrega','cc_recibo','sst_nombre','sst_cedula'];
   } else if(tipo==='imagen'){
     cols=['fecha','nombre','cedula','ciudad_cedula','correo','ciudad_firma','dia_firma','mes_firma','anio_firma'];
   } else {
