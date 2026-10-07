@@ -1060,9 +1060,7 @@ function generarPDFImagen(r){
   doc.setFontSize(14);doc.setFont('helvetica','bold');doc.setTextColor(CP[0],CP[1],CP[2]);
   doc.text('AUTORIZACIÓN DE USO DE IMAGEN Y DATOS PERSONALES',W/2,y,'center');
   y+=6;
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,80,160);
-  doc.text('Colaborador / Visitador Médico',W/2,y,'center');
-  y+=8;
+  y+=4;
 
   // Línea divisora
   doc.setDrawColor(CA[0],CA[1],CA[2]);doc.setLineWidth(0.5);
