@@ -149,6 +149,7 @@ td.nombre{font-weight:600;}
           <th>Documento</th>
           <th>Teléfono</th>
           <th>Familiar</th>
+          <th>Médico</th>
           <th>Fórmula</th>
           <th>Ver</th>
         </tr>
@@ -267,6 +268,7 @@ function renderTabla(lista){
       '<td><span class="badge">'+(r.tipo_documento||'')+' '+(r.num_documento||'—')+'</span></td>'+
       '<td>'+(r.telefono||'—')+'</td>'+
       '<td style="color:var(--gris);">'+(r.familiar||'—')+'</td>'+
+      '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(r.nombre_medico||'—')+'</td>'+
       '<td style="text-align:center;">'+(tieneFormula?'📋 Sí':'—')+'</td>'+
       '<td style="display:flex;gap:6px;align-items:center;">'+
         '<button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button>'+
@@ -313,6 +315,9 @@ function abrirModal(id){
     ['N° documento',r.num_documento],
     ['Teléfono',r.telefono],
     ['Familiar / acudiente',r.familiar||'—'],
+    ['Nombre del médico',r.nombre_medico||'—'],
+    ['Correo del médico',r.correo_medico||'—'],
+    ['Teléfono del médico',r.telefono_medico||'—'],
     ['Nombre archivo',r.formula_nombre||'—'],
   ];
   let html=campos.map(([k,v])=>
@@ -348,8 +353,8 @@ async function eliminarRegistro(id, nombre){
 // ── CSV ──
 function exportarCSV(){
   if(!registros.length)return alert('No hay registros.');
-  const cols=['fecha','nombre','tipo_documento','num_documento','telefono','familiar','formula_nombre'];
-  const cabecera=['Fecha','Nombre','Tipo Doc','N° Documento','Teléfono','Familiar','Archivo Fórmula'];
+  const cols=['fecha','nombre','tipo_documento','num_documento','telefono','familiar','nombre_medico','correo_medico','telefono_medico','formula_nombre'];
+  const cabecera=['Fecha','Nombre','Tipo Doc','N° Documento','Teléfono','Familiar','Médico','Correo Médico','Tel. Médico','Archivo Fórmula'];
   const rows=registros.map(r=>cols.map(c=>'"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(','));
   const blob=new Blob(['\ufeff'+[cabecera.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');

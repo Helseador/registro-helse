@@ -137,6 +137,27 @@ input::placeholder{color:#9EAFAD;}
         <input type="text" id="familiar" placeholder="Nombre del familiar o acudiente">
       </div>
 
+      <!-- Datos del médico -->
+      <div class="section-label">Datos del Médico</div>
+
+      <div class="campo" id="cNombreMedico">
+        <label class="campo-label" for="nombreMedico">Nombre del médico <span class="req">*</span></label>
+        <input type="text" id="nombreMedico" placeholder="Nombre completo del médico">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="campo" id="cCorreoMedico">
+        <label class="campo-label" for="correoMedico">Correo del médico <span class="req">*</span></label>
+        <input type="text" id="correoMedico" placeholder="correo@ejemplo.com">
+        <div class="error-msg">Ingrese un correo válido.</div>
+      </div>
+
+      <div class="campo" id="cTelefonoMedico">
+        <label class="campo-label" for="telefonoMedico">Teléfono del médico <span class="req">*</span></label>
+        <input type="tel" id="telefonoMedico" placeholder="Ej. 3001234567">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
       <!-- Foto fórmula -->
       <div class="section-label">Fórmula MIPRES</div>
 
@@ -275,7 +296,10 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['cTipoDoc', () => !document.getElementById('tipoDoc').value],
     ['cNumDoc',  () => !txt('numDoc')],
     ['cTelefono',() => !txt('telefono')],
-    ['cFoto',    () => !archivoFoto],
+    ['cNombreMedico',  () => !txt('nombreMedico')],
+    ['cCorreoMedico',  () => { const v=txt('correoMedico'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
+    ['cTelefonoMedico',() => !txt('telefonoMedico')],
+    ['cFoto',          () => !archivoFoto],
   ];
   checks.forEach(([id, fn]) => { if(fn()) { document.getElementById(id).classList.add('invalid'); ok = false; } });
 
@@ -294,6 +318,9 @@ document.getElementById('form').addEventListener('submit', async e => {
       num_documento:  txt('numDoc'),
       telefono:       txt('telefono'),
       familiar:       txt('familiar'),
+      nombre_medico:  txt('nombreMedico'),
+      correo_medico:  txt('correoMedico'),
+      telefono_medico:txt('telefonoMedico'),
       formula_nombre: archivoFoto.name,
       formula_imagen: fotoBase64,
       token:          linkToken,
