@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vista MIPRES – Helse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B0C4DE;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;}
+
+/* LOGIN */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0D2B5E 0%,#1B3A6B 50%,#0D47A1 100%);}
+.login-card{background:white;border-radius:20px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+.login-logo{text-align:center;margin-bottom:18px;}
+.login-logo img{height:48px;}
+.login-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);text-align:center;margin-bottom:4px;}
+.login-sub{font-size:12.5px;color:var(--gris);text-align:center;margin-bottom:22px;}
+.login-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;transition:border-color 0.2s;}
+.login-input:focus{border-color:var(--azul);}
+.btn-login{width:100%;background:var(--azul);color:white;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+.btn-login:hover{background:var(--azul-dark);}
+.login-error{color:var(--rojo);font-size:12.5px;text-align:center;margin-top:8px;display:none;}
+
+/* APP */
+.app{display:none;}
+
+/* TOPBAR */
+.topbar{background:var(--azul);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(27,58,107,0.2);}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-left img{height:32px;background:white;border-radius:6px;padding:3px 8px;}
+.topbar h1{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.btn-top{background:white;color:var(--azul-dark);border:none;border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-top:hover{background:var(--azul-light);}
+.btn-top.danger{background:#FFEBEE;color:var(--rojo);}
+.btn-top.danger:hover{background:var(--rojo);color:white;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;padding:18px 24px 0;}
+.stat-card{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(27,58,107,0.08);border-top:3px solid var(--azul);}
+.stat-num{font-size:28px;font-weight:700;color:var(--azul);}
+.stat-label{font-size:12px;color:var(--gris);margin-top:3px;}
+
+/* TOOLBAR */
+.toolbar{padding:14px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.search-box{flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:white;}
+.search-box:focus{border-color:var(--azul);}
+.filtro-fecha{border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:white;cursor:pointer;}
+
+/* TABLE */
+.table-wrap{padding:0 24px 40px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(27,58,107,0.08);font-size:13px;}
+thead{background:var(--azul);color:white;}
+thead th{padding:11px 13px;text-align:left;font-weight:600;font-size:11px;letter-spacing:0.5px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--gris-light);transition:background 0.15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--azul-bg);}
+td{padding:10px 13px;vertical-align:middle;}
+td.nombre{font-weight:600;}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--azul-light);color:var(--azul-dark);}
+.btn-ver{background:var(--azul-light);color:var(--azul-dark);border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;}
+.btn-ver:hover{background:var(--azul);color:white;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:18px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.modal-header{background:var(--azul);color:white;padding:16px 20px;border-radius:18px 18px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-header h2{font-family:'DM Serif Display',serif;font-size:16px;font-weight:400;}
+.btn-cerrar{background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;}
+.modal-body{padding:20px;}
+.detalle-fila{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--gris-light);font-size:13px;}
+.detalle-fila:last-child{border-bottom:none;}
+.detalle-key{font-weight:600;color:var(--gris);min-width:150px;flex-shrink:0;}
+.formula-img{max-width:100%;border-radius:10px;border:1.5px solid var(--border);margin-top:6px;cursor:zoom-in;}
+
+/* Misc */
+.loading{text-align:center;padding:40px;color:var(--gris);}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--azul);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:40px;color:var(--gris);}
+
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr;}.toolbar{padding:10px 14px;}.table-wrap{padding:0 14px 30px;}.topbar{padding:10px 14px;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="https://helseador.github.io/registro-helse/logo.png"
+           onerror="this.style.display='none'" alt="Helse">
+    </div>
+    <p class="login-title">Vista MIPRES</p>
+    <p class="login-sub">Fórmulas capturadas · Grupo Helse SAS</p>
+    <input type="email"    class="login-input" id="loginEmail" placeholder="Correo electrónico">
+    <input type="password" class="login-input" id="loginPass"  placeholder="Contraseña"
+           onkeydown="if(event.key==='Enter')iniciarSesion()">
+    <button class="btn-login" onclick="iniciarSesion()">Ingresar</button>
+    <p class="login-error" id="loginError"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appScreen">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="https://helseador.github.io/registro-helse/logo.png"
+           onerror="this.style.display='none'" alt="Helse">
+      <h1>Fórmulas MIPRES</h1>
+    </div>
+    <div class="topbar-right">
+      <span id="userEmail" style="font-size:11px;opacity:0.75;"></span>
+      <button class="btn-top" onclick="exportarCSV()">⬇️ CSV</button>
+      <button class="btn-top danger" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total capturas</div></div>
+    <div class="stat-card"><div class="stat-num" id="statHoy">—</div><div class="stat-label">Hoy</div></div>
+    <div class="stat-card"><div class="stat-num" id="statSemana">—</div><div class="stat-label">Esta semana</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-box" id="buscador"
+           placeholder="🔍 Buscar por nombre, documento, teléfono…">
+    <input type="date" class="filtro-fecha" id="filtroFecha" title="Filtrar por fecha">
+    <button class="btn-top" onclick="limpiarFiltros()" style="background:var(--azul-light);color:var(--azul-dark);">✕ Limpiar</button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="loading" id="loading"><div class="spinner"></div>Cargando…</div>
+    <table id="tabla" style="display:none;">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Nombre Paciente</th>
+          <th>Documento</th>
+          <th>Teléfono</th>
+          <th>Familiar</th>
+          <th>Fórmula</th>
+          <th>Ver</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none;">No se encontraron registros.</div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalNombre">Detalle</h2>
+      <button class="btn-cerrar" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain:"helse-entregas.firebaseapp.com",
+  projectId:"helse-entregas",
+  storageBucket:"helse-entregas.firebasestorage.app",
+  messagingSenderId:"1086193469864",
+  appId:"1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+});
+const db=firebase.firestore(), auth=firebase.auth();
+
+let registros=[], registroActual=null;
+
+// ── AUTH ──
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    // Verificar que tenga acceso (mismo sistema de usuarios del dashboard)
+    const snap=await db.collection('usuarios').doc(user.uid).get();
+    if(!snap.exists){auth.signOut();return;}
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    document.getElementById('userEmail').textContent=user.email;
+    cargarDatos();
+  } else {
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('appScreen').style.display='none';
+  }
+});
+
+function iniciarSesion(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginError');
+  if(!email||!pass){err.textContent='Completa todos los campos.';err.style.display='block';return;}
+  err.style.display='none';
+  auth.signInWithEmailAndPassword(email,pass).catch(e=>{
+    err.textContent=e.code==='auth/invalid-credential'?'Correo o contraseña incorrectos.':'Error: '+e.message;
+    err.style.display='block';
+  });
+}
+function cerrarSesion(){ auth.signOut(); }
+
+// ── CARGA DE DATOS ──
+async function cargarDatos(){
+  try{
+    const snap=await db.collection('capturas_mipres').orderBy('fecha','desc').get();
+    registros=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderTabla(registros);
+    actualizarStats(registros);
+    document.getElementById('loading').style.display='none';
+  }catch(e){
+    document.getElementById('loading').innerHTML='❌ Error al cargar: '+e.message;
+  }
+}
+
+// ── STATS ──
+function actualizarStats(lista){
+  const ahora=new Date();
+  const hoy=ahora.toDateString();
+  const inicioSemana=new Date(ahora); inicioSemana.setDate(ahora.getDate()-ahora.getDay());
+  document.getElementById('statTotal').textContent=lista.length;
+  document.getElementById('statHoy').textContent=lista.filter(r=>{
+    const d=r.fecha?.toDate?.(); return d&&d.toDateString()===hoy;
+  }).length;
+  document.getElementById('statSemana').textContent=lista.filter(r=>{
+    const d=r.fecha?.toDate?.(); return d&&d>=inicioSemana;
+  }).length;
+}
+
+// ── RENDER ──
+function formatFecha(ts){
+  if(!ts)return'—';
+  const d=ts.toDate?ts.toDate():new Date(ts);
+  return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'})+
+    ' '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderTabla(lista){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  if(!lista.length){
+    document.getElementById('tabla').style.display='none';
+    document.getElementById('empty').style.display='block';
+    return;
+  }
+  document.getElementById('tabla').style.display='table';
+  document.getElementById('empty').style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const tieneFormula=!!r.formula_imagen;
+    tr.innerHTML=
+      '<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td><span class="badge">'+(r.tipo_documento||'')+' '+(r.num_documento||'—')+'</span></td>'+
+      '<td>'+(r.telefono||'—')+'</td>'+
+      '<td style="color:var(--gris);">'+(r.familiar||'—')+'</td>'+
+      '<td style="text-align:center;">'+(tieneFormula?'📋 Sí':'—')+'</td>'+
+      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// ── BÚSQUEDA Y FILTROS ──
+function filtrar(){
+  const q=document.getElementById('buscador').value.toLowerCase();
+  const fecha=document.getElementById('filtroFecha').value;
+  let lista=registros.filter(r=>{
+    const texto=(r.nombre||'')+' '+(r.num_documento||'')+' '+(r.telefono||'')+' '+(r.familiar||'');
+    return texto.toLowerCase().includes(q);
+  });
+  if(fecha){
+    lista=lista.filter(r=>{
+      const d=r.fecha?.toDate?.();
+      return d&&d.toISOString().slice(0,10)===fecha;
+    });
+  }
+  renderTabla(lista);
+}
+
+document.getElementById('buscador').addEventListener('input',filtrar);
+document.getElementById('filtroFecha').addEventListener('change',filtrar);
+function limpiarFiltros(){
+  document.getElementById('buscador').value='';
+  document.getElementById('filtroFecha').value='';
+  renderTabla(registros);
+}
+
+// ── MODAL ──
+function abrirModal(id){
+  const r=registros.find(x=>x.id===id); if(!r)return;
+  registroActual=r;
+  document.getElementById('modalNombre').textContent=r.nombre||'Detalle';
+  const campos=[
+    ['Fecha captura',formatFecha(r.fecha)],
+    ['Nombre paciente',r.nombre],
+    ['Tipo documento',r.tipo_documento],
+    ['N° documento',r.num_documento],
+    ['Teléfono',r.telefono],
+    ['Familiar / acudiente',r.familiar||'—'],
+    ['Nombre archivo',r.formula_nombre||'—'],
+  ];
+  let html=campos.map(([k,v])=>
+    '<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>'
+  ).join('');
+  if(r.formula_imagen){
+    html+='<div class="detalle-fila" style="flex-direction:column;">'+
+      '<span class="detalle-key" style="margin-bottom:8px;">Fórmula MIPRES</span>'+
+      '<img src="'+r.formula_imagen+'" class="formula-img" alt="Fórmula" onclick="window.open(this.src)">'+
+      '</div>';
+  }
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ── CSV ──
+function exportarCSV(){
+  if(!registros.length)return alert('No hay registros.');
+  const cols=['fecha','nombre','tipo_documento','num_documento','telefono','familiar','formula_nombre'];
+  const cabecera=['Fecha','Nombre','Tipo Doc','N° Documento','Teléfono','Familiar','Archivo Fórmula'];
+  const rows=registros.map(r=>cols.map(c=>'"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(','));
+  const blob=new Blob(['\ufeff'+[cabecera.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='capturas_mipres_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
