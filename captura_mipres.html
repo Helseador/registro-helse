@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -137,24 +137,24 @@ input::placeholder{color:#9EAFAD;}
         <input type="text" id="familiar" placeholder="Nombre del familiar o acudiente">
       </div>
 
-      <!-- Datos del médico -->
-      <div class="section-label">Datos del Médico</div>
+      <!-- Datos del prescriptor -->
+      <div class="section-label">Datos del prescriptor</div>
 
-      <div class="campo" id="cNombreMedico">
-        <label class="campo-label" for="nombreMedico">Nombre prescriptor(a) <span class="req">*</span></label>
-        <input type="text" id="nombreMedico" placeholder="Nombre completo del prescriptor(a)">
+      <div class="campo" id="cNombreprescriptor">
+        <label class="campo-label" for="nombreprescriptor">Nombre prescriptor(a) <span class="req">*</span></label>
+        <input type="text" id="nombreprescriptor" placeholder="Nombre completo del prescriptor(a)">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
-      <div class="campo" id="cCorreoMedico">
-        <label class="campo-label" for="correoMedico">Correo del médico <span class="req">*</span></label>
-        <input type="text" id="correoMedico" placeholder="correo@ejemplo.com">
+      <div class="campo" id="cCorreoprescriptor">
+        <label class="campo-label" for="correoprescriptor">Correo del prescriptor <span class="req">*</span></label>
+        <input type="text" id="correoprescriptor" placeholder="correo@ejemplo.com">
         <div class="error-msg">Ingrese un correo válido.</div>
       </div>
 
-      <div class="campo" id="cTelefonoMedico">
-        <label class="campo-label" for="telefonoMedico">Teléfono del médico <span class="req">*</span></label>
-        <input type="tel" id="telefonoMedico" placeholder="Ej. 3001234567">
+      <div class="campo" id="cTelefonoprescriptor">
+        <label class="campo-label" for="telefonoprescriptor">Teléfono del prescriptor <span class="req">*</span></label>
+        <input type="tel" id="telefonoprescriptor" placeholder="Ej. 3001234567">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
@@ -308,9 +308,9 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['cTipoDoc', () => !document.getElementById('tipoDoc').value],
     ['cNumDoc',  () => !txt('numDoc')],
     ['cTelefono',() => !txt('telefono')],
-    ['cNombreMedico',  () => !txt('nombreMedico')],
-    ['cCorreoMedico',  () => { const v=txt('correoMedico'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
-    ['cTelefonoMedico',() => !txt('telefonoMedico')],
+    ['cNombreprescriptor',  () => !txt('nombreprescriptor')],
+    ['cCorreoprescriptor',  () => { const v=txt('correoprescriptor'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
+    ['cTelefonoprescriptor',() => !txt('telefonoprescriptor')],
     ['cEspecialidad',  () => !txt('especialidad')],
     ['cIps',           () => !txt('ips')],
     ['cFoto',          () => !archivoFoto],
@@ -332,9 +332,9 @@ document.getElementById('form').addEventListener('submit', async e => {
       num_documento:  txt('numDoc'),
       telefono:       txt('telefono'),
       familiar:       txt('familiar'),
-      nombre_medico:  txt('nombreMedico'),
-      correo_medico:  txt('correoMedico'),
-      telefono_medico:txt('telefonoMedico'),
+      nombre_prescriptor:  txt('nombreprescriptor'),
+      correo_prescriptor:  txt('correoprescriptor'),
+      telefono_prescriptor:txt('telefonoprescriptor'),
       especialidad:   txt('especialidad'),
       ips:            txt('ips'),
       formula_nombre: archivoFoto.name,
@@ -363,3 +363,4 @@ window.nuevoRegistro = function() {
 </script>
 </body>
 </html>
+
