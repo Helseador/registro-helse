@@ -141,8 +141,8 @@ input::placeholder{color:#9EAFAD;}
       <div class="section-label">Datos del Médico</div>
 
       <div class="campo" id="cNombreMedico">
-        <label class="campo-label" for="nombreMedico">Nombre del médico <span class="req">*</span></label>
-        <input type="text" id="nombreMedico" placeholder="Nombre completo del médico">
+        <label class="campo-label" for="nombreMedico">Nombre prescriptor(a) <span class="req">*</span></label>
+        <input type="text" id="nombreMedico" placeholder="Nombre completo del prescriptor(a)">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
@@ -155,12 +155,6 @@ input::placeholder{color:#9EAFAD;}
       <div class="campo" id="cTelefonoMedico">
         <label class="campo-label" for="telefonoMedico">Teléfono del médico <span class="req">*</span></label>
         <input type="tel" id="telefonoMedico" placeholder="Ej. 3001234567">
-        <div class="error-msg">Este campo es obligatorio.</div>
-      </div>
-
-      <div class="campo" id="cFormulador">
-        <label class="campo-label" for="formulador">Nombre del formulador <span class="req">*</span></label>
-        <input type="text" id="formulador" placeholder="Nombre de quien formula">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
@@ -317,7 +311,6 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['cNombreMedico',  () => !txt('nombreMedico')],
     ['cCorreoMedico',  () => { const v=txt('correoMedico'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
     ['cTelefonoMedico',() => !txt('telefonoMedico')],
-    ['cFormulador',    () => !txt('formulador')],
     ['cEspecialidad',  () => !txt('especialidad')],
     ['cIps',           () => !txt('ips')],
     ['cFoto',          () => !archivoFoto],
@@ -342,7 +335,6 @@ document.getElementById('form').addEventListener('submit', async e => {
       nombre_medico:  txt('nombreMedico'),
       correo_medico:  txt('correoMedico'),
       telefono_medico:txt('telefonoMedico'),
-      formulador:     txt('formulador'),
       especialidad:   txt('especialidad'),
       ips:            txt('ips'),
       formula_nombre: archivoFoto.name,
