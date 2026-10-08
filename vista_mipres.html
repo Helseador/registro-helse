@@ -65,6 +65,8 @@ td.nombre{font-weight:600;}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--azul-light);color:var(--azul-dark);}
 .btn-ver{background:var(--azul-light);color:var(--azul-dark);border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;}
 .btn-ver:hover{background:var(--azul);color:white;}
+.btn-eliminar{background:#FFEBEE;color:var(--rojo);border:none;border-radius:7px;padding:5px 9px;font-size:13px;cursor:pointer;transition:all 0.2s;}
+.btn-eliminar:hover{background:var(--rojo);color:white;}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
@@ -266,7 +268,10 @@ function renderTabla(lista){
       '<td>'+(r.telefono||'—')+'</td>'+
       '<td style="color:var(--gris);">'+(r.familiar||'—')+'</td>'+
       '<td style="text-align:center;">'+(tieneFormula?'📋 Sí':'—')+'</td>'+
-      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button></td>';
+      '<td style="display:flex;gap:6px;align-items:center;">'+
+        '<button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button>'+
+        '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+( r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'+
+      '</td>';
     tbody.appendChild(tr);
   });
 }
@@ -319,10 +324,26 @@ function abrirModal(id){
       '<img src="'+r.formula_imagen+'" class="formula-img" alt="Fórmula" onclick="window.open(this.src)">'+
       '</div>';
   }
+  html+='<div style="margin-top:16px;text-align:right;">'+
+    '<button onclick="eliminarRegistro(\''+r.id+'\',\''+( r.nombre||'').replace(/'/g,'')+'\')" '+
+    'style="background:#FFEBEE;color:var(--rojo);border:none;border-radius:8px;padding:9px 18px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">'+
+    '🗑️ Eliminar registro</button></div>';
   document.getElementById('modalBody').innerHTML=html;
   document.getElementById('modalOverlay').classList.add('open');
 }
 function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ── ELIMINAR ──
+async function eliminarRegistro(id, nombre){
+  if(!confirm('¿Eliminar el registro de "'+nombre+'"?\nEsta acción no se puede deshacer.')) return;
+  try{
+    await db.collection('capturas_mipres').doc(id).delete();
+    registros = registros.filter(r => r.id !== id);
+    filtrar();
+    actualizarStats(registros);
+    cerrarModal();
+  }catch(e){ alert('❌ Error al eliminar: '+e.message); }
+}
 
 // ── CSV ──
 function exportarCSV(){
