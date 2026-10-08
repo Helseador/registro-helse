@@ -158,6 +158,24 @@ input::placeholder{color:#9EAFAD;}
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
+      <div class="campo" id="cFormulador">
+        <label class="campo-label" for="formulador">Nombre del formulador <span class="req">*</span></label>
+        <input type="text" id="formulador" placeholder="Nombre de quien formula">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="campo" id="cEspecialidad">
+        <label class="campo-label" for="especialidad">Especialidad <span class="req">*</span></label>
+        <input type="text" id="especialidad" placeholder="Ej. Oncología, Medicina Interna…">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="campo" id="cIps">
+        <label class="campo-label" for="ips">IPS <span class="req">*</span></label>
+        <input type="text" id="ips" placeholder="Nombre de la institución o clínica">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
       <!-- Foto fórmula -->
       <div class="section-label">Fórmula MIPRES</div>
 
@@ -299,6 +317,9 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['cNombreMedico',  () => !txt('nombreMedico')],
     ['cCorreoMedico',  () => { const v=txt('correoMedico'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
     ['cTelefonoMedico',() => !txt('telefonoMedico')],
+    ['cFormulador',    () => !txt('formulador')],
+    ['cEspecialidad',  () => !txt('especialidad')],
+    ['cIps',           () => !txt('ips')],
     ['cFoto',          () => !archivoFoto],
   ];
   checks.forEach(([id, fn]) => { if(fn()) { document.getElementById(id).classList.add('invalid'); ok = false; } });
@@ -321,6 +342,9 @@ document.getElementById('form').addEventListener('submit', async e => {
       nombre_medico:  txt('nombreMedico'),
       correo_medico:  txt('correoMedico'),
       telefono_medico:txt('telefonoMedico'),
+      formulador:     txt('formulador'),
+      especialidad:   txt('especialidad'),
+      ips:            txt('ips'),
       formula_nombre: archivoFoto.name,
       formula_imagen: fotoBase64,
       token:          linkToken,
