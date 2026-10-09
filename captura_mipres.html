@@ -138,6 +138,12 @@ input::placeholder{color:#9EAFAD;}
       </div>
 
       <!-- Datos del prescriptor -->
+      <div class="campo" id="cEps">
+        <label class="campo-label" for="eps">EPS <span class="req">*</span></label>
+        <input type="text" id="eps" placeholder="Nombre de la EPS">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
       <div class="section-label">Datos del prescriptor</div>
 
       <div class="campo" id="cNombreprescriptor">
@@ -321,6 +327,7 @@ document.getElementById('form').addEventListener('submit', async e => {
 
   const checks = [
     ['cNombre',  () => !txt('nombre')],
+    ['cEps',     () => !txt('eps')],
     ['cTipoDoc', () => !document.getElementById('tipoDoc').value],
     ['cNumDoc',  () => !txt('numDoc')],
     ['cTelefono',() => !txt('telefono')],
@@ -349,6 +356,7 @@ document.getElementById('form').addEventListener('submit', async e => {
       num_documento:  txt('numDoc'),
       telefono:       txt('telefono'),
       familiar:       txt('familiar'),
+      eps:            txt('eps'),
       nombre_prescriptor:  txt('nombreprescriptor'),
       correo_prescriptor:  txt('correoprescriptor'),
       telefono_prescriptor:txt('telefonoprescriptor'),

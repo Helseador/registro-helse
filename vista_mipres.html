@@ -315,6 +315,7 @@ function abrirModal(id){
     ['N° documento',r.num_documento],
     ['Teléfono',r.telefono],
     ['Familiar / acudiente',r.familiar||'—'],
+    ['EPS',r.eps||'—'],
     ['Nombre prescriptor(a)',r.nombre_prescriptor||'—'],
     ['Correo del prescriptor',r.correo_prescriptor||'—'],
     ['Teléfono del prescriptor',r.telefono_prescriptor||'—'],
@@ -364,8 +365,8 @@ async function eliminarRegistro(id, nombre){
 // ── CSV ──
 function exportarCSV(){
   if(!registros.length)return alert('No hay registros.');
-  const cols=['fecha','nombre','tipo_documento','num_documento','telefono','familiar','nombre_medico','correo_medico','telefono_medico','especialidad','ips','nutritional','formula_nombre'];
-  const cabecera=['Fecha','Nombre','Tipo Doc','N° Documento','Teléfono','Familiar','Prescriptor(a)','Correo Prescriptor','Tel. Prescriptor','Especialidad','IPS','Nutritional Advance','Archivo Fórmula'];
+  const cols=['fecha','nombre','tipo_documento','num_documento','telefono','eps','familiar','nombre_prescriptor','correo_prescriptor','telefono_prescriptor','especialidad','ips','nutritional','formula_nombre'];
+  const cabecera=['Fecha','Nombre','Tipo Doc','N° Documento','Teléfono','EPS','Familiar','Prescriptor(a)','Correo Prescriptor','Tel. Prescriptor','Especialidad','IPS','Nutritional Advance','Archivo Fórmula'];
   const rows=registros.map(r=>cols.map(c=>'"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(','));
   const blob=new Blob(['\ufeff'+[cabecera.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
