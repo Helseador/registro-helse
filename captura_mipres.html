@@ -170,6 +170,22 @@ input::placeholder{color:#9EAFAD;}
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
+      <div class="campo" id="cNutritional">
+        <label class="campo-label">Nutritional Advance <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select id="nutritional">
+            <option value="" disabled selected>Seleccione…</option>
+            <option>Angela Bohorquez</option>
+            <option>Pablo Silva</option>
+            <option>Carolina Ardila</option>
+            <option>Angelica Bautista</option>
+            <option>Isabella Caro</option>
+            <option>Johana Florez</option>
+          </select>
+        </div>
+        <div class="error-msg">Seleccione una opción.</div>
+      </div>
+
       <!-- Foto fórmula -->
       <div class="section-label">Fórmula MIPRES</div>
 
@@ -313,6 +329,7 @@ document.getElementById('form').addEventListener('submit', async e => {
     ['cTelefonoprescriptor',() => !txt('telefonoprescriptor')],
     ['cEspecialidad',  () => !txt('especialidad')],
     ['cIps',           () => !txt('ips')],
+    ['cNutritional',   () => !document.getElementById('nutritional').value],
     ['cFoto',          () => !archivoFoto],
   ];
   checks.forEach(([id, fn]) => { if(fn()) { document.getElementById(id).classList.add('invalid'); ok = false; } });
@@ -337,6 +354,7 @@ document.getElementById('form').addEventListener('submit', async e => {
       telefono_prescriptor:txt('telefonoprescriptor'),
       especialidad:   txt('especialidad'),
       ips:            txt('ips'),
+      nutritional:    document.getElementById('nutritional').value,
       formula_nombre: archivoFoto.name,
       formula_imagen: fotoBase64,
       token:          linkToken,
