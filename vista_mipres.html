@@ -67,6 +67,33 @@ td.nombre{font-weight:600;}
 .btn-ver:hover{background:var(--azul);color:white;}
 .btn-eliminar{background:#FFEBEE;color:var(--rojo);border:none;border-radius:7px;padding:5px 9px;font-size:13px;cursor:pointer;transition:all 0.2s;}
 .btn-eliminar:hover{background:var(--rojo);color:white;}
+.btn-gestion{background:#E8F5E9;color:#2E7D32;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-gestion:hover{background:#2E7D32;color:white;}
+.btn-gestion.tiene-gestion{background:#2E7D32;color:white;}
+
+/* MODAL GESTIÓN */
+.modal-gestion{background:white;border-radius:18px;width:100%;max-width:860px;max-height:94vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);}
+.modal-gestion .modal-header{background:#2E7D32;border-radius:18px 18px 0 0;}
+.g-body{padding:20px 24px 28px;}
+.g-section{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2E7D32;border-bottom:2px solid #E8F5E9;padding-bottom:6px;margin:22px 0 14px;}
+.g-section:first-of-type{margin-top:0;}
+.g-grid{display:grid;gap:12px;margin-bottom:4px;}
+.g-grid-2{grid-template-columns:1fr 1fr;}
+.g-grid-3{grid-template-columns:1fr 1fr 1fr;}
+.g-grid-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.g-campo label{font-size:11px;font-weight:600;color:var(--gris);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;}
+.g-campo input,.g-campo select,.g-campo textarea{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#FAFFFE;outline:none;transition:border-color 0.2s;appearance:none;}
+.g-campo input:focus,.g-campo select:focus,.g-campo textarea:focus{border-color:#2E7D32;box-shadow:0 0 0 3px rgba(46,125,50,0.10);}
+.g-campo textarea{resize:vertical;min-height:60px;}
+.g-campo .sel-wrap{position:relative;}
+.g-campo .sel-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--gris);pointer-events:none;font-size:12px;}
+.g-campo input[readonly]{background:#F5F5F5;color:var(--gris);cursor:default;}
+.btn-guardar-gestion{background:#2E7D32;color:white;border:none;border-radius:10px;padding:12px 36px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(46,125,50,0.3);}
+.btn-guardar-gestion:hover{background:#1B5E20;}
+.btn-guardar-gestion:disabled{opacity:0.6;cursor:not-allowed;}
+.g-guardado{display:none;color:#2E7D32;font-size:13px;font-weight:600;margin-left:12px;}
+
+@media(max-width:700px){.g-grid-2,.g-grid-3,.g-grid-4{grid-template-columns:1fr;}}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
@@ -157,6 +184,140 @@ td.nombre{font-weight:600;}
       <tbody id="tbody"></tbody>
     </table>
     <div class="empty" id="empty" style="display:none;">No se encontraron registros.</div>
+  </div>
+</div>
+
+<!-- MODAL GESTIÓN -->
+<div class="modal-overlay" id="gestionOverlay" onclick="if(event.target===this)cerrarGestion()" style="z-index:300;">
+  <div class="modal-gestion">
+    <div class="modal-header">
+      <h2 id="gestionTitulo">Gestión del Paciente</h2>
+      <button class="btn-cerrar" onclick="cerrarGestion()">✕</button>
+    </div>
+    <div class="g-body">
+      <div id="gestionForm">
+
+        <!-- IDENTIFICACIÓN -->
+        <div class="g-section">Identificación del Paciente</div>
+        <div class="g-grid g-grid-4">
+          <div class="g-campo"><label>Tipo Doc</label><input id="g_tipo_doc" readonly></div>
+          <div class="g-campo"><label># Documento</label><input id="g_num_documento" readonly></div>
+          <div class="g-campo"><label>Nombre</label><input id="g_nombre" readonly></div>
+          <div class="g-campo"><label>Teléfono</label><input id="g_telefono" readonly></div>
+        </div>
+
+        <!-- DATOS GENERALES -->
+        <div class="g-section">Datos Generales</div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Estado</label><input id="g_estado" placeholder="Estado del paciente"></div>
+          <div class="g-campo"><label>Ciudad</label><input id="g_ciudad" placeholder="Ciudad"></div>
+          <div class="g-campo"><label>EPS</label><input id="g_eps" placeholder="EPS"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Régimen</label>
+            <div class="sel-wrap"><select id="g_regimen"><option value="">Seleccione…</option><option>Contributivo</option><option>Subsidiado</option><option>Especial</option><option>Excepción</option></select></div>
+          </div>
+          <div class="g-campo"><label>Visitador Médico</label><input id="g_visitador" placeholder="Visitador médico"></div>
+          <div class="g-campo"><label>IPS</label><input id="g_ips" placeholder="IPS"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Profesional que Prescribe</label><input id="g_profesional" placeholder="Nombre del profesional"></div>
+          <div class="g-campo"><label>Tipo MIPRES</label><input id="g_tipo_mipres" placeholder="Tipo de MIPRES"></div>
+          <div class="g-campo"><label>Renovación</label>
+            <div class="sel-wrap"><select id="g_renovacion"><option value="">Seleccione…</option><option>Sí</option><option>No</option></select></div>
+          </div>
+        </div>
+        <div class="g-grid g-grid-2">
+          <div class="g-campo"><label>Fecha para Gestión Renovación</label><input type="date" id="g_fecha_renovacion"></div>
+          <div class="g-campo"><label># MIPRES Generado por Médico / Nutricionista</label><input id="g_num_mipres" placeholder="Número MIPRES"></div>
+        </div>
+
+        <!-- PROGRAMA P2D -->
+        <div class="g-section">Programa P2D</div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Fecha Ingreso a P2D</label><input type="date" id="g_fecha_p2d"></div>
+          <div class="g-campo"><label>Latas Totales</label><input type="number" id="g_latas_totales" placeholder="0" min="0"></div>
+          <div class="g-campo"><label>Latas Mes</label><input type="number" id="g_latas_mes" placeholder="0" min="0"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Tiempo Prescripción (días)</label><input type="number" id="g_tiempo_prescripcion" placeholder="0" min="0"></div>
+          <div class="g-campo"><label>Kit Inicio</label>
+            <div class="sel-wrap"><select id="g_kit_inicio"><option value="">Seleccione…</option><option>Sí</option><option>No</option></select></div>
+          </div>
+          <div class="g-campo"><label>Donación</label>
+            <div class="sel-wrap"><select id="g_donacion"><option value="">Seleccione…</option><option>Sí</option><option>No</option></select></div>
+          </div>
+        </div>
+        <div class="g-grid g-grid-2">
+          <div class="g-campo"><label># Latas Donación</label><input type="number" id="g_latas_donacion" placeholder="0" min="0"></div>
+          <div class="g-campo"><label>Operador Logístico Encargado</label><input id="g_operador" placeholder="Nombre del operador"></div>
+        </div>
+
+        <!-- APROBACIONES -->
+        <div class="g-section">Aprobaciones</div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>MIPRES Aprobado en IPS</label>
+            <div class="sel-wrap"><select id="g_aprobado_ips"><option value="">Seleccione…</option><option>Sí</option><option>No</option><option>Pendiente</option></select></div>
+          </div>
+          <div class="g-campo"><label>Estado Aprobación IPS</label><input id="g_estado_aprobacion_ips" placeholder="Estado"></div>
+          <div class="g-campo"><label>Fecha Aprobación IPS</label><input type="date" id="g_fecha_aprobacion_ips"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>MIPRES Aprobado EPS & Direccionado</label>
+            <div class="sel-wrap"><select id="g_aprobado_eps"><option value="">Seleccione…</option><option>Sí</option><option>No</option><option>Pendiente</option></select></div>
+          </div>
+          <div class="g-campo"><label>Estado Aprobación EPS</label><input id="g_estado_aprobacion_eps" placeholder="Estado"></div>
+          <div class="g-campo"><label>Fecha Aprobación EPS</label><input type="date" id="g_fecha_aprobacion_eps"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label># Días Aprobación IPS</label><input type="number" id="g_dias_aprobacion_ips" placeholder="0" min="0"></div>
+          <div class="g-campo"><label># Días Aprobación EPS</label><input type="number" id="g_dias_aprobacion_eps" placeholder="0" min="0"></div>
+          <div class="g-campo"><label># Días Entrega 1</label><input type="number" id="g_dias_entrega1" placeholder="0" min="0"></div>
+        </div>
+
+        <!-- ENTREGAS -->
+        <div class="g-section">Entregas</div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Entregado de OPL al Paciente</label>
+            <div class="sel-wrap"><select id="g_entregado_opl"><option value="">Seleccione…</option><option>Sí</option><option>No</option></select></div>
+          </div>
+          <div class="g-campo"><label>Estado Entrega 1</label><input id="g_estado_entrega1" placeholder="Estado"></div>
+          <div class="g-campo"><label>Fecha Próxima Entrega</label><input type="date" id="g_fecha_proxima_entrega"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Fecha de Entrega 1</label><input type="date" id="g_fecha_entrega1"></div>
+          <div class="g-campo"><label>Fecha de Entrega 2</label><input type="date" id="g_fecha_entrega2"></div>
+          <div class="g-campo"><label>Fecha de Entrega 3</label><input type="date" id="g_fecha_entrega3"></div>
+        </div>
+        <div class="g-grid g-grid-3">
+          <div class="g-campo"><label>Fecha de Entrega 4</label><input type="date" id="g_fecha_entrega4"></div>
+          <div class="g-campo"><label>Fecha de Entrega 5</label><input type="date" id="g_fecha_entrega5"></div>
+          <div class="g-campo"><label>Fecha de Entrega 6</label><input type="date" id="g_fecha_entrega6"></div>
+        </div>
+
+        <!-- ESTACIONES -->
+        <div class="g-section">Estaciones de Entrega</div>
+        <div class="g-grid g-grid-4">
+          <div class="g-campo"><label>Estación 1</label><input id="g_estacion1" placeholder="Estación 1"></div>
+          <div class="g-campo"><label>Estación 2</label><input id="g_estacion2" placeholder="Estación 2"></div>
+          <div class="g-campo"><label>Estación 3</label><input id="g_estacion3" placeholder="Estación 3"></div>
+          <div class="g-campo"><label>Estación Final</label><input id="g_estacion_final" placeholder="Estación final"></div>
+        </div>
+
+        <!-- NOVEDADES -->
+        <div class="g-section">Novedades y Observaciones</div>
+        <div class="g-grid g-grid-1" style="grid-template-columns:1fr;">
+          <div class="g-campo"><label>Novedad</label><textarea id="g_novedad" placeholder="Describa la novedad…"></textarea></div>
+          <div class="g-campo"><label>Acción a Tomar</label><textarea id="g_accion" placeholder="Acción a tomar…"></textarea></div>
+          <div class="g-campo"><label>Observación Programa de Pacientes / Neuro Vital</label><textarea id="g_observacion" placeholder="Observaciones del programa…"></textarea></div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;align-items:center;">
+          <button class="btn-guardar-gestion" id="btnGuardarGestion" onclick="guardarGestion()">💾 Guardar Gestión</button>
+          <span class="g-guardado" id="gGuardado">✅ Guardado correctamente</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -270,9 +431,10 @@ function renderTabla(lista){
       '<td style="color:var(--gris);">'+(r.familiar||'—')+'</td>'+
       '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+(r.nombre_prescriptor||'')+'">'+( r.nombre_prescriptor||'—')+'</td>'+
       '<td style="text-align:center;">'+(tieneFormula?'📋 Sí':'—')+'</td>'+
-      '<td style="display:flex;gap:6px;align-items:center;">'+
+      '<td style="display:flex;gap:5px;align-items:center;">'+
         '<button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button>'+
-        '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+( r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'+
+        '<button class="btn-gestion'+(r.gestion?' tiene-gestion':'')+'" onclick="abrirGestion(\''+r.id+'\')">'+(r.gestion?'✅ Gestión':'📋 Gestión')+'</button>'+
+        '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+(r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'+
       '</td>';
     tbody.appendChild(tr);
   });
@@ -349,6 +511,79 @@ function abrirModal(id){
   document.getElementById('modalOverlay').classList.add('open');
 }
 function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ── GESTIÓN ──
+let gestionActualId = null;
+
+const G_CAMPOS = [
+  'estado','ciudad','eps','regimen','visitador','ips','profesional','tipo_mipres','renovacion',
+  'fecha_renovacion','num_mipres','fecha_p2d','latas_totales','latas_mes','tiempo_prescripcion',
+  'kit_inicio','donacion','latas_donacion','operador',
+  'aprobado_ips','estado_aprobacion_ips','fecha_aprobacion_ips',
+  'aprobado_eps','estado_aprobacion_eps','fecha_aprobacion_eps',
+  'dias_aprobacion_ips','dias_aprobacion_eps','dias_entrega1',
+  'entregado_opl','estado_entrega1','fecha_proxima_entrega',
+  'fecha_entrega1','fecha_entrega2','fecha_entrega3','fecha_entrega4','fecha_entrega5','fecha_entrega6',
+  'estacion1','estacion2','estacion3','estacion_final',
+  'novedad','accion','observacion',
+  'tipo_doc','num_documento','nombre','telefono'
+];
+
+function abrirGestion(id){
+  const r = registros.find(x => x.id === id);
+  if(!r) return;
+  gestionActualId = id;
+  document.getElementById('gestionTitulo').textContent = 'Gestión · ' + (r.nombre || '');
+
+  // Pre-llenar campos de solo lectura desde la captura
+  document.getElementById('g_tipo_doc').value      = r.tipo_documento || '';
+  document.getElementById('g_num_documento').value = r.num_documento  || '';
+  document.getElementById('g_nombre').value         = r.nombre         || '';
+  document.getElementById('g_telefono').value       = r.telefono       || '';
+
+  // Cargar datos de gestión guardados
+  const g = r.gestion || {};
+  G_CAMPOS.forEach(c => {
+    const el = document.getElementById('g_' + c);
+    if(el && g[c] !== undefined) el.value = g[c];
+    else if(el && !['tipo_doc','num_documento','nombre','telefono'].includes(c)) el.value = '';
+  });
+
+  document.getElementById('gGuardado').style.display = 'none';
+  document.getElementById('gestionOverlay').classList.add('open');
+}
+
+function cerrarGestion(){
+  document.getElementById('gestionOverlay').classList.remove('open');
+  gestionActualId = null;
+}
+
+async function guardarGestion(){
+  if(!gestionActualId) return;
+  const btn = document.getElementById('btnGuardarGestion');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const gestion = {};
+  G_CAMPOS.forEach(c => {
+    const el = document.getElementById('g_' + c);
+    if(el) gestion[c] = el.value;
+  });
+  gestion.ultima_actualizacion = new Date().toISOString();
+
+  try{
+    await db.collection('capturas_mipres').doc(gestionActualId).update({ gestion });
+    // Actualizar en memoria
+    const idx = registros.findIndex(r => r.id === gestionActualId);
+    if(idx > -1) registros[idx].gestion = gestion;
+    filtrar();
+    btn.disabled = false; btn.textContent = '💾 Guardar Gestión';
+    const ok = document.getElementById('gGuardado');
+    ok.style.display = 'inline'; setTimeout(() => ok.style.display = 'none', 3000);
+  }catch(e){
+    btn.disabled = false; btn.textContent = '💾 Guardar Gestión';
+    alert('❌ Error al guardar: ' + e.message);
+  }
+}
 
 // ── ELIMINAR ──
 async function eliminarRegistro(id, nombre){
