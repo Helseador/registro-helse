@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vista Dotación & Herramientas – Helse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--verde-light:#E8F5E9;--naranja:#BF360C;--naranja-light:#FBE9E7;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B0C4DE;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;}
+
+/* LOGIN */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0D2B5E 0%,#1B3A6B 60%,#2E7D32 100%);}
+.login-card{background:white;border-radius:20px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+.login-logo{text-align:center;margin-bottom:18px;}
+.login-logo img{height:48px;}
+.login-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);text-align:center;margin-bottom:4px;}
+.login-sub{font-size:12.5px;color:var(--gris);text-align:center;margin-bottom:22px;}
+.login-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;transition:border-color 0.2s;}
+.login-input:focus{border-color:var(--azul);}
+.btn-login{width:100%;background:var(--azul);color:white;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s;}
+.btn-login:hover{background:var(--azul-dark);}
+.login-error{color:var(--rojo);font-size:12.5px;text-align:center;margin-top:8px;display:none;}
+
+/* APP */
+.app{display:none;}
+
+/* TOPBAR */
+.topbar{background:var(--azul);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(27,58,107,0.2);}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-left img{height:32px;background:white;border-radius:6px;padding:3px 8px;}
+.topbar h1{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.btn-top{background:white;color:var(--azul-dark);border:none;border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-top:hover{background:var(--azul-light);}
+.btn-top.danger{background:#FFEBEE;color:var(--rojo);}
+.btn-top.danger:hover{background:var(--rojo);color:white;}
+
+/* TABS */
+.tabs{display:flex;background:white;border-bottom:2px solid var(--azul-light);padding:0 24px;}
+.tab{padding:13px 20px;font-size:13px;font-weight:600;color:var(--gris);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.2s;white-space:nowrap;}
+.tab.active.dot{color:var(--verde);border-bottom-color:var(--verde);}
+.tab.active.her{color:var(--naranja);border-bottom-color:var(--naranja);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;padding:18px 24px 0;}
+.stat-card{background:white;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(27,58,107,0.08);}
+.stat-card.dot{border-top:3px solid var(--verde);}
+.stat-card.her{border-top:3px solid var(--naranja);}
+.stat-num{font-size:28px;font-weight:700;}
+.stat-num.dot{color:var(--verde);}
+.stat-num.her{color:var(--naranja);}
+.stat-label{font-size:12px;color:var(--gris);margin-top:3px;}
+
+/* TOOLBAR */
+.toolbar{padding:14px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.search-box{flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:white;}
+.search-box:focus{border-color:var(--azul);}
+
+/* TABLE */
+.table-wrap{padding:0 24px 40px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(27,58,107,0.08);font-size:13px;}
+thead{color:white;}
+thead.dot{background:var(--verde);}
+thead.her{background:var(--naranja);}
+thead th{padding:11px 13px;text-align:left;font-weight:600;font-size:11px;letter-spacing:0.5px;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--gris-light);transition:background 0.15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--azul-bg);}
+td{padding:10px 13px;vertical-align:middle;}
+td.nombre{font-weight:600;}
+.btn-ver{border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-ver.dot{background:var(--verde-light);color:var(--verde);}
+.btn-ver.dot:hover{background:var(--verde);color:white;}
+.btn-ver.her{background:var(--naranja-light);color:var(--naranja);}
+.btn-ver.her:hover{background:var(--naranja);color:white;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:18px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.modal-header{color:white;padding:16px 20px;border-radius:18px 18px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-header.dot{background:var(--verde);}
+.modal-header.her{background:var(--naranja);}
+.modal-header h2{font-family:'DM Serif Display',serif;font-size:16px;font-weight:400;}
+.btn-cerrar{background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;}
+.modal-body{padding:20px;}
+.detalle-fila{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--gris-light);font-size:13px;}
+.detalle-fila:last-child{border-bottom:none;}
+.detalle-key{font-weight:600;color:var(--gris);min-width:160px;flex-shrink:0;}
+.firma-preview{max-width:100%;border:1.5px solid var(--border);border-radius:10px;margin-top:6px;}
+
+/* Misc */
+.loading{text-align:center;padding:40px;color:var(--gris);}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:40px;color:var(--gris);}
+.items-lista{background:var(--azul-bg);border-radius:8px;padding:10px 14px;font-size:12.5px;margin-top:4px;}
+.items-lista li{margin-bottom:4px;list-style:disc;margin-left:16px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="https://helseador.github.io/registro-helse/logo.png" onerror="this.style.display='none'" alt="Helse">
+    </div>
+    <p class="login-title">Dotación & Herramientas</p>
+    <p class="login-sub">Vista de registros · Grupo Helse SAS</p>
+    <input type="email"    class="login-input" id="loginEmail" placeholder="Correo electrónico">
+    <input type="password" class="login-input" id="loginPass"  placeholder="Contraseña"
+           onkeydown="if(event.key==='Enter')iniciarSesion()">
+    <button class="btn-login" onclick="iniciarSesion()">Ingresar</button>
+    <p class="login-error" id="loginError"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appScreen">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="https://helseador.github.io/registro-helse/logo.png" onerror="this.style.display='none'" alt="Helse">
+      <h1>Dotación & Herramientas</h1>
+    </div>
+    <div class="topbar-right">
+      <span id="userEmail" style="font-size:11px;opacity:0.75;"></span>
+      <button class="btn-top" id="btnCSVDot" onclick="exportarCSV('dotacion')">⬇️ CSV Dotación</button>
+      <button class="btn-top" id="btnCSVHer" onclick="exportarCSV('herramientas')">⬇️ CSV Herramientas</button>
+      <button class="btn-top danger" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active dot" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
+    <div class="tab her"       onclick="cambiarTab('herramientas',this)">🔧 Herramientas</div>
+  </div>
+
+  <!-- TAB DOTACIÓN -->
+  <div class="tab-content active" id="tc-dotacion">
+    <div class="stats">
+      <div class="stat-card dot"><div class="stat-num dot" id="dTotal">—</div><div class="stat-label">Total actas</div></div>
+      <div class="stat-card dot"><div class="stat-num dot" id="dHoy">—</div><div class="stat-label">Hoy</div></div>
+      <div class="stat-card dot"><div class="stat-num dot" id="dSemana">—</div><div class="stat-label">Esta semana</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="search-box" id="buscadorDot" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
+    </div>
+    <div class="table-wrap">
+      <div class="loading" id="loadDot"><div class="spinner"></div>Cargando…</div>
+      <table id="tablaDot" style="display:none;">
+        <thead class="dot"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th>Ver</th></tr></thead>
+        <tbody id="tbodyDot"></tbody>
+      </table>
+      <div class="empty" id="emptyDot" style="display:none;">No hay actas de dotación.</div>
+    </div>
+  </div>
+
+  <!-- TAB HERRAMIENTAS -->
+  <div class="tab-content" id="tc-herramientas">
+    <div class="stats">
+      <div class="stat-card her"><div class="stat-num her" id="hTotal">—</div><div class="stat-label">Total actas</div></div>
+      <div class="stat-card her"><div class="stat-num her" id="hHoy">—</div><div class="stat-label">Hoy</div></div>
+      <div class="stat-card her"><div class="stat-num her" id="hSemana">—</div><div class="stat-label">Esta semana</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="search-box" id="buscadorHer" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
+    </div>
+    <div class="table-wrap">
+      <div class="loading" id="loadHer"><div class="spinner"></div>Cargando…</div>
+      <table id="tablaHer" style="display:none;">
+        <thead class="her"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th>Ver</th></tr></thead>
+        <tbody id="tbodyHer"></tbody>
+      </table>
+      <div class="empty" id="emptyHer" style="display:none;">No hay actas de herramientas.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <div class="modal-header" id="modalHeader">
+      <h2 id="modalNombre">Detalle</h2>
+      <button class="btn-cerrar" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain:"helse-entregas.firebaseapp.com",
+  projectId:"helse-entregas",
+  storageBucket:"helse-entregas.firebasestorage.app",
+  messagingSenderId:"1086193469864",
+  appId:"1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+});
+const db=firebase.firestore(), auth=firebase.auth();
+let dotacion=[], herramientas=[], rolActual=null;
+
+// AUTH
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    const snap=await db.collection('usuarios').doc(user.uid).get();
+    if(!snap.exists){auth.signOut();return;}
+    rolActual=snap.data().rol;
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    document.getElementById('userEmail').textContent=user.email;
+    if(rolActual!=='superadmin'){
+      document.getElementById('btnCSVDot').style.display='none';
+      document.getElementById('btnCSVHer').style.display='none';
+    }
+    cargarDatos();
+  } else {
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('appScreen').style.display='none';
+  }
+});
+
+function iniciarSesion(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginError');
+  if(!email||!pass){err.textContent='Completa todos los campos.';err.style.display='block';return;}
+  err.style.display='none';
+  auth.signInWithEmailAndPassword(email,pass).catch(e=>{
+    err.textContent=e.code==='auth/invalid-credential'?'Correo o contraseña incorrectos.':'Error: '+e.message;
+    err.style.display='block';
+  });
+}
+function cerrarSesion(){ auth.signOut(); }
+
+// TABS
+function cambiarTab(nombre,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tc-'+nombre).classList.add('active');
+}
+
+// HELPERS
+function formatFecha(ts){
+  if(!ts)return'—';
+  const d=ts.toDate?ts.toDate():new Date(ts);
+  return d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+}
+function stats(lista, prefHoy, prefSem, prefTotal){
+  const ahora=new Date(), hoy=ahora.toDateString();
+  const inicioSemana=new Date(ahora); inicioSemana.setDate(ahora.getDate()-ahora.getDay());
+  document.getElementById(prefTotal).textContent=lista.length;
+  document.getElementById(prefHoy).textContent=lista.filter(r=>{const d=r.fecha?.toDate?.();return d&&d.toDateString()===hoy;}).length;
+  document.getElementById(prefSem).textContent=lista.filter(r=>{const d=r.fecha?.toDate?.();return d&&d>=inicioSemana;}).length;
+}
+
+// CARGA
+async function cargarDatos(){
+  try{
+    const snapDot=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','dotacion').get();
+    dotacion=snapDot.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    renderTabla(dotacion,'dot');
+    stats(dotacion,'dHoy','dSemana','dTotal');
+    document.getElementById('loadDot').style.display='none';
+
+    const snapHer=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','herramientas').get();
+    herramientas=snapHer.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    renderTabla(herramientas,'her');
+    stats(herramientas,'hHoy','hSemana','hTotal');
+    document.getElementById('loadHer').style.display='none';
+  }catch(e){ console.error(e); }
+}
+
+function renderTabla(lista, tipo){
+  const tbody=document.getElementById('tbody'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  const tabla=document.getElementById('tabla'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  const empty=document.getElementById('empty'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  tbody.innerHTML='';
+  if(!lista.length){ tabla.style.display='none'; empty.style.display='block'; return; }
+  tabla.style.display='table'; empty.style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.cargo||'—')+'</td>'+
+      '<td>'+(r.area||'—')+'</td>'+
+      '<td>'+(r.fecha_entrega||'—')+'</td>'+
+      '<td><button class="btn-ver '+tipo+'" onclick="abrirModal(\''+r.id+'\',\''+tipo+'\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+// BÚSQUEDA
+document.getElementById('buscadorDot').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderTabla(dotacion.filter(r=>(r.nombre||'').toLowerCase().includes(q)||(r.cedula||'').toLowerCase().includes(q)||(r.cargo||'').toLowerCase().includes(q)||(r.area||'').toLowerCase().includes(q)),'dot');
+});
+document.getElementById('buscadorHer').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderTabla(herramientas.filter(r=>(r.nombre||'').toLowerCase().includes(q)||(r.cedula||'').toLowerCase().includes(q)||(r.cargo||'').toLowerCase().includes(q)||(r.area||'').toLowerCase().includes(q)),'her');
+});
+
+// MODAL
+function abrirModal(id, tipo){
+  const lista=tipo==='dot'?dotacion:herramientas;
+  const r=lista.find(x=>x.id===id); if(!r)return;
+  document.getElementById('modalNombre').textContent=r.nombre||'Detalle';
+  document.getElementById('modalHeader').className='modal-header '+tipo;
+  const itemKey=tipo==='dot'?'dotacion':'herramientas';
+  const itemLabel=tipo==='dot'?'Dotación entregada':'Herramientas entregadas';
+  const items=(r[itemKey]||[]).map(i=>'<li>'+[i.cantidad,i.descripcion,i.observaciones].filter(Boolean).join(' · ')+'</li>').join('');
+  let html=[
+    ['Fecha registro',formatFecha(r.fecha)],
+    ['Nombre',r.nombre],['Cédula',r.cedula],
+    ['Cargo',r.cargo],['Área',r.area],
+    ['Fecha de entrega',r.fecha_entrega],
+  ].map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
+  if(items) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">'+itemLabel+'</span><ul class="items-lista">'+items+'</ul></div>';
+  if(r.firma_recibo) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">Firma – Recibido por</span><img src="'+r.firma_recibo+'" class="firma-preview" alt="Firma"></div>';
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+// CSV
+function exportarCSV(tipo){
+  const lista=tipo==='dotacion'?dotacion:herramientas;
+  if(!lista.length)return alert('No hay registros.');
+  const cols=['fecha','nombre','cedula','cargo','area','fecha_entrega'];
+  const cab=['Fecha','Nombre','Cédula','Cargo','Área','Fecha Entrega'];
+  const rows=lista.map(r=>cols.map(c=>'"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(','));
+  const blob=new Blob(['\ufeff'+[cab.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='helse_'+tipo+'_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+}
+</script>
+</body>
+</html>
