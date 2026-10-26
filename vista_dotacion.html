@@ -273,6 +273,7 @@ auth.onAuthStateChanged(async user=>{
     if(rolActual!=='superadmin'){
       document.getElementById('btnCSVDot').style.display='none';
       document.getElementById('btnCSVHer').style.display='none';
+      const bc=document.getElementById('btnCSVCol'); if(bc) bc.style.display='none';
     }
     cargarDatos();
   } else {
