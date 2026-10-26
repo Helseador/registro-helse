@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="actas_pdf.js"></script>
 <style>
 :root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--verde-light:#E8F5E9;--naranja:#BF360C;--naranja-light:#FBE9E7;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B0C4DE;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -81,6 +82,18 @@ td.nombre{font-weight:600;}
 .btn-ver.dot:hover{background:var(--verde);color:white;}
 .btn-ver.her{background:var(--naranja-light);color:var(--naranja);}
 .btn-ver.her:hover{background:var(--naranja);color:white;}
+
+/* DESCARGA DE ACTAS */
+.btn-acta{border:none;border-radius:9px;padding:10px 15px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;background:var(--verde);color:white;transition:background 0.2s;white-space:nowrap;}
+.btn-acta.her{background:var(--naranja);}
+.btn-acta:hover{filter:brightness(0.92);}
+.btn-acta:disabled{opacity:0.65;cursor:wait;}
+.btn-pdf{border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-pdf.dot{background:var(--verde-light);color:var(--verde);}
+.btn-pdf.dot:hover{background:var(--verde);color:white;}
+.btn-pdf.her{background:var(--naranja-light);color:var(--naranja);}
+.btn-pdf.her:hover{background:var(--naranja);color:white;}
+.btn-pdf:disabled{opacity:0.6;cursor:wait;}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
@@ -155,11 +168,12 @@ td.nombre{font-weight:600;}
     </div>
     <div class="toolbar">
       <input type="text" class="search-box" id="buscadorDot" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
+      <button class="btn-acta" id="btnActaDot" onclick="descargarTodas('dot',this)">⬇️ Descargar todas las actas</button>
     </div>
     <div class="table-wrap">
       <div class="loading" id="loadDot"><div class="spinner"></div>Cargando…</div>
       <table id="tablaDot" style="display:none;">
-        <thead class="dot"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th>Ver</th></tr></thead>
+        <thead class="dot"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th>Acta</th><th>Ver</th></tr></thead>
         <tbody id="tbodyDot"></tbody>
       </table>
       <div class="empty" id="emptyDot" style="display:none;">No hay actas de dotación.</div>
@@ -175,11 +189,12 @@ td.nombre{font-weight:600;}
     </div>
     <div class="toolbar">
       <input type="text" class="search-box" id="buscadorHer" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
+      <button class="btn-acta her" id="btnActaHer" onclick="descargarTodas('her',this)">⬇️ Descargar todas las actas</button>
     </div>
     <div class="table-wrap">
       <div class="loading" id="loadHer"><div class="spinner"></div>Cargando…</div>
       <table id="tablaHer" style="display:none;">
-        <thead class="her"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th>Ver</th></tr></thead>
+        <thead class="her"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Fecha Entrega</th><th>Acta</th><th>Ver</th></tr></thead>
         <tbody id="tbodyHer"></tbody>
       </table>
       <div class="empty" id="emptyHer" style="display:none;">No hay actas de herramientas.</div>
@@ -298,6 +313,7 @@ function renderTabla(lista, tipo){
       '<td>'+(r.cargo||'—')+'</td>'+
       '<td>'+(r.area||'—')+'</td>'+
       '<td>'+(r.fecha_entrega||'—')+'</td>'+
+      '<td><button class="btn-pdf '+tipo+'" title="Descargar acta firmada en PDF" onclick="descargarActa(\''+r.id+'\',\''+tipo+'\',this)">📄 PDF</button></td>'+
       '<td><button class="btn-ver '+tipo+'" onclick="abrirModal(\''+r.id+'\',\''+tipo+'\')">Ver</button></td>';
     tbody.appendChild(tr);
   });
@@ -330,10 +346,40 @@ function abrirModal(id, tipo){
   ].map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
   if(items) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">'+itemLabel+'</span><ul class="items-lista">'+items+'</ul></div>';
   if(r.firma_recibo) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">Firma – Recibido por</span><img src="'+r.firma_recibo+'" class="firma-preview" alt="Firma"></div>';
+  html='<button class="btn-acta'+(tipo==='her'?' her':'')+'" style="width:100%;margin-bottom:16px;" onclick="descargarActa(\''+r.id+'\',\''+tipo+'\',this)">📄 Descargar acta firmada (PDF)</button>'+html;
   document.getElementById('modalBody').innerHTML=html;
   document.getElementById('modalOverlay').classList.add('open');
 }
 function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+// ── DESCARGA DE ACTAS FIRMADAS (plantilla oficial POS CO-SSG-15-V02) ──
+function tipoActas(tipo){ return tipo==='dot'?'dotacion':'herramientas'; }
+
+function descargarActa(id, tipo, btn){
+  const r=(tipo==='dot'?dotacion:herramientas).find(x=>x.id===id);
+  if(!r) return alert('No se encontró el registro.');
+  if(!window.ActaPDF) return alert('No se cargó el generador de actas (actas_pdf.js). Revisa la conexión y recarga la página.');
+  const txt=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
+  setTimeout(()=>{
+    try{ window.ActaPDF.descargar(tipoActas(tipo), r); }
+    catch(e){ console.error(e); alert('No se pudo generar el acta: '+e.message); }
+    finally{ if(btn){ btn.disabled=false; btn.textContent=txt; } }
+  }, 40);
+}
+
+function descargarTodas(tipo, btn){
+  const lista=tipo==='dot'?dotacion:herramientas;
+  if(!lista.length) return alert('No hay actas para descargar.');
+  if(!window.ActaPDF) return alert('No se cargó el generador de actas (actas_pdf.js). Revisa la conexión y recarga la página.');
+  const txt=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Generando '+lista.length+' actas…'; }
+  setTimeout(()=>{
+    try{ window.ActaPDF.descargarLote(tipoActas(tipo), lista); }
+    catch(e){ console.error(e); alert('No se pudo generar el lote de actas: '+e.message); }
+    finally{ if(btn){ btn.disabled=false; btn.textContent=txt; } }
+  }, 40);
+}
 
 // CSV
 function exportarCSV(tipo){
