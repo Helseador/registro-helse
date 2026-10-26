@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vista Dotación & Herramientas – Helse</title>
+<title>Dotación, Herramientas y Personal – Helse</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="actas_pdf.js"></script>
+<script src="registro_colaborador_pdf.js"></script>
 <style>
 :root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--verde-light:#E8F5E9;--naranja:#BF360C;--naranja-light:#FBE9E7;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B0C4DE;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -96,6 +97,16 @@ td.nombre{font-weight:600;}
 .btn-pdf.her{background:var(--naranja-light);color:var(--naranja);}
 .btn-pdf.her:hover{background:var(--naranja);color:white;}
 .btn-pdf:disabled{opacity:0.6;cursor:wait;}
+.stat-card.col{border-top:3px solid var(--azul);}
+.stat-num.col{color:var(--azul);}
+thead.col{background:var(--azul);}
+.btn-ver.col{background:var(--azul-light);color:var(--azul);}
+.btn-ver.col:hover{background:var(--azul);color:white;}
+.btn-pdf.col{background:var(--azul-light);color:var(--azul);}
+.btn-pdf.col:hover{background:var(--azul);color:white;}
+.btn-acta.col{background:var(--azul);}
+.tab.active.col{color:var(--azul);border-bottom-color:var(--azul);}
+.modal-header.col{background:var(--azul);}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
@@ -129,7 +140,7 @@ td.nombre{font-weight:600;}
     <div class="login-logo">
       <img src="https://helseador.github.io/registro-helse/logo.png" onerror="this.style.display='none'" alt="Helse">
     </div>
-    <p class="login-title">Dotación & Herramientas</p>
+    <p class="login-title">Dotación y Personal</p>
     <p class="login-sub">Vista de registros · Grupo Helse SAS</p>
     <input type="email"    class="login-input" id="loginEmail" placeholder="Correo electrónico">
     <input type="password" class="login-input" id="loginPass"  placeholder="Contraseña"
@@ -145,11 +156,9 @@ td.nombre{font-weight:600;}
   <div class="topbar">
     <div class="topbar-left">
       <img src="https://helseador.github.io/registro-helse/logo.png" onerror="this.style.display='none'" alt="Helse">
-      <h1>Dotación & Herramientas</h1>
+      <h1>Dotación, Herramientas y Personal</h1>
     </div>
     <div class="topbar-right">
-      <a class="btn-top" href="dashboard_helse.html" title="Volver al dashboard" style="text-decoration:none;display:inline-flex;align-items:center;">🏠 Dashboard</a>
-      <a class="btn-top active" href="vista_dotacion.html" title="Estás en esta vista" style="text-decoration:none;display:inline-flex;align-items:center;">👕 Dotación &amp; Herramientas</a>
       <span id="userEmail" style="font-size:11px;opacity:0.75;"></span>
       <button class="btn-top" id="btnCSVDot" onclick="exportarCSV('dotacion')">⬇️ CSV Dotación</button>
       <button class="btn-top" id="btnCSVHer" onclick="exportarCSV('herramientas')">⬇️ CSV Herramientas</button>
@@ -161,6 +170,7 @@ td.nombre{font-weight:600;}
   <div class="tabs">
     <div class="tab active dot" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
     <div class="tab her"       onclick="cambiarTab('herramientas',this)">🔧 Herramientas</div>
+    <div class="tab col"       onclick="cambiarTab('colaboradores',this)">🧑‍💼 Colaboradores</div>
   </div>
 
   <!-- TAB DOTACIÓN -->
@@ -204,6 +214,28 @@ td.nombre{font-weight:600;}
       <div class="empty" id="emptyHer" style="display:none;">No hay actas de herramientas.</div>
     </div>
   </div>
+
+  <!-- TAB COLABORADORES -->
+  <div class="tab-content" id="tc-colaboradores">
+    <div class="stats">
+      <div class="stat-card col"><div class="stat-num col" id="cTotal">—</div><div class="stat-label">Total colaboradores</div></div>
+      <div class="stat-card col"><div class="stat-num col" id="cHoy">—</div><div class="stat-label">Hoy</div></div>
+      <div class="stat-card col"><div class="stat-num col" id="cSemana">—</div><div class="stat-label">Esta semana</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="search-box" id="buscadorCol" placeholder="🔍 Buscar por nombre, cédula, cargo, ciudad, EPS…">
+      <button class="btn-acta col" id="btnActaCol" onclick="descargarTodas('col',this)">⬇️ Descargar todos</button>
+      <button class="btn-top" id="btnCSVCol" onclick="exportarCSV('colaboradores')">⬇️ CSV</button>
+    </div>
+    <div class="table-wrap">
+      <div class="loading" id="loadCol"><div class="spinner"></div>Cargando…</div>
+      <table id="tablaCol" style="display:none;">
+        <thead class="col"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Ciudad</th><th>EPS</th><th>Registro</th><th>Ver</th></tr></thead>
+        <tbody id="tbodyCol"></tbody>
+      </table>
+      <div class="empty" id="emptyCol" style="display:none;">No hay registros de colaboradores.</div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -227,7 +259,7 @@ firebase.initializeApp({
   appId:"1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
 });
 const db=firebase.firestore(), auth=firebase.auth();
-let dotacion=[], herramientas=[], rolActual=null;
+let dotacion=[], herramientas=[], colaboradores=[], rolActual=null;
 
 // AUTH
 auth.onAuthStateChanged(async user=>{
@@ -298,6 +330,12 @@ async function cargarDatos(){
     renderTabla(herramientas,'her');
     stats(herramientas,'hHoy','hSemana','hTotal');
     document.getElementById('loadHer').style.display='none';
+
+    const snapCol=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','colaborador').get();
+    colaboradores=snapCol.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    renderTablaCol(colaboradores);
+    stats(colaboradores,'cHoy','cSemana','cTotal');
+    document.getElementById('loadCol').style.display='none';
   }catch(e){ console.error(e); }
 }
 
@@ -333,24 +371,76 @@ document.getElementById('buscadorHer').addEventListener('input',function(){
   renderTabla(herramientas.filter(r=>(r.nombre||'').toLowerCase().includes(q)||(r.cedula||'').toLowerCase().includes(q)||(r.cargo||'').toLowerCase().includes(q)||(r.area||'').toLowerCase().includes(q)),'her');
 });
 
+function renderTablaCol(lista){
+  const tbody=document.getElementById('tbodyCol');
+  const tabla=document.getElementById('tablaCol');
+  const empty=document.getElementById('emptyCol');
+  tbody.innerHTML='';
+  if(!lista.length){ tabla.style.display='none'; empty.style.display='block'; return; }
+  tabla.style.display='table'; empty.style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.cargo||'—')+'</td>'+
+      '<td>'+(r.ciudad||'—')+'</td>'+
+      '<td>'+(r.eps||'—')+'</td>'+
+      '<td><button class="btn-pdf col" title="Descargar registro firmado" onclick="descargarActa(\''+r.id+'\',\'col\',this)">📄 PDF</button></td>'+
+      '<td><button class="btn-ver col" onclick="abrirModal(\''+r.id+'\',\'col\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('buscadorCol').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderTablaCol(colaboradores.filter(r=>
+    (r.nombre||'').toLowerCase().includes(q)||
+    (r.cedula||'').toLowerCase().includes(q)||
+    (r.cargo||'').toLowerCase().includes(q)||
+    (r.ciudad||'').toLowerCase().includes(q)||
+    (r.eps||'').toLowerCase().includes(q)
+  ));
+});
+
 // MODAL
 function abrirModal(id, tipo){
-  const lista=tipo==='dot'?dotacion:herramientas;
+  const lista=tipo==='dot'?dotacion:tipo==='her'?herramientas:colaboradores;
   const r=lista.find(x=>x.id===id); if(!r)return;
   document.getElementById('modalNombre').textContent=r.nombre||'Detalle';
   document.getElementById('modalHeader').className='modal-header '+tipo;
-  const itemKey=tipo==='dot'?'dotacion':'herramientas';
-  const itemLabel=tipo==='dot'?'Dotación entregada':'Herramientas entregadas';
-  const items=(r[itemKey]||[]).map(i=>'<li>'+[i.cantidad,i.descripcion,i.observaciones].filter(Boolean).join(' · ')+'</li>').join('');
-  let html=[
-    ['Fecha registro',formatFecha(r.fecha)],
-    ['Nombre',r.nombre],['Cédula',r.cedula],
-    ['Cargo',r.cargo],['Área',r.area],
-    ['Fecha de entrega',r.fecha_entrega],
-  ].map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
-  if(items) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">'+itemLabel+'</span><ul class="items-lista">'+items+'</ul></div>';
-  if(r.firma_recibo) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">Firma – Recibido por</span><img src="'+r.firma_recibo+'" class="firma-preview" alt="Firma"></div>';
-  html='<button class="btn-acta'+(tipo==='her'?' her':'')+'" style="width:100%;margin-bottom:16px;" onclick="descargarActa(\''+r.id+'\',\''+tipo+'\',this)">📄 Descargar acta firmada (PDF)</button>'+html;
+  let html='';
+  if(tipo==='col'){
+    html=[
+      ['Fecha registro',formatFecha(r.fecha)],
+      ['Nombre',r.nombre],['Cédula',r.cedula],
+      ['Fecha de nacimiento',r.fecha_nacimiento],
+      ['Ciudad',r.ciudad],['Dirección',r.direccion],
+      ['Teléfono',r.telefono],['Correo',r.correo],
+      ['Cargo',r.cargo],['Fecha de ingreso',r.fecha_ingreso],
+      ['EPS',r.eps],['AFP',r.afp],['RH',r.rh],
+      ['Tallas',[r.talla_camisa,r.talla_pantalon,r.talla_zapatos].filter(Boolean).join(' · ')],
+      ['Contacto de emergencia',[r.emergencia_nombre,r.emergencia_parentesco,r.emergencia_telefono].filter(Boolean).join(' · ')],
+      ['Autoriza datos',r.autoriza_datos?'✅ Sí':'❌ No'],
+      ['Declara veracidad',r.autoriza_veracidad?'✅ Sí':'❌ No'],
+    ].map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
+    if(r.firma_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">Firma del colaborador</span><img src="'+r.firma_imagen+'" class="firma-preview" alt="Firma"></div>';
+    html='<button class="btn-acta col" style="width:100%;margin-bottom:16px;" onclick="descargarActa(\''+r.id+'\',\'col\',this)">📄 Descargar registro (PDF)</button>'+html;
+  } else {
+    const itemKey=tipo==='dot'?'dotacion':'herramientas';
+    const itemLabel=tipo==='dot'?'Dotación entregada':'Herramientas entregadas';
+    const items=(r[itemKey]||[]).map(i=>'<li>'+[i.cantidad,i.descripcion,i.observaciones].filter(Boolean).join(' · ')+'</li>').join('');
+    html=[
+      ['Fecha registro',formatFecha(r.fecha)],
+      ['Nombre',r.nombre],['Cédula',r.cedula],
+      ['Cargo',r.cargo],['Área',r.area],
+      ['Fecha de entrega',r.fecha_entrega],
+    ].map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
+    if(items) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">'+itemLabel+'</span><ul class="items-lista">'+items+'</ul></div>';
+    if(r.firma_recibo) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:6px;">Firma – Recibido por</span><img src="'+r.firma_recibo+'" class="firma-preview" alt="Firma"></div>';
+    html='<button class="btn-acta'+(tipo==='her'?' her':'')+'" style="width:100%;margin-bottom:16px;" onclick="descargarActa(\''+r.id+'\',\''+tipo+'\',this)">📄 Descargar acta firmada (PDF)</button>'+html;
+  }
   document.getElementById('modalBody').innerHTML=html;
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -360,33 +450,52 @@ function cerrarModal(){ document.getElementById('modalOverlay').classList.remove
 function tipoActas(tipo){ return tipo==='dot'?'dotacion':'herramientas'; }
 
 function descargarActa(id, tipo, btn){
-  const r=(tipo==='dot'?dotacion:herramientas).find(x=>x.id===id);
+  const lista=tipo==='dot'?dotacion:tipo==='her'?herramientas:colaboradores;
+  const r=lista.find(x=>x.id===id);
   if(!r) return alert('No se encontró el registro.');
-  if(!window.ActaPDF) return alert('No se cargó el generador de actas (actas_pdf.js). Revisa la conexión y recarga la página.');
+  const esCol=tipo==='col';
+  if(esCol && !window.RegistroColaboradorPDF) return alert('No se cargó el generador de PDF (registro_colaborador_pdf.js).');
+  if(!esCol && !window.ActaPDF) return alert('No se cargó el generador de actas (actas_pdf.js).');
   const txt=btn?btn.textContent:'';
   if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
   setTimeout(()=>{
-    try{ window.ActaPDF.descargar(tipoActas(tipo), r); }
-    catch(e){ console.error(e); alert('No se pudo generar el acta: '+e.message); }
+    try{
+      if(esCol) window.RegistroColaboradorPDF.descargar(r);
+      else window.ActaPDF.descargar(tipoActas(tipo), r);
+    } catch(e){ console.error(e); alert('No se pudo generar el documento: '+e.message); }
     finally{ if(btn){ btn.disabled=false; btn.textContent=txt; } }
   }, 40);
 }
 
 function descargarTodas(tipo, btn){
-  const lista=tipo==='dot'?dotacion:herramientas;
-  if(!lista.length) return alert('No hay actas para descargar.');
-  if(!window.ActaPDF) return alert('No se cargó el generador de actas (actas_pdf.js). Revisa la conexión y recarga la página.');
+  const lista=tipo==='dot'?dotacion:tipo==='her'?herramientas:colaboradores;
+  if(!lista.length) return alert('No hay registros para descargar.');
+  const esCol=tipo==='col';
+  if(esCol && !window.RegistroColaboradorPDF) return alert('No se cargó el generador de PDF.');
+  if(!esCol && !window.ActaPDF) return alert('No se cargó el generador de actas.');
   const txt=btn?btn.textContent:'';
-  if(btn){ btn.disabled=true; btn.textContent='Generando '+lista.length+' actas…'; }
+  if(btn){ btn.disabled=true; btn.textContent='Generando '+lista.length+'…'; }
   setTimeout(()=>{
-    try{ window.ActaPDF.descargarLote(tipoActas(tipo), lista); }
-    catch(e){ console.error(e); alert('No se pudo generar el lote de actas: '+e.message); }
+    try{
+      if(esCol) window.RegistroColaboradorPDF.descargarLote(lista);
+      else window.ActaPDF.descargarLote(tipoActas(tipo), lista);
+    } catch(e){ console.error(e); alert('No se pudo generar el lote: '+e.message); }
     finally{ if(btn){ btn.disabled=false; btn.textContent=txt; } }
   }, 40);
 }
 
 // CSV
 function exportarCSV(tipo){
+  if(tipo==='colaboradores'){
+    if(!colaboradores.length)return alert('No hay registros.');
+    const cab=['No.','COLABORADOR','CEDULA','CARGO','FECHA DE INGRESO','SALUD','PENSION','RH','CIUDAD','DIRECCION','TELEFONO','MAIL','FECHA DE NACIMIENTO','TALLA CAMISA','TALLA PANTALON','TALLA ZAPATOS','CONTACTO DE EMERGENCIA NOMBRE','PARENTESCO','CONTACTO DE EMERGENCIA TELEFONO'];
+    const filas=colaboradores.map((r,i)=>[i+1,r.nombre,r.cedula,r.cargo,r.fecha_ingreso,r.eps,r.afp,r.rh,r.ciudad,r.direccion,r.telefono,r.correo,r.fecha_nacimiento,r.talla_camisa,r.talla_pantalon,r.talla_zapatos,r.emergencia_nombre,r.emergencia_parentesco,r.emergencia_telefono]
+      .map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(','));
+    const blob=new Blob(['\ufeff'+[cab.join(','),...filas].join('\n')],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='colaboradores_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+    return;
+  }
   const lista=tipo==='dotacion'?dotacion:herramientas;
   if(!lista.length)return alert('No hay registros.');
   const cols=['fecha','nombre','cedula','cargo','area','fecha_entrega'];
