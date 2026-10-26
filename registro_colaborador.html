@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Información del Colaborador – Helse</title>
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="registro_colaborador_pdf.js"></script>
+<style>
+:root{
+  --azul:#1B3A6B;--azul-dark:#122A52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;
+  --verde:#2E7D32;--rojo:#C62828;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;
+  --shadow:0 4px 24px rgba(27,58,107,0.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:36px 14px 70px;line-height:1.5;}
+body::before{content:'';position:fixed;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(27,58,107,0.10) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;bottom:-80px;left:-80px;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,125,50,0.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.wrapper{max-width:720px;margin:0 auto;position:relative;z-index:1;}
+
+/* HEADER */
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:30px 34px 24px;color:white;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.header-logo img{height:52px;width:auto;background:white;border-radius:10px;padding:6px 12px;display:block;}
+.header-tag{font-size:10.5px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;opacity:0.72;margin:16px 0 8px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:27px;font-weight:400;line-height:1.2;position:relative;}
+.header h1 span{display:block;font-size:16px;font-weight:300;opacity:0.85;font-family:'DM Sans',sans-serif;margin-top:3px;}
+.header-badge{display:inline-block;margin-top:14px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;padding:5px 13px;font-size:11.5px;font-weight:600;letter-spacing:0.6px;position:relative;}
+
+/* PROGRESO */
+.progress{background:white;padding:14px 34px 12px;border-bottom:1px solid var(--azul-light);}
+.progress-top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--gris);margin-bottom:7px;}
+.progress-top strong{color:var(--azul);font-size:11.5px;letter-spacing:0.4px;}
+.progress-track{height:7px;background:var(--azul-light);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,#2E5C9E,#1B3A6B);border-radius:4px;transition:width 0.3s;}
+
+/* LEGAL */
+.legal-box{background:white;border-left:4px solid var(--azul);padding:16px 22px;font-size:12px;color:var(--gris);line-height:1.6;}
+.legal-box a{color:var(--azul-dark);font-weight:600;}
+
+/* CARD */
+.card{background:white;border-radius:0 0 20px 20px;padding:26px 34px 34px;box-shadow:var(--shadow);}
+.obligatorio-note{font-size:11.5px;color:var(--rojo);margin-bottom:22px;}
+.section-title{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--azul);border-bottom:1px solid var(--azul-light);padding-bottom:8px;margin:30px 0 18px;}
+.section-title:first-of-type{margin-top:6px;}
+.sec-num{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;
+  background:var(--azul);color:white;font-size:10.5px;font-weight:700;letter-spacing:0;flex-shrink:0;}
+
+/* CAMPOS */
+.campo{margin-bottom:20px;}
+.campo-label{display:flex;align-items:flex-start;gap:7px;font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;}
+.req{color:var(--rojo);}
+input[type="text"],input[type="tel"],input[type="email"],input[type="date"],select{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;
+  font-size:14.5px;color:var(--text);background:#FAFFFE;outline:none;transition:border-color .2s, box-shadow .2s;
+  appearance:none;-webkit-appearance:none;}
+select{background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23546E7A' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;}
+input:focus,select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,0.10);background:white;}
+input::placeholder{color:#9EAFAD;}
+input[type="date"]{color-scheme:light;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.error-msg{display:none;font-size:11.5px;color:var(--rojo);margin-top:6px;}
+.campo.invalid input,.campo.invalid select{border-color:var(--rojo);background:#FFF7F7;}
+.campo.invalid .error-msg{display:block;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{position:relative;}
+.chip input{position:absolute;opacity:0;pointer-events:none;}
+.chip span{display:inline-flex;align-items:center;justify-content:center;min-width:46px;padding:9px 14px;border:1.5px solid var(--border);
+  border-radius:10px;font-size:13px;font-weight:600;color:var(--gris);background:#FAFFFE;cursor:pointer;transition:all .18s;user-select:none;}
+.chip span:hover{border-color:var(--azul);background:var(--azul-light);}
+.chip input:checked + span{background:var(--azul);border-color:var(--azul);color:white;box-shadow:0 3px 10px rgba(27,58,107,0.25);}
+
+/* CHECK CARDS */
+.check-item{display:flex;align-items:flex-start;gap:13px;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;
+  cursor:pointer;transition:all .2s;background:#FAFFFE;margin-bottom:10px;}
+.check-item:hover{border-color:var(--azul);background:var(--azul-light);}
+.check-item input{display:none;}
+.cbox{width:21px;height:21px;border-radius:6px;border:2px solid var(--border);background:white;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px;}
+.cbox svg{width:12px;height:12px;stroke:white;opacity:0;transform:scale(0);transition:all .2s;}
+.check-item input:checked ~ .cbox{background:var(--verde);border-color:var(--verde);}
+.check-item input:checked ~ .cbox svg{opacity:1;transform:scale(1);}
+.check-item:has(input:checked){border-color:var(--verde);background:#F1F8F1;}
+.check-text{font-size:12.5px;line-height:1.5;color:var(--text);}
+.check-item:has(input:checked) .check-text{color:#1B5E20;}
+
+/* FIRMA */
+.firma-wrap{border-radius:10px;overflow:hidden;}
+.firma-wrap canvas{display:block;cursor:crosshair;width:100%;}
+.campo.invalid .firma-wrap{border:2px solid var(--rojo);border-radius:10px;}
+
+/* BOTÓN */
+.btn-submit{width:100%;background:var(--azul);color:white;border:none;border-radius:12px;padding:16px;
+  font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:background .2s, transform .1s;}
+.btn-submit:hover{background:var(--azul-dark);}
+.btn-submit:active{transform:scale(0.995);}
+.btn-submit:disabled{opacity:0.6;cursor:wait;}
+.submit-note{font-size:11px;color:var(--gris);text-align:center;margin-top:10px;}
+
+/* ÉXITO */
+.success-msg{display:none;text-align:center;padding:26px 6px 6px;}
+.success-icon{width:66px;height:66px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;font-size:32px;}
+.success-msg h2{font-family:'DM Serif Display',serif;font-size:23px;font-weight:400;color:var(--azul);margin-bottom:8px;}
+.success-msg p{font-size:13.5px;color:var(--gris);line-height:1.6;max-width:460px;margin:0 auto 8px;}
+.success-msg .aviso{background:#FFF8E1;border:1px solid #FFE0A3;color:#8A5A00;border-radius:10px;padding:10px 14px;
+  font-size:12px;margin:16px auto 0;max-width:460px;text-align:left;}
+.btn-descarga{display:inline-flex;align-items:center;gap:8px;margin-top:18px;background:var(--azul);color:white;border:none;
+  border-radius:10px;padding:13px 22px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-descarga:hover{background:var(--azul-dark);}
+
+@media(max-width:620px){
+  .header,.legal-box,.card{padding-left:20px;padding-right:20px;}
+  .progress{padding-left:20px;padding-right:20px;}
+  .header h1{font-size:23px;}
+  .grid2,.grid3{grid-template-columns:1fr;}
+  .wrapper{max-width:100%;}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="header-logo">
+      <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+    </div>
+    <div class="header-tag">Grupo Helse SAS</div>
+    <h1>Registro de información<span>del Colaborador</span></h1>
+    <div class="header-badge">🧑‍💼 Talento Humano</div>
+  </div>
+
+  <div class="progress">
+    <div class="progress-top"><strong>Progreso del formulario</strong><span id="progressPct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="legal-box">
+    Con el fin de mantener actualizada la información laboral, personal y de seguridad social, diligencie el formato de manera completa y veraz.
+    Los datos se usan exclusivamente para gestión del talento humano, afiliaciones al Sistema de Seguridad Social Integral, entrega de dotación,
+    contacto en caso de emergencia y actividades relacionadas con la relación laboral, conforme a la Ley 1581 de 2012.
+    <a href="https://www.helse.com.co" target="_blank" rel="noopener">Política de privacidad</a>
+  </div>
+
+  <div class="card">
+    <p class="obligatorio-note"><span class="req">*</span> Todos los campos marcados son obligatorios</p>
+
+    <form id="form" novalidate>
+
+      <!-- 1 DATOS PERSONALES -->
+      <div class="section-title"><span class="sec-num">1</span> Datos personales</div>
+
+      <div class="campo" id="cNombre">
+        <label class="campo-label" for="nombre">Nombre y apellidos <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Nombres y apellidos completos" autocomplete="name">
+        <div class="error-msg">Escriba su nombre completo.</div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cCedula">
+          <label class="campo-label" for="cedula">Cédula <span class="req">*</span></label>
+          <input type="text" id="cedula" inputmode="numeric" placeholder="Ej. 1020304050" maxlength="12">
+          <div class="error-msg">Ingrese una cédula válida (6 a 10 dígitos).</div>
+        </div>
+        <div class="campo" id="cNacimiento">
+          <label class="campo-label" for="fechaNacimiento">Fecha de nacimiento <span class="req">*</span></label>
+          <input type="date" id="fechaNacimiento" max="2026-12-31">
+          <div class="error-msg">Seleccione su fecha de nacimiento.</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cCiudad">
+          <label class="campo-label" for="ciudad">Ciudad <span class="req">*</span></label>
+          <input type="text" id="ciudad" placeholder="Ciudad de residencia">
+          <div class="error-msg">Indique su ciudad.</div>
+        </div>
+        <div class="campo" id="cTelefono">
+          <label class="campo-label" for="telefono">Teléfono <span class="req">*</span></label>
+          <input type="tel" id="telefono" inputmode="tel" placeholder="Ej. 3001234567" maxlength="15">
+          <div class="error-msg">Ingrese un teléfono válido (7 a 10 dígitos).</div>
+        </div>
+      </div>
+
+      <div class="campo" id="cDireccion">
+        <label class="campo-label" for="direccion">Dirección <span class="req">*</span></label>
+        <input type="text" id="direccion" placeholder="Dirección completa" autocomplete="street-address">
+        <div class="error-msg">Escriba su dirección.</div>
+      </div>
+
+      <div class="campo" id="cCorreo">
+        <label class="campo-label" for="correo">Correo electrónico <span class="req">*</span></label>
+        <input type="email" id="correo" placeholder="correo@dominio.com" autocomplete="email">
+        <div class="error-msg">Ingrese un correo válido.</div>
+      </div>
+
+      <!-- 2 DATOS LABORALES -->
+      <div class="section-title"><span class="sec-num">2</span> Datos laborales</div>
+
+      <div class="grid2">
+        <div class="campo" id="cCargo">
+          <label class="campo-label" for="cargo">Cargo <span class="req">*</span></label>
+          <input type="text" id="cargo" placeholder="Ej. Visitadora médica">
+          <div class="error-msg">Indique su cargo.</div>
+        </div>
+        <div class="campo" id="cIngreso">
+          <label class="campo-label" for="fechaIngreso">Fecha de ingreso <span class="req">*</span></label>
+          <input type="date" id="fechaIngreso" max="2026-12-31">
+          <div class="error-msg">Seleccione la fecha de ingreso.</div>
+        </div>
+      </div>
+
+      <!-- 3 SEGURIDAD SOCIAL Y DOTACIÓN -->
+      <div class="section-title"><span class="sec-num">3</span> Seguridad social y dotación</div>
+
+      <div class="grid2">
+        <div class="campo" id="cEps">
+          <label class="campo-label" for="eps">EPS (salud) <span class="req">*</span></label>
+          <input type="text" id="eps" list="epsList" placeholder="Escriba o seleccione…" autocomplete="off">
+          <datalist id="epsList">
+            <option>Nueva EPS</option><option>Sura</option><option>Sanitas</option><option>Compensar</option>
+            <option>Famisanar</option><option>Salud Total</option><option>Coosalud</option><option>Mutual Ser</option>
+            <option>Asmet Salud</option><option>Emssanar</option><option>Capital Salud</option><option>Savia Salud</option>
+            <option>SOS</option><option>Cruz Blanca</option><option>Policía Nacional</option><option>Magisterio</option>
+            <option>Ecopetrol</option><option>Otra</option>
+          </datalist>
+          <div class="error-msg">Indique su EPS.</div>
+        </div>
+        <div class="campo" id="cAfp">
+          <label class="campo-label" for="afp">AFP (pensión) <span class="req">*</span></label>
+          <input type="text" id="afp" list="afpList" placeholder="Escriba o seleccione…" autocomplete="off">
+          <datalist id="afpList">
+            <option>Colpensiones</option><option>Porvenir</option><option>Protección</option>
+            <option>Colfondos</option><option>Skandia</option><option>Old Mutual</option><option>Otra</option>
+          </datalist>
+          <div class="error-msg">Indique su fondo de pensión.</div>
+        </div>
+      </div>
+
+      <div class="campo" id="cRh">
+        <label class="campo-label">RH (tipo de sangre) <span class="req">*</span></label>
+        <div class="chips">
+          <label class="chip"><input type="radio" name="rh" value="O+"><span>O+</span></label>
+          <label class="chip"><input type="radio" name="rh" value="O-"><span>O−</span></label>
+          <label class="chip"><input type="radio" name="rh" value="A+"><span>A+</span></label>
+          <label class="chip"><input type="radio" name="rh" value="A-"><span>A−</span></label>
+          <label class="chip"><input type="radio" name="rh" value="B+"><span>B+</span></label>
+          <label class="chip"><input type="radio" name="rh" value="B-"><span>B−</span></label>
+          <label class="chip"><input type="radio" name="rh" value="AB+"><span>AB+</span></label>
+          <label class="chip"><input type="radio" name="rh" value="AB-"><span>AB−</span></label>
+        </div>
+        <div class="error-msg">Seleccione su RH.</div>
+      </div>
+
+      <div class="campo" id="cTallas">
+        <label class="campo-label">Tallas para dotación <span class="req">*</span></label>
+        <div class="grid3">
+          <div>
+            <div style="font-size:11px;color:var(--gris);margin-bottom:5px;">Camisa</div>
+            <select id="tallaCamisa">
+              <option value="">—</option>
+              <option>XS</option><option>S</option><option>M</option><option>L</option>
+              <option>XL</option><option>XXL</option><option>XXXL</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--gris);margin-bottom:5px;">Pantalón</div>
+            <select id="tallaPantalon">
+              <option value="">—</option>
+              <option>28</option><option>30</option><option>32</option><option>34</option>
+              <option>36</option><option>38</option><option>40</option><option>42</option>
+              <option>44</option><option>46</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--gris);margin-bottom:5px;">Zapatos</div>
+            <select id="tallaZapatos">
+              <option value="">—</option>
+              <option>34</option><option>35</option><option>36</option><option>37</option><option>38</option>
+              <option>39</option><option>40</option><option>41</option><option>42</option><option>43</option>
+              <option>44</option><option>45</option>
+            </select>
+          </div>
+        </div>
+        <div class="error-msg">Seleccione las tres tallas.</div>
+      </div>
+
+      <!-- 4 CONTACTO DE EMERGENCIA -->
+      <div class="section-title"><span class="sec-num">4</span> Contacto de emergencia</div>
+
+      <div class="campo" id="cEmNombre">
+        <label class="campo-label" for="emNombre">Nombre completo <span class="req">*</span></label>
+        <input type="text" id="emNombre" placeholder="Persona a contactar en caso de emergencia">
+        <div class="error-msg">Indique el nombre del contacto.</div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cEmParentesco">
+          <label class="campo-label" for="emParentesco">Parentesco <span class="req">*</span></label>
+          <select id="emParentesco">
+            <option value="">Seleccione…</option>
+            <option>Madre</option><option>Padre</option><option>Hermano(a)</option><option>Hijo(a)</option>
+            <option>Cónyuge / Compañero(a)</option><option>Familiar</option><option>Amigo(a)</option><option>Otro</option>
+          </select>
+          <div class="error-msg">Seleccione el parentesco.</div>
+        </div>
+        <div class="campo" id="cEmTelefono">
+          <label class="campo-label" for="emTelefono">Teléfono <span class="req">*</span></label>
+          <input type="tel" id="emTelefono" inputmode="tel" placeholder="Ej. 3105552211" maxlength="15">
+          <div class="error-msg">Ingrese un teléfono válido.</div>
+        </div>
+      </div>
+
+      <!-- 5 AUTORIZACIONES -->
+      <div class="section-title"><span class="sec-num">5</span> Autorizaciones</div>
+
+      <div class="campo" id="cAutorizaciones">
+        <label class="check-item">
+          <input type="checkbox" id="autorizaDatos">
+          <span class="cbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="check-text">Autorizo a Grupo Helse SAS a tratar mis datos personales para gestión del talento humano, afiliaciones al SGSSI, dotación y contacto en emergencia, conforme a la Ley 1581 de 2012.</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" id="autorizaVeracidad">
+          <span class="cbox"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="check-text">Declaro que la información suministrada es veraz y completa, y me comprometo a informar cualquier cambio.</span>
+        </label>
+        <div class="error-msg">Debe aceptar ambas autorizaciones.</div>
+      </div>
+
+      <!-- 6 FIRMA -->
+      <div class="section-title"><span class="sec-num">6</span> Firma del colaborador</div>
+
+      <div class="campo" id="cFirma">
+        <div id="firmaEstado1">
+          <button type="button" id="btnAbrirFirma" style="width:100%;padding:20px;border:2px dashed var(--border);border-radius:14px;background:#FAFFFE;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--azul);font-weight:600;">
+            ✍️ Toque aquí para firmar
+          </button>
+        </div>
+
+        <div id="firmaEstado2" style="display:none;">
+          <div style="background:#F5F8FD;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+            <p style="font-size:12px;color:var(--gris);text-align:center;margin-bottom:10px;">Firme en el recuadro blanco</p>
+            <div class="firma-wrap" id="firmaWrap"><canvas id="firmaCanvas"></canvas></div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button type="button" id="btnLimpiarFirma" style="flex:1;padding:13px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;">🗑️ Limpiar</button>
+            <button type="button" id="btnGuardarFirma" style="flex:2;padding:13px;border-radius:10px;border:none;background:var(--azul);color:white;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;">✅ Guardar firma</button>
+          </div>
+        </div>
+
+        <div id="firmaEstado3" style="display:none;">
+          <div style="border:2px solid var(--azul);border-radius:14px;padding:14px;background:var(--azul-light);">
+            <p style="font-size:12px;color:var(--azul-dark);font-weight:600;margin-bottom:8px;">✅ Firma guardada correctamente</p>
+            <img id="firmaPreview" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;background:white;border:1px solid var(--border);" alt="Firma">
+          </div>
+          <button type="button" id="btnRehacerFirma" style="margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--gris);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">🔄 Volver a firmar</button>
+        </div>
+
+        <div class="error-msg">Guarde su firma antes de enviar.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">Enviar registro</button>
+      <p class="submit-note">Al enviar, el registro queda cerrado y no podrá modificarse.</p>
+
+      <div class="success-msg" id="successMsg">
+        <div class="success-icon">✅</div>
+        <h2>¡Registro enviado!</h2>
+        <p>Su información quedó guardada con su firma. El área de Talento Humano la recibirá para las afiliaciones y la entrega de dotación.</p>
+        <button type="button" class="btn-descarga" id="btnDescargarMio">📄 Descargar mi registro</button>
+        <div class="aviso">Este registro ya quedó cerrado. Si necesita corregir algo, debe diligenciar un registro nuevo.</div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+});
+const db = firebase.firestore();
+const linkToken = new URLSearchParams(window.location.search).get('t') || '';
+
+const $ = (id) => document.getElementById(id);
+const val = (id) => ($(id).value || '').trim();
+
+// fechas: no permitir futuras
+const hoyISO = new Date().toISOString().slice(0, 10);
+['fechaNacimiento', 'fechaIngreso'].forEach(id => { $(id).max = hoyISO; });
+$('fechaNacimiento').min = '1900-01-01';
+
+// ── Firma ──
+const canvas = $('firmaCanvas');
+const ctx = canvas.getContext('2d');
+let dibujando = false, firmaHecha = false, firmaGuardada = false;
+
+function initCanvas() {
+  const wrap = $('firmaWrap');
+  const w = wrap.clientWidth || 600;
+  const h = 190;
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  firmaHecha = false;
+}
+function estadoFirma(n) {
+  $('firmaEstado1').style.display = n === 1 ? 'block' : 'none';
+  $('firmaEstado2').style.display = n === 2 ? 'block' : 'none';
+  $('firmaEstado3').style.display = n === 3 ? 'block' : 'none';
+}
+function xy(e) {
+  const r = canvas.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: p.clientX - r.left, y: p.clientY - r.top };
+}
+$('btnAbrirFirma').addEventListener('click', () => { estadoFirma(2); setTimeout(initCanvas, 60); });
+$('btnLimpiarFirma').addEventListener('click', () => { initCanvas(); $('cFirma').classList.remove('invalid'); });
+$('btnGuardarFirma').addEventListener('click', () => {
+  if (!firmaHecha) { alert('Por favor firme en el recuadro antes de guardar.'); return; }
+  $('firmaPreview').src = canvas.toDataURL('image/png');
+  firmaGuardada = true;
+  estadoFirma(3);
+  $('cFirma').classList.remove('invalid');
+  actualizarProgreso();
+});
+$('btnRehacerFirma').addEventListener('click', () => { firmaGuardada = false; estadoFirma(2); setTimeout(initCanvas, 60); });
+
+canvas.addEventListener('mousedown', e => { dibujando = true; const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('mousemove', e => { if (!dibujando) return; const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHecha = true; });
+canvas.addEventListener('mouseup', () => dibujando = false);
+canvas.addEventListener('mouseleave', () => dibujando = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); dibujando = true; const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!dibujando) return; const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHecha = true; }, { passive: false });
+canvas.addEventListener('touchend', () => dibujando = false);
+
+// ── Progreso ──
+const requeridos = () => {
+  const campos = ['nombre', 'cedula', 'fechaNacimiento', 'ciudad', 'telefono', 'direccion', 'correo',
+                  'cargo', 'fechaIngreso', 'eps', 'afp', 'tallaCamisa', 'tallaPantalon', 'tallaZapatos',
+                  'emNombre', 'emParentesco', 'emTelefono'];
+  let llenos = campos.filter(id => val(id)).length;
+  if (document.querySelector('input[name="rh"]:checked')) llenos++;
+  if ($('autorizaDatos').checked) llenos++;
+  if ($('autorizaVeracidad').checked) llenos++;
+  if (firmaGuardada) llenos++;
+  return { llenos, total: campos.length + 4 };
+};
+function actualizarProgreso() {
+  const { llenos, total } = requeridos();
+  const pct = Math.round(llenos * 100 / total);
+  $('progressFill').style.width = pct + '%';
+  $('progressPct').textContent = pct + '%';
+}
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', actualizarProgreso);
+  el.addEventListener('change', actualizarProgreso);
+});
+
+// ── Validación ──
+const soloDigitos = (s) => s.replace(/\D/g, '');
+const emailOk = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+const telOk = (s) => { const d = soloDigitos(s); return d.length >= 7 && d.length <= 10; };
+
+const checks = [
+  ['cNombre', () => val('nombre').length >= 3],
+  ['cCedula', () => { const d = soloDigitos(val('cedula')); return d.length >= 6 && d.length <= 10; }],
+  ['cNacimiento', () => !!val('fechaNacimiento')],
+  ['cCiudad', () => val('ciudad').length >= 2],
+  ['cTelefono', () => telOk(val('telefono'))],
+  ['cDireccion', () => val('direccion').length >= 5],
+  ['cCorreo', () => emailOk(val('correo'))],
+  ['cCargo', () => val('cargo').length >= 2],
+  ['cIngreso', () => !!val('fechaIngreso')],
+  ['cEps', () => val('eps').length >= 2],
+  ['cAfp', () => val('afp').length >= 2],
+  ['cRh', () => !!document.querySelector('input[name="rh"]:checked')],
+  ['cTallas', () => !!val('tallaCamisa') && !!val('tallaPantalon') && !!val('tallaZapatos')],
+  ['cEmNombre', () => val('emNombre').length >= 3],
+  ['cEmParentesco', () => !!val('emParentesco')],
+  ['cEmTelefono', () => telOk(val('emTelefono'))],
+  ['cAutorizaciones', () => $('autorizaDatos').checked && $('autorizaVeracidad').checked],
+  ['cFirma', () => firmaGuardada],
+];
+
+function validar() {
+  let ok = true;
+  document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
+  checks.forEach(([id, fn]) => {
+    let valido = false;
+    try { valido = fn(); } catch (e) { valido = false; }
+    if (!valido) { $(id).classList.add('invalid'); ok = false; }
+  });
+  if (!ok) {
+    const primero = document.querySelector('.campo.invalid');
+    if (primero) primero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  return ok;
+}
+
+// ── Envío ──
+let registroEnviado = null;
+
+$('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!validar()) return;
+
+  const datos = {
+    tipo_registro: 'colaborador',
+    fecha: firebase.firestore.FieldValue.serverTimestamp(),
+    nombre: val('nombre'),
+    cedula: soloDigitos(val('cedula')),
+    fecha_nacimiento: val('fechaNacimiento'),
+    ciudad: val('ciudad'),
+    telefono: soloDigitos(val('telefono')),
+    direccion: val('direccion'),
+    correo: val('correo').toLowerCase(),
+    cargo: val('cargo'),
+    fecha_ingreso: val('fechaIngreso'),
+    eps: val('eps'),
+    afp: val('afp'),
+    rh: document.querySelector('input[name="rh"]:checked').value,
+    talla_camisa: val('tallaCamisa'),
+    talla_pantalon: val('tallaPantalon'),
+    talla_zapatos: val('tallaZapatos'),
+    emergencia_nombre: val('emNombre'),
+    emergencia_parentesco: val('emParentesco'),
+    emergencia_telefono: soloDigitos(val('emTelefono')),
+    autoriza_datos: $('autorizaDatos').checked,
+    autoriza_veracidad: $('autorizaVeracidad').checked,
+    firma_imagen: $('firmaPreview').src,
+    token: linkToken,
+  };
+
+  const btn = $('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  try {
+    await db.collection('registros_entrega_efectiva').add(datos);
+    registroEnviado = Object.assign({}, datos, { fecha: new Date() });
+    document.querySelectorAll('.section-title, .campo, .obligatorio-note').forEach(el => el.style.display = 'none');
+    btn.style.display = 'none';
+    document.querySelector('.submit-note').style.display = 'none';
+    $('successMsg').style.display = 'block';
+    $('successMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('progressFill').style.width = '100%';
+    $('progressPct').textContent = '100%';
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Enviar registro';
+    alert('❌ No se pudo enviar el registro: ' + err.message + '\n\nRevise la conexión e intente de nuevo.');
+  }
+});
+
+$('btnDescargarMio').addEventListener('click', function () {
+  if (!registroEnviado) return;
+  if (!window.RegistroColaboradorPDF) { alert('No se cargó el generador de PDF.'); return; }
+  const b = this;
+  b.disabled = true;
+  try {
+    window.RegistroColaboradorPDF.descargar(registroEnviado);
+  } catch (e) {
+    console.error(e);
+    alert('No se pudo generar el PDF: ' + e.message);
+  } finally {
+    setTimeout(() => b.disabled = false, 800);
+  }
+});
+
+actualizarProgreso();
+</script>
+</body>
+</html>
