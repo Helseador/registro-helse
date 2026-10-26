@@ -36,7 +36,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text
 .topbar-left{display:flex;align-items:center;gap:12px;}
 .topbar-left img{height:32px;background:white;border-radius:6px;padding:3px 8px;}
 .topbar h1{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;}
-.topbar-right{display:flex;align-items:center;gap:8px;}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.btn-top.active{background:var(--azul-light);color:var(--azul-dark);}
+.btn-top.active:hover{background:white;}
 .btn-top{background:white;color:var(--azul-dark);border:none;border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
 .btn-top:hover{background:var(--azul-light);}
 .btn-top.danger{background:#FFEBEE;color:var(--rojo);}
@@ -146,6 +148,8 @@ td.nombre{font-weight:600;}
       <h1>Dotación & Herramientas</h1>
     </div>
     <div class="topbar-right">
+      <a class="btn-top" href="dashboard_helse.html" title="Volver al dashboard" style="text-decoration:none;display:inline-flex;align-items:center;">🏠 Dashboard</a>
+      <a class="btn-top active" href="vista_dotacion.html" title="Estás en esta vista" style="text-decoration:none;display:inline-flex;align-items:center;">👕 Dotación &amp; Herramientas</a>
       <span id="userEmail" style="font-size:11px;opacity:0.75;"></span>
       <button class="btn-top" id="btnCSVDot" onclick="exportarCSV('dotacion')">⬇️ CSV Dotación</button>
       <button class="btn-top" id="btnCSVHer" onclick="exportarCSV('herramientas')">⬇️ CSV Herramientas</button>
