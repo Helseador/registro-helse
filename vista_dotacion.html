@@ -160,8 +160,6 @@ thead.col{background:var(--azul);}
     </div>
     <div class="topbar-right">
       <span id="userEmail" style="font-size:11px;opacity:0.75;"></span>
-      <button class="btn-top" id="btnCSVDot" onclick="exportarCSV('dotacion')">⬇️ CSV Dotación</button>
-      <button class="btn-top" id="btnCSVHer" onclick="exportarCSV('herramientas')">⬇️ CSV Herramientas</button>
       <button class="btn-top danger" onclick="cerrarSesion()">Salir</button>
     </div>
   </div>
@@ -183,6 +181,7 @@ thead.col{background:var(--azul);}
     <div class="toolbar">
       <input type="text" class="search-box" id="buscadorDot" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
       <button class="btn-acta" id="btnActaDot" onclick="descargarTodas('dot',this)">⬇️ Descargar todas las actas</button>
+      <button class="btn-top" id="btnCSVDot" onclick="exportarCSV('dotacion')">⬇️ Descargar Excel (dotación)</button>
     </div>
     <div class="table-wrap">
       <div class="loading" id="loadDot"><div class="spinner"></div>Cargando…</div>
@@ -204,6 +203,7 @@ thead.col{background:var(--azul);}
     <div class="toolbar">
       <input type="text" class="search-box" id="buscadorHer" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
       <button class="btn-acta her" id="btnActaHer" onclick="descargarTodas('her',this)">⬇️ Descargar todas las actas</button>
+      <button class="btn-top" id="btnCSVHer" onclick="exportarCSV('herramientas')">⬇️ Descargar Excel (herramientas)</button>
     </div>
     <div class="table-wrap">
       <div class="loading" id="loadHer"><div class="spinner"></div>Cargando…</div>
@@ -225,7 +225,7 @@ thead.col{background:var(--azul);}
     <div class="toolbar">
       <input type="text" class="search-box" id="buscadorCol" placeholder="🔍 Buscar por nombre, cédula, cargo, ciudad, EPS…">
       <button class="btn-acta col" id="btnActaCol" onclick="descargarTodas('col',this)">⬇️ Descargar todos</button>
-      <button class="btn-top" id="btnCSVCol" onclick="exportarCSV('colaboradores')">⬇️ CSV</button>
+      <button class="btn-top" id="btnCSVCol" onclick="exportarCSV('colaboradores')">⬇️ Descargar Excel (colaboradores)</button>
     </div>
     <div class="table-wrap">
       <div class="loading" id="loadCol"><div class="spinner"></div>Cargando…</div>
