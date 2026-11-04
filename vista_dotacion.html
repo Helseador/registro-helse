@@ -270,11 +270,7 @@ auth.onAuthStateChanged(async user=>{
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='block';
     document.getElementById('userEmail').textContent=user.email;
-    if(rolActual!=='superadmin'){
-      document.getElementById('btnCSVDot').style.display='none';
-      document.getElementById('btnCSVHer').style.display='none';
-      const bc=document.getElementById('btnCSVCol'); if(bc) bc.style.display='none';
-    }
+    // Los botones de Excel quedan disponibles para cualquier usuario con acceso a esta vista.
     cargarDatos();
   } else {
     document.getElementById('loginScreen').style.display='flex';
