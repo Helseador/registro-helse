@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="actas_pdf.js"></script>
 <script src="registro_colaborador_pdf.js"></script>
+<script src="acta_inicio_pdf.js"></script>
 <style>
 :root{
   --verde:#1B3A6B;--verde-dark:#122a52;--verde-light:#E3EAF5;--verde-bg:#F0F4FA;
@@ -49,8 +50,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--verde-bg);color:var(--tex
 .tab{padding:13px 18px;font-size:13px;font-weight:600;color:var(--gris);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;white-space:nowrap;}
 .tab.active{color:var(--verde);border-bottom-color:var(--verde);}
 .tab.sa-only{display:none;}
-.tab-link{text-decoration:none;display:inline-flex;align-items:center;}
-.tab-link:hover{color:var(--verde);background:var(--verde-light);}
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;padding:20px 28px 0;}
@@ -187,7 +186,7 @@ td.nombre{font-weight:600;}
   <!-- TABS -->
   <div class="tabs">
     <div class="tab active" onclick="cambiarTab('pacientes',this)">🧑‍⚕️ Pacientes</div>
-    <a class="tab tab-link" href="inicio-tratamiento/index.html" target="_blank" rel="noopener" title="Abrir el módulo de inicio de tratamiento">🩺 Inicio de Tratamiento</a>
+    <div class="tab" onclick="cambiarTab('inicio',this)">🩺 Inicio de Tratamiento</div>
     <div class="tab" onclick="cambiarTab('medicos',this)">👨‍⚕️ Médicos</div>
     <div class="tab" onclick="cambiarTab('imagen',this)">📸 Uso de Imagen</div>
     <div class="tab" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
@@ -215,6 +214,27 @@ td.nombre{font-weight:600;}
         <tbody id="tbodyPac"></tbody>
       </table>
       <div class="empty" id="emptyPac" style="display:none;">No se encontraron registros.</div>
+    </div>
+  </div>
+
+  <!-- TAB: INICIO DE TRATAMIENTO -->
+  <div class="tab-content" id="tc-inicio">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="statIniTotal">—</div><div class="stat-label">Total actas</div></div>
+      <div class="stat-card"><div class="stat-num" id="statIniPend">—</div><div class="stat-label">Pendientes de firma</div></div>
+      <div class="stat-card"><div class="stat-num" id="statIniFirm">—</div><div class="stat-label">Firmadas</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="search-box" id="buscadorIni" placeholder="🔍 Buscar por paciente, cédula, gestor, zona...">
+      <a class="btn-top" href="inicio_tratamiento.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;background:var(--verde);color:white;">＋ Nueva acta</a>
+    </div>
+    <div class="table-wrap">
+      <div class="loading" id="loadingIni"><div class="spinner"></div>Cargando...</div>
+      <table id="tablaIni" style="display:none;">
+        <thead><tr><th>#</th><th>Fecha</th><th>Paciente</th><th>Cédula</th><th>Gestor</th><th>Estado</th><th>Link</th><th>Acta</th><th>Ver</th></tr></thead>
+        <tbody id="tbodyIni"></tbody>
+      </table>
+      <div class="empty" id="emptyIni" style="display:none;">No hay actas de inicio de tratamiento.</div>
     </div>
   </div>
 
@@ -381,7 +401,7 @@ firebase.initializeApp({
 const db=firebase.firestore(), auth=firebase.auth();
 
 // ── Estado global ──
-let registrosPac=[], registrosMed=[], registrosImg=[], registrosDot=[], registrosHer=[], registrosCol=[], registroActual=null, tipoRegistroActual=null;
+let registrosPac=[], registrosMed=[], registrosImg=[], registrosDot=[], registrosHer=[], registrosCol=[], actasInicio=[], registroActual=null, tipoRegistroActual=null;
 let rolActual=null, cdInterval=null;
 
 // ── Base64 logo para PDF ──
@@ -414,6 +434,7 @@ auth.onAuthStateChanged(async user=>{
     cargarDotacion();
     cargarHerramientas();
     cargarColaboradores();
+    cargarActasInicio();
     if(rolActual==='superadmin') cargarUsuarios();
   } else {
     document.getElementById('loginScreen').style.display='flex';
@@ -442,6 +463,7 @@ function cambiarTab(nombre,el){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tc-'+nombre).classList.add('active');
+  if(nombre==='inicio') cargarActasInicio();
 }
 
 // ── HELPERS ──
@@ -715,9 +737,99 @@ function descargarTodosCol(btn){
   },40);
 }
 
+// ── INICIO DE TRATAMIENTO ──
+async function cargarActasInicio(){
+  try{
+    const snap=await db.collection('actas_inicio_tratamiento').get();
+    actasInicio=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+      const ta=a.createdAt&&a.createdAt.toDate?a.createdAt.toDate().getTime():(a.createdAt?new Date(a.createdAt).getTime():0);
+      const tb=b.createdAt&&b.createdAt.toDate?b.createdAt.toDate().getTime():(b.createdAt?new Date(b.createdAt).getTime():0);
+      return tb-ta;
+    });
+    renderTablaIni(actasInicio);
+    actualizarStatsIni(actasInicio);
+    document.getElementById('loadingIni').style.display='none';
+  }catch(e){
+    document.getElementById('loadingIni').innerHTML='❌ Error: '+e.message;
+  }
+}
+
+function estadoBadgeIni(r){
+  return r.estado==='firmado'
+    ? '<span style="background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;">✔ Firmada</span>'
+    : '<span style="background:#FFF8E1;color:#8A5A00;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;">⏳ Pendiente</span>';
+}
+
+function renderTablaIni(lista){
+  const tbody=document.getElementById('tbodyIni');
+  tbody.innerHTML='';
+  if(!lista.length){
+    document.getElementById('tablaIni').style.display='none';
+    document.getElementById('emptyIni').style.display='block';
+    return;
+  }
+  document.getElementById('tablaIni').style.display='table';
+  document.getElementById('emptyIni').style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+(r.fecha||'—')+'</td>'+
+      '<td class="nombre">'+(r.pacienteNombre||'—')+'</td>'+
+      '<td>'+(r.pacienteCedula||'—')+'</td>'+
+      '<td>'+(r.gestorNombre||'—')+'</td>'+
+      '<td>'+estadoBadgeIni(r)+'</td>'+
+      '<td><button class="btn-ver" title="Copiar link de firma" onclick="copiarLinkInicio(\''+r.id+'\',this)">🔗 Link</button></td>'+
+      '<td><button class="btn-ver" onclick="descargarActaInicio(\''+r.id+'\',this)">📄 PDF</button></td>'+
+      '<td><button class="btn-ver" onclick="abrirModal(\''+r.id+'\',\'inicio\')">Ver</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function actualizarStatsIni(lista){
+  document.getElementById('statIniTotal').textContent=lista.length;
+  document.getElementById('statIniPend').textContent=lista.filter(r=>r.estado!=='firmado').length;
+  document.getElementById('statIniFirm').textContent=lista.filter(r=>r.estado==='firmado').length;
+}
+
+document.getElementById('buscadorIni').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderTablaIni(actasInicio.filter(r=>
+    (r.pacienteNombre||'').toLowerCase().includes(q)||
+    (r.pacienteCedula||'').toLowerCase().includes(q)||
+    (r.gestorNombre||'').toLowerCase().includes(q)||
+    (r.zona||'').toLowerCase().includes(q)||
+    (r.laboratorio||'').toLowerCase().includes(q)
+  ));
+});
+
+function linkFirmaInicio(id){
+  return location.origin + location.pathname.replace(/[^\/]*$/, '') + 'firma_inicio_tratamiento.html?id=' + id;
+}
+
+async function copiarLinkInicio(id,btn){
+  const url=linkFirmaInicio(id);
+  try{
+    await navigator.clipboard.writeText(url);
+    if(btn){ const t=btn.textContent; btn.textContent='✔ Copiado'; setTimeout(()=>btn.textContent=t,1600); }
+  }catch(e){ prompt('Copia el link de firma:', url); }
+}
+
+function descargarActaInicio(id,btn){
+  const r=actasInicio.find(x=>x.id===id);
+  if(!r)return alert('No se encontró el acta.');
+  if(!window.ActaInicioPDF)return alert('No se cargó el generador de PDF.');
+  const t=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Generando…';}
+  setTimeout(()=>{
+    try{ window.ActaInicioPDF.descargar(r); }
+    catch(e){ console.error(e); alert('No se pudo generar el PDF: '+e.message); }
+    finally{ if(btn){btn.disabled=false;btn.textContent=t;} }
+  },40);
+}
+
 // ── MODAL ──
 function abrirModal(id,tipo){
-  const lista=tipo==='medico'?registrosMed:tipo==='imagen'?registrosImg:tipo==='dotacion'?registrosDot:tipo==='herramientas'?registrosHer:tipo==='colaborador'?registrosCol:registrosPac;
+  const lista=tipo==='medico'?registrosMed:tipo==='imagen'?registrosImg:tipo==='dotacion'?registrosDot:tipo==='herramientas'?registrosHer:tipo==='colaborador'?registrosCol:tipo==='inicio'?actasInicio:registrosPac;
   const r=lista.find(x=>x.id===id);
   if(!r)return;
   registroActual=r; tipoRegistroActual=tipo;
@@ -780,6 +892,22 @@ function abrirModal(id,tipo){
       ['Autoriza datos',r.autoriza_datos?'✅ Sí':'❌ No'],
       ['Declara veracidad',r.autoriza_veracidad?'✅ Sí':'❌ No'],
     ];
+  } else if(tipo==='inicio'){
+    const prods=(r.productos||[]).map(p=>[p.cantidad,p.nombre,p.lote].filter(Boolean).join(' × ')).join(' | ')||'—';
+    campos=[
+      ['Fecha de gestión',r.fecha],
+      ['Gestor',r.gestorNombre],
+      ['Zona',r.zona],
+      ['Laboratorio',r.laboratorio],
+      ['Paciente',r.pacienteNombre],
+      ['Cédula',r.pacienteCedula],
+      ['Teléfono',r.pacienteTel],
+      ['Gestor comercial',r.gcNombre],
+      ['Cédula gestor comercial',r.gcCedula],
+      ['Productos',prods],
+      ['Observaciones',r.observaciones||'—'],
+      ['Estado',r.estado==='firmado'?'✅ Firmada':'⏳ Pendiente'],
+    ];
   } else if(tipo==='medico'){
     campos=[
       ['Fecha registro',formatFecha(r.fecha)],
@@ -827,6 +955,8 @@ function abrirModal(id,tipo){
   html+=campos.map(([k,v])=>'<div class="detalle-fila"><span class="detalle-key">'+k+'</span><span>'+(v||'—')+'</span></div>').join('');
   if(tipo==='dotacion'||tipo==='herramientas'){
     if(r.firma_recibo) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma – Recibido por</span><img src="'+r.firma_recibo+'" class="firma-preview" alt="Firma recibo"></div>';
+  } else if(tipo==='inicio'){
+    if(r.firmaPaciente) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma del paciente</span><img src="'+r.firmaPaciente+'" class="firma-preview" alt="Firma"></div>';
   } else if(r.firma_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Firma</span><img src="'+r.firma_imagen+'" class="firma-preview" alt="Firma"></div>';
   if(r.formula_imagen) html+='<div class="detalle-fila" style="flex-direction:column;"><span class="detalle-key" style="margin-bottom:8px;">Fórmula médica</span><img src="'+r.formula_imagen+'" style="max-width:100%;border-radius:10px;border:1.5px solid var(--border);" alt="Fórmula"></div>';
 
@@ -1220,6 +1350,7 @@ function generarPDF(){
   if(tipo==='imagen'){ generarPDFImagen(r); return; }
   if(tipo==='dotacion'||tipo==='herramientas'){ window.ActaPDF.descargar(tipo,r); return; }
   if(tipo==='colaborador'){ window.RegistroColaboradorPDF.descargar(r); return; }
+  if(tipo==='inicio'){ window.ActaInicioPDF.descargar(r); return; }
 
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});

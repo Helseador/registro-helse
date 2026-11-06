@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nueva Acta · Inicio de Tratamiento – Helse</title>
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122A52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--rojo:#C62828;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;--shadow:0 4px 24px rgba(27,58,107,0.10);}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:32px 14px 70px;line-height:1.5;}
+body::before{content:'';position:fixed;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(27,58,107,0.10) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.wrapper{max-width:860px;margin:0 auto;position:relative;z-index:1;}
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:28px 34px 22px;color:white;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.header-logo img{height:48px;background:white;border-radius:10px;padding:6px 12px;display:block;}
+.header-tag{font-size:10.5px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;opacity:.72;margin:14px 0 6px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:25px;font-weight:400;}
+.header h1 span{display:block;font-size:15px;font-weight:300;opacity:.85;font-family:'DM Sans',sans-serif;margin-top:2px;}
+.card{background:white;border-radius:0 0 20px 20px;padding:26px 34px 34px;box-shadow:var(--shadow);}
+.section-title{display:flex;align-items:center;gap:9px;font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--azul);border-bottom:1px solid var(--azul-light);padding-bottom:8px;margin:28px 0 18px;}
+.section-title:first-child{margin-top:0;}
+.sec-num{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;background:var(--azul);color:white;font-size:10.5px;font-weight:700;flex-shrink:0;}
+.campo{margin-bottom:18px;}
+.campo-label{display:block;font-size:13px;font-weight:500;margin-bottom:8px;}
+.req{color:var(--rojo);}
+input,textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14.5px;color:var(--text);background:#FAFFFE;outline:none;transition:border-color .2s,box-shadow .2s;}
+input:focus,textarea:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(27,58,107,.10);background:#fff;}
+input::placeholder,textarea::placeholder{color:#9EAFAD;}
+textarea{resize:vertical;min-height:80px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.error-msg{display:none;font-size:11.5px;color:var(--rojo);margin-top:6px;}
+.campo.invalid input,.campo.invalid textarea{border-color:var(--rojo);background:#FFF7F7;}
+.campo.invalid .error-msg{display:block;}
+
+/* productos */
+.tabla-prod{width:100%;border-collapse:collapse;font-size:13px;}
+.tabla-prod th{background:var(--azul);color:white;font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:8px 8px;text-align:left;}
+.tabla-prod td{padding:5px 4px;border-bottom:1px solid #EEF2F8;vertical-align:middle;}
+.tabla-prod input{padding:8px 9px;font-size:13px;border-radius:8px;}
+.quitar{background:#FFEBEE;color:var(--rojo);border:none;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:15px;line-height:1;}
+.agregar{margin-top:10px;background:var(--azul-light);color:var(--azul);border:none;border-radius:9px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;}
+.agregar:hover{background:var(--azul);color:white;}
+
+.btn-submit{width:100%;background:var(--azul);color:white;border:none;border-radius:12px;padding:16px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;margin-top:22px;}
+.btn-submit:hover{background:var(--azul-dark);}
+.btn-submit:disabled{opacity:.6;cursor:wait;}
+
+/* estados */
+.aviso{background:#FFF8E1;border:1px solid #FFE0A3;color:#8A5A00;border-radius:12px;padding:16px 18px;font-size:13.5px;line-height:1.6;}
+.login-req{text-align:center;padding:50px 20px;}
+.login-req .icon{font-size:44px;margin-bottom:12px;}
+.login-req h2{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:var(--azul);margin-bottom:8px;}
+.login-req p{font-size:14px;color:var(--gris);margin-bottom:18px;}
+.btn-link{display:inline-block;background:var(--azul);color:white;text-decoration:none;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:600;}
+.exito{display:none;text-align:center;padding:14px 6px;}
+.exito .icon{width:64px;height:64px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:30px;}
+.exito h2{font-family:'DM Serif Display',serif;font-size:23px;font-weight:400;color:var(--azul);margin-bottom:8px;}
+.exito p{font-size:13.5px;color:var(--gris);margin-bottom:14px;}
+.link-caja{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;}
+.link-caja input{flex:1;min-width:220px;font-size:12.5px;background:var(--azul-light);border-color:var(--azul-light);}
+.btn-copiar,.btn-abrir{background:var(--azul);color:white;border:none;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-copiar:hover,.btn-abrir:hover{background:var(--azul-dark);}
+.btn-sec{background:white;color:var(--azul);border:1.5px solid var(--border);border-radius:10px;padding:11px 18px;font-size:13px;font-weight:600;cursor:pointer;}
+@media(max-width:680px){.grid2,.grid3{grid-template-columns:1fr;}.card,.header{padding-left:20px;padding-right:20px;}.tabla-prod{font-size:12px;}.tabla-prod input{padding:6px;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="header-logo"><img src="logo.png" alt="Helse" onerror="this.style.display='none'"></div>
+    <div class="header-tag">Grupo Helse SAS</div>
+    <h1>Nueva acta de entrega<span>Inicio de Tratamiento · FTA-02-P2D-V.2</span></h1>
+  </div>
+
+  <div class="card">
+
+    <div id="loginReq" class="login-req" style="display:none">
+      <div class="icon">🔒</div>
+      <h2>Inicia sesión para crear actas</h2>
+      <p>Entra al dashboard con tu usuario y vuelve a abrir esta página.</p>
+      <a class="btn-link" href="dashboard_helse.html" target="_blank" rel="noopener">Ir al dashboard</a>
+    </div>
+
+    <div id="app" style="display:none">
+      <form id="form" novalidate>
+
+        <div class="section-title"><span class="sec-num">1</span> Datos de la gestión</div>
+
+        <div class="grid2">
+          <div class="campo" id="cGestor">
+            <label class="campo-label">Nombre del gestor <span class="req">*</span></label>
+            <input type="text" id="gestor" placeholder="Nombre completo">
+            <div class="error-msg">Indica el nombre del gestor.</div>
+          </div>
+          <div class="campo" id="cFecha">
+            <label class="campo-label">Fecha de gestión <span class="req">*</span></label>
+            <input type="date" id="fecha">
+            <div class="error-msg">Selecciona la fecha.</div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="campo" id="cZona">
+            <label class="campo-label">Zona <span class="req">*</span></label>
+            <input type="text" id="zona" placeholder="Ej. Bogotá Norte">
+            <div class="error-msg">Indica la zona.</div>
+          </div>
+          <div class="campo" id="cLab">
+            <label class="campo-label">Fabricante / Laboratorio <span class="req">*</span></label>
+            <input type="text" id="laboratorio" placeholder="Ej. Laboratorio X">
+            <div class="error-msg">Indica el laboratorio.</div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="sec-num">2</span> Productos entregados</div>
+        <div style="overflow-x:auto">
+          <table class="tabla-prod">
+            <thead>
+              <tr><th style="width:36%">Producto</th><th style="width:12%">Cantidad</th><th style="width:18%">Vencimiento</th><th style="width:18%">Ciudad</th><th style="width:16%">Lote</th><th style="width:34px"></th></tr>
+            </thead>
+            <tbody id="tbodyProd"></tbody>
+          </table>
+        </div>
+        <button type="button" class="agregar" id="btnAgregar">＋ Agregar producto</button>
+        <div class="error-msg" id="errProd" style="margin-top:6px">Agrega al menos un producto con nombre y cantidad.</div>
+
+        <div class="section-title"><span class="sec-num">3</span> Paciente beneficiado</div>
+
+        <div class="campo" id="cPacNombre">
+          <label class="campo-label">Nombre del paciente <span class="req">*</span></label>
+          <input type="text" id="pacNombre" placeholder="Nombres y apellidos">
+          <div class="error-msg">Indica el nombre del paciente.</div>
+        </div>
+
+        <div class="grid2">
+          <div class="campo" id="cPacCedula">
+            <label class="campo-label">Cédula del paciente <span class="req">*</span></label>
+            <input type="text" id="pacCedula" inputmode="numeric" placeholder="Ej. 1020304050">
+            <div class="error-msg">Indica la cédula.</div>
+          </div>
+          <div class="campo" id="cPacTel">
+            <label class="campo-label">Teléfono del paciente <span class="req">*</span></label>
+            <input type="tel" id="pacTel" inputmode="tel" placeholder="Ej. 3001234567">
+            <div class="error-msg">Indica el teléfono.</div>
+          </div>
+        </div>
+
+        <div class="section-title"><span class="sec-num">4</span> Gestor comercial y observaciones</div>
+
+        <div class="grid2">
+          <div class="campo" id="cGcNombre">
+            <label class="campo-label">Nombre del gestor comercial <span class="req">*</span></label>
+            <input type="text" id="gcNombre" placeholder="Nombre completo">
+            <div class="error-msg">Indica el gestor comercial.</div>
+          </div>
+          <div class="campo" id="cGcCedula">
+            <label class="campo-label">Cédula del gestor comercial <span class="req">*</span></label>
+            <input type="text" id="gcCedula" inputmode="numeric" placeholder="Ej. 79123456">
+            <div class="error-msg">Indica la cédula.</div>
+          </div>
+        </div>
+
+        <div class="campo" id="cObs">
+          <label class="campo-label">Observaciones</label>
+          <textarea id="obs" placeholder="Observaciones de la entrega (opcional)"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnCrear">Crear acta y generar link</button>
+      </form>
+
+      <div class="exito" id="exito">
+        <div class="icon">✅</div>
+        <h2>Acta creada</h2>
+        <p>Comparte este link con el paciente para que firme. Es único para esta acta.</p>
+        <div class="link-caja">
+          <input type="text" id="linkFirma" readonly>
+          <button type="button" class="btn-copiar" id="btnCopiar">Copiar link</button>
+          <a class="btn-abrir" id="btnAbrir" href="#" target="_blank" rel="noopener">Abrir</a>
+        </div>
+        <button type="button" class="btn-sec" id="btnOtra">Crear otra acta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+});
+const db = firebase.firestore();
+const auth = firebase.auth();
+const $ = (id) => document.getElementById(id);
+const val = (id) => ($(id).value || '').trim();
+
+// fecha de hoy por defecto
+$('fecha').value = new Date().toISOString().slice(0, 10);
+$('fecha').max = new Date().toISOString().slice(0, 10);
+
+// ── Auth: solo usuarios del dashboard ──
+auth.onAuthStateChanged(user => {
+  if (user) {
+    $('app').style.display = 'block';
+    $('loginReq').style.display = 'none';
+    if (!val('gestor')) $('gestor').value = user.displayName || user.email.split('@')[0];
+  } else {
+    $('loginReq').style.display = 'block';
+    $('app').style.display = 'none';
+  }
+});
+
+// ── Productos ──
+function filaProducto() {
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input type="text" class="p-nombre" placeholder="Producto"></td>' +
+    '<td><input type="text" class="p-cantidad" placeholder="1"></td>' +
+    '<td><input type="date" class="p-vencimiento"></td>' +
+    '<td><input type="text" class="p-ciudad" placeholder="Ciudad"></td>' +
+    '<td><input type="text" class="p-lote" placeholder="Lote"></td>' +
+    '<td><button type="button" class="quitar" title="Quitar">✕</button></td>';
+  tr.querySelector('.quitar').addEventListener('click', () => {
+    if ($('tbodyProd').children.length > 1) tr.remove();
+  });
+  return tr;
+}
+function agregarProducto() {
+  $('tbodyProd').appendChild(filaProducto());
+}
+$('btnAgregar').addEventListener('click', agregarProducto);
+agregarProducto();
+
+function leerProductos() {
+  return [...$('tbodyProd').children].map(tr => ({
+    nombre: tr.querySelector('.p-nombre').value.trim(),
+    cantidad: tr.querySelector('.p-cantidad').value.trim(),
+    vencimiento: tr.querySelector('.p-vencimiento').value,
+    ciudad: tr.querySelector('.p-ciudad').value.trim(),
+    lote: tr.querySelector('.p-lote').value.trim(),
+  })).filter(p => p.nombre || p.cantidad || p.lote);
+}
+
+// ── Validación ──
+function marcar(id, ok) {
+  $(id).classList.toggle('invalid', !ok);
+  return ok;
+}
+function validar() {
+  const prods = leerProductos();
+  let ok = true;
+  ok = marcar('cGestor', val('gestor').length >= 3) && ok;
+  ok = marcar('cFecha', !!val('fecha')) && ok;
+  ok = marcar('cZona', val('zona').length >= 2) && ok;
+  ok = marcar('cLab', val('laboratorio').length >= 2) && ok;
+  ok = marcar('cPacNombre', val('pacNombre').length >= 3) && ok;
+  ok = marcar('cPacCedula', /^\d{5,12}$/.test(val('pacCedula'))) && ok;
+  ok = marcar('cPacTel', /^[\d\s+\-]{7,15}$/.test(val('pacTel'))) && ok;
+  ok = marcar('cGcNombre', val('gcNombre').length >= 3) && ok;
+  ok = marcar('cGcCedula', /^\d{5,12}$/.test(val('gcCedula'))) && ok;
+  const prodOk = prods.length > 0 && prods.every(p => p.nombre && p.cantidad);
+  $('errProd').style.display = prodOk ? 'none' : 'block';
+  ok = prodOk && ok;
+  if (!ok) {
+    const primero = document.querySelector('.campo.invalid');
+    if (primero) primero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  return ok;
+}
+
+// ── Crear ──
+$('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!validar()) return;
+  const btn = $('btnCrear');
+  btn.disabled = true; btn.textContent = 'Creando acta...';
+  try {
+    const user = auth.currentUser;
+    const ref = await db.collection('actas_inicio_tratamiento').add({
+      gestorUid: user ? user.uid : '',
+      gestorEmail: user ? user.email : '',
+      gestorNombre: val('gestor'),
+      fecha: val('fecha'),
+      zona: val('zona'),
+      laboratorio: val('laboratorio'),
+      productos: leerProductos(),
+      pacienteNombre: val('pacNombre'),
+      pacienteCedula: val('pacCedula').replace(/\D/g, ''),
+      pacienteTel: val('pacTel'),
+      gcNombre: val('gcNombre'),
+      gcCedula: val('gcCedula').replace(/\D/g, ''),
+      observaciones: val('obs'),
+      estado: 'pendiente',
+      firmaPaciente: null,
+      fechaFirma: null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    const url = location.origin + location.pathname.replace('inicio_tratamiento.html', '') + 'firma_inicio_tratamiento.html?id=' + ref.id;
+    $('linkFirma').value = url;
+    $('btnAbrir').href = url;
+    $('form').style.display = 'none';
+    $('exito').style.display = 'block';
+    $('exito').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (err) {
+    alert('No se pudo crear el acta: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Crear acta y generar link';
+  }
+});
+
+$('btnCopiar').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText($('linkFirma').value);
+    $('btnCopiar').textContent = '¡Copiado!';
+    setTimeout(() => $('btnCopiar').textContent = 'Copiar link', 1800);
+  } catch (e) {
+    $('linkFirma').select();
+    document.execCommand('copy');
+  }
+});
+
+$('btnOtra').addEventListener('click', () => {
+  $('form').reset();
+  $('tbodyProd').innerHTML = '';
+  agregarProducto();
+  $('fecha').value = new Date().toISOString().slice(0, 10);
+  $('form').style.display = 'block';
+  $('exito').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>
