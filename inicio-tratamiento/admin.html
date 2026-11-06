@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración — Inicio de Tratamiento</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #111827; }
+nav {
+  background: #0303B5; color: #fff; padding: 0 28px;
+  display: flex; align-items: center; justify-content: space-between; height: 58px;
+}
+nav img { height: 36px; }
+nav .nav-right { display: flex; align-items: center; gap: 16px; }
+nav .user-name { font-size: 14px; opacity: 0.85; }
+.btn-logout {
+  background: rgba(255,255,255,0.15); border: none; color: #fff;
+  padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+.main { max-width: 1100px; margin: 28px auto; padding: 0 20px 40px; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 2px solid #e5e7eb; }
+.tab {
+  padding: 10px 20px; background: none; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s;
+}
+.tab.active { color: #0303B5; border-bottom-color: #0303B5; }
+
+/* ESTADÍSTICAS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: #fff; border-radius: 10px; padding: 20px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); text-align: center;
+}
+.stat-card .num { font-size: 32px; font-weight: 800; color: #0303B5; }
+.stat-card .lbl { font-size: 12px; color: #6b7280; margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-card.signed .num { color: #065f46; }
+.stat-card.pending .num { color: #92400e; }
+.stat-card.saved .num { color: #1e40af; }
+
+/* FILTROS */
+.filters {
+  background: #fff; border-radius: 10px; padding: 16px 20px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 20px;
+  display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+}
+.filters .f-group { display: flex; flex-direction: column; gap: 4px; }
+.filters label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; }
+.filters input, .filters select {
+  padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 7px;
+  font-size: 13px; outline: none; transition: border-color 0.2s; font-family: inherit;
+}
+.filters input:focus, .filters select:focus { border-color: #0303B5; }
+.btn-filter {
+  background: #0303B5; color: #fff; border: none; padding: 9px 18px;
+  border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.btn-filter:hover { background: #0202a0; }
+.btn-clear {
+  background: #fff; color: #6b7280; border: 1.5px solid #e5e7eb;
+  padding: 9px 14px; border-radius: 7px; font-size: 13px; cursor: pointer;
+}
+
+/* TABLA */
+.table-wrap {
+  background: #fff; border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: #0303B5; color: #fff; padding: 11px 14px;
+  font-size: 11px; font-weight: 600; text-align: left; text-transform: uppercase; letter-spacing: 0.05em;
+}
+tbody tr { border-bottom: 1px solid #f3f4f6; }
+tbody tr:hover { background: #f8f9ff; }
+tbody td { padding: 11px 14px; font-size: 13px; color: #374151; }
+tbody td:first-child { font-weight: 600; color: #111827; }
+
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+}
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-signed { background: #d1fae5; color: #065f46; }
+.badge-saved { background: #dbeafe; color: #1e40af; }
+
+.btn-icon {
+  background: none; border: 1.5px solid #e5e7eb; color: #374151;
+  padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.btn-icon:hover { border-color: #0303B5; color: #0303B5; }
+
+/* USUARIOS */
+.user-card {
+  background: #fff; border-radius: 10px; padding: 18px 20px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.user-info h3 { font-size: 15px; font-weight: 700; }
+.user-info p { font-size: 13px; color: #6b7280; margin-top: 2px; }
+.rol-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-left: 8px;
+}
+.rol-superadmin { background: #0303B5; color: #fff; }
+.rol-admin { background: #dbeafe; color: #1e40af; }
+.rol-visitador { background: #f3f4f6; color: #374151; }
+
+/* Nuevo usuario form */
+.new-user-form {
+  background: #fff; border-radius: 10px; padding: 22px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 20px;
+}
+.new-user-form h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: #0303B5; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #374151; display: block; margin-bottom: 4px; }
+input, select {
+  width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 7px;
+  font-size: 14px; outline: none; transition: border-color 0.2s; font-family: inherit;
+}
+input:focus, select:focus { border-color: #0303B5; }
+.btn-primary {
+  background: #0303B5; color: #fff; border: none; padding: 10px 20px;
+  border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.btn-primary:hover { background: #0202a0; }
+.btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.empty-state { text-align: center; padding: 40px; color: #9ca3af; font-size: 14px; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: #1f2937; color: #fff;
+  padding: 12px 20px; border-radius: 8px; font-size: 14px; z-index: 9999;
+  opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #065f46; }
+.toast.error { background: #7f1d1d; }
+
+.loading-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8);
+  z-index: 2000; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+}
+.loading-overlay.open { display: flex; }
+.big-spinner {
+  width: 40px; height: 40px;
+  border: 4px solid #e5e7eb; border-top-color: #0303B5;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAHBhIQExQWFhUVGRcbFxgVGRYfIBohHhgiHRsXGRodHikjHSAlHhkaIzIlJy0tLi8uGiMzODMtNyguMS0BCgoKDg0NGRAQFzcgHR4tNys3KzAxMSs3LS83KzctLy01Ny01Ny0rLS03KysuLSstMzc2LTcvNzcrLS0tLTctOP/AABEIAMgAyAMBIgACEQEDEQH/xAAcAAEAAgIDAQAAAAAAAAAAAAAABgcFCAIDBAH/xABMEAABAwIDBAUFCwgIBwAAAAABAAIDBAQFBhIHEyExIkFRYXEUMoGRoRUWIzY3QnKSsbKzM0NSVHOC0vAIFzVjdKLB0yQ0U1Vig9H/xAAZAQEAAwEBAAAAAAAAAAAAAAAAAgMEAQX/xAAgEQEAAgICAwEBAQAAAAAAAAAAAQIDERJBBCExUSIT/9oADAMBAAIRAxEAPwC8EREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREGP+yqr/AOYzf0D/APFYHEcUhw5gdLI1oJ4C5ufQBzWRVd5nzPPitw6Seq/SbeTO14PWxB9K51yjlPJ9ViNw6eouByYDpYO4cPEoL3xnO1BTOtHJ0h/MY4j0i1lxPV5gqGOvNP2MGrw0kjwuqkjY2RpDgCDwIPJZKixOopmuZHI9jXcWte4A+gcEF1RbSqNzQ6aCdrh1a2vHrC2DC8VgxaIugkD7cQNj6DwPqWluHaxHFb+i8lDXTUz9UUj43d7HFp9YKDUZkp8FxNgZVua1w+c3Qfq4/5XNkw7L9OzV7pJGTsaS12lwtyvcFvFHj+I0gAiqpGgcgXEj0G4Wvp8xYhNcPqZDf8ALd/sEGPo8AgqY9UEzH9jm3v4XuPStYvDRVEkLg6N7mOHJzSQR6QvdjmNTYvMHzuLrd3Qz9g6vFayCBkTQGNa0DkALBB0vJGcKug/I3LHMHzu1jtHgbj0LrGZsejxVgZUNDid7HgafAcFkQq4zVgz8Ox6WMAhwJfGeVn8fOHz4q6sk5ojyyGxzEcnO0/EZo0nUb9x5Hv47wpjVVTYIi6RwaxxaSSSAAPEqCWRkj2vYHNIIIO4gg8CF1dERER/9k=" alt="Grupo Helse">
+  <div class="nav-right">
+    <span class="user-name" id="navUser"></span>
+    <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('actas', this)">Actas</button>
+    <button class="tab" onclick="setTab('usuarios', this)" id="tabUsuarios" style="display:none">Usuarios</button>
+  </div>
+
+  <!-- TAB ACTAS -->
+  <div id="tab-actas">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num" id="stat-total">—</div><div class="lbl">Total</div></div>
+      <div class="stat-card signed"><div class="num" id="stat-signed">—</div><div class="lbl">Firmadas</div></div>
+      <div class="stat-card pending"><div class="num" id="stat-pending">—</div><div class="lbl">Pendiente Firma</div></div>
+      <div class="stat-card saved"><div class="num" id="stat-saved">—</div><div class="lbl">Guardadas</div></div>
+    </div>
+
+    <div class="filters">
+      <div class="f-group">
+        <label>Buscar paciente</label>
+        <input type="text" id="f-buscar" placeholder="Nombre..." oninput="filtrarActas()">
+      </div>
+      <div class="f-group">
+        <label>Estado</label>
+        <select id="f-estado" onchange="filtrarActas()">
+          <option value="">Todos</option>
+          <option value="firmado">Firmado</option>
+          <option value="pendiente">Pendiente firma</option>
+          <option value="guardado">Guardado</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label>Desde</label>
+        <input type="date" id="f-desde" onchange="filtrarActas()">
+      </div>
+      <div class="f-group">
+        <label>Hasta</label>
+        <input type="date" id="f-hasta" onchange="filtrarActas()">
+      </div>
+      <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Paciente</th>
+            <th>Gestor</th>
+            <th>Fecha</th>
+            <th>Zona</th>
+            <th>Productos</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="actasTableBody">
+          <tr><td colspan="7" class="empty-state">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB USUARIOS -->
+  <div id="tab-usuarios" style="display:none">
+    <div class="new-user-form" id="newUserSection" style="display:none">
+      <h3>Crear nuevo usuario</h3>
+      <div class="form-row">
+        <div>
+          <label>Nombre completo</label>
+          <input type="text" id="nu-nombre" placeholder="Nombre">
+        </div>
+        <div>
+          <label>Correo electrónico</label>
+          <input type="email" id="nu-email" placeholder="correo@helse.com">
+        </div>
+        <div>
+          <label>Contraseña</label>
+          <input type="password" id="nu-pass" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div>
+          <label>Rol</label>
+          <select id="nu-rol">
+            <option value="visitador">Visitador</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn-primary" id="btnCrearUsuario" onclick="crearUsuario()">Crear Usuario</button>
+      </div>
+    </div>
+    <div id="usuariosList"></div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="big-spinner"></div>
+  <p style="font-size:14px;color:#374151" id="loadingMsg">Cargando...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signOut,
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection,
+  getDocs, query, orderBy, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDd4A_zjK_ATHNiT4ZszUxiI0yaJ23B69c",
+  authDomain: "inicio-tratamiento.firebaseapp.com",
+  projectId: "inicio-tratamiento",
+  storageBucket: "inicio-tratamiento.firebasestorage.app",
+  messagingSenderId: "272460050530",
+  appId: "1:272460050530:web:055247079f3beda38d213b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let currentRol = null;
+let todasActas = [];
+
+onAuthStateChanged(auth, async user => {
+  if (!user) { window.location.href = 'index.html'; return; }
+  const snap = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!snap.exists()) { window.location.href = 'index.html'; return; }
+  currentRol = snap.data().rol;
+  if (currentRol !== 'admin' && currentRol !== 'superadmin') {
+    window.location.href = 'gestor.html'; return;
+  }
+  currentUser = user;
+  document.getElementById('navUser').textContent = snap.data().nombre || user.email;
+
+  if (currentRol === 'superadmin') {
+    document.getElementById('tabUsuarios').style.display = '';
+    document.getElementById('newUserSection').style.display = '';
+  }
+
+  cargarActas();
+});
+
+// TABS
+window.setTab = function(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-actas').style.display = tab === 'actas' ? '' : 'none';
+  document.getElementById('tab-usuarios').style.display = tab === 'usuarios' ? '' : 'none';
+  if (tab === 'usuarios') cargarUsuarios();
+};
+
+// CARGAR ACTAS
+async function cargarActas() {
+  try {
+    const q = query(collection(db, 'actas'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    todasActas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderActas(todasActas);
+    actualizarStats(todasActas);
+  } catch (e) {
+    document.getElementById('actasTableBody').innerHTML = `<tr><td colspan="7" class="empty-state" style="color:#dc2626">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderActas(actas) {
+  const tbody = document.getElementById('actasTableBody');
+  if (!actas.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay actas registradas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = actas.map(a => {
+    const badge = a.estado === 'firmado'
+      ? '<span class="badge badge-signed">✔ Firmado</span>'
+      : a.estado === 'pendiente'
+        ? '<span class="badge badge-pending">⏳ Pendiente</span>'
+        : '<span class="badge badge-saved">📄 Guardado</span>';
+    return `<tr>
+      <td>${a.pacienteNombre||'—'}</td>
+      <td>${a.gestorNombre||'—'}</td>
+      <td>${a.fecha||'—'}</td>
+      <td>${a.zona||'—'}</td>
+      <td>${(a.productos||[]).length}</td>
+      <td>${badge}</td>
+      <td>
+        <button class="btn-icon" onclick="descargarPDF('${a.id}')">⬇ PDF</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function actualizarStats(actas) {
+  document.getElementById('stat-total').textContent = actas.length;
+  document.getElementById('stat-signed').textContent = actas.filter(a => a.estado === 'firmado').length;
+  document.getElementById('stat-pending').textContent = actas.filter(a => a.estado === 'pendiente').length;
+  document.getElementById('stat-saved').textContent = actas.filter(a => a.estado === 'guardado').length;
+}
+
+window.filtrarActas = function() {
+  const buscar = document.getElementById('f-buscar').value.toLowerCase();
+  const estado = document.getElementById('f-estado').value;
+  const desde = document.getElementById('f-desde').value;
+  const hasta = document.getElementById('f-hasta').value;
+
+  const filtradas = todasActas.filter(a => {
+    if (buscar && !(a.pacienteNombre||'').toLowerCase().includes(buscar)) return false;
+    if (estado && a.estado !== estado) return false;
+    if (desde && a.fecha < desde) return false;
+    if (hasta && a.fecha > hasta) return false;
+    return true;
+  });
+  renderActas(filtradas);
+  actualizarStats(filtradas);
+};
+
+window.limpiarFiltros = function() {
+  document.getElementById('f-buscar').value = '';
+  document.getElementById('f-estado').value = '';
+  document.getElementById('f-desde').value = '';
+  document.getElementById('f-hasta').value = '';
+  renderActas(todasActas);
+  actualizarStats(todasActas);
+};
+
+// DESCARGAR PDF
+window.descargarPDF = async function(actaId) {
+  setLoading(true, 'Generando PDF...');
+  try {
+    const acta = todasActas.find(a => a.id === actaId);
+    if (!acta) throw new Error('No encontrada');
+    setLoading(false);
+    generarPDF(acta, actaId);
+  } catch(e) {
+    setLoading(false);
+    showToast('Error: ' + e.message, 'error');
+  }
+};
+
+// USUARIOS
+async function cargarUsuarios() {
+  const list = document.getElementById('usuariosList');
+  list.innerHTML = '<div class="empty-state">Cargando...</div>';
+  try {
+    const snap = await getDocs(collection(db, 'usuarios'));
+    if (snap.empty) { list.innerHTML = '<div class="empty-state">No hay usuarios.</div>'; return; }
+    list.innerHTML = '';
+    snap.forEach(d => {
+      const u = d.data();
+      const card = document.createElement('div');
+      card.className = 'user-card';
+      card.innerHTML = `
+        <div class="user-info">
+          <h3>${u.nombre||'Sin nombre'} <span class="rol-badge rol-${u.rol||'visitador'}">${u.rol||''}</span></h3>
+          <p>${u.email||''}</p>
+        </div>
+        ${currentRol === 'superadmin' && u.rol !== 'superadmin'
+          ? `<button class="btn-icon red" onclick="eliminarUsuario('${d.id}')">🗑 Eliminar</button>`
+          : ''}
+      `;
+      list.appendChild(card);
+    });
+  } catch(e) {
+    list.innerHTML = `<div class="empty-state" style="color:#dc2626">Error: ${e.message}</div>`;
+  }
+}
+
+window.crearUsuario = async function() {
+  const nombre = document.getElementById('nu-nombre').value.trim();
+  const email = document.getElementById('nu-email').value.trim();
+  const pass = document.getElementById('nu-pass').value;
+  const rol = document.getElementById('nu-rol').value;
+  const btn = document.getElementById('btnCrearUsuario');
+
+  if (!nombre || !email || !pass) { showToast('Completa todos los campos.', 'error'); return; }
+  if (pass.length < 6) { showToast('La contraseña debe tener al menos 6 caracteres.', 'error'); return; }
+
+  btn.disabled = true;
+  setLoading(true, 'Creando usuario...');
+
+  try {
+    // Segunda instancia de Firebase — no toca la sesión del superadmin
+    const { initializeApp: initApp2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth: getAuth2, createUserWithEmailAndPassword: createUser2 } = 
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+    const app2 = initApp2(firebaseConfig, 'secondary');
+    const auth2 = getAuth2(app2);
+
+    const cred = await createUser2(auth2, email, pass);
+    
+    // Escribimos con la sesión del superadmin (auth principal, no auth2)
+    await setDoc(doc(db, 'usuarios', cred.user.uid), {
+      nombre, email, rol, createdAt: new Date().toISOString()
+    });
+
+    // Cerramos sesión de la instancia secundaria
+    await auth2.signOut();
+
+    setLoading(false);
+    showToast('Usuario creado correctamente.', 'success');
+    document.getElementById('nu-nombre').value = '';
+    document.getElementById('nu-email').value = '';
+    document.getElementById('nu-pass').value = '';
+    cargarUsuarios();
+  } catch(e) {
+    setLoading(false);
+    let msg = e.message;
+    if (e.code === 'auth/email-already-in-use') msg = 'Este correo ya está registrado.';
+    showToast('Error: ' + msg, 'error');
+  }
+  btn.disabled = false;
+};
+
+window.eliminarUsuario = async function(uid) {
+  if (!confirm('¿Eliminar este usuario del sistema?')) return;
+  try {
+    await deleteDoc(doc(db, 'usuarios', uid));
+    showToast('Usuario eliminado.', 'success');
+    cargarUsuarios();
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+};
+
+window.cerrarSesion = async function() {
+  await signOut(auth);
+  window.location.href = 'index.html';
+};
+
+function setLoading(show, msg = '') {
+  document.getElementById('loadingOverlay').classList.toggle('open', show);
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+}
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// PDF
+window.generarPDF = function(acta, actaId) {
+  const LOGO = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAHBhIQExQWFhUVGRcbFxgVGRYfIBohHhgiHRsXGRodHikjHSAlHhkaIzIlJy0tLi8uGiMzODMtNyguMS0BCgoKDg0NGRAQFzcgHR4tNys3KzAxMSs3LS83KzctLy01Ny01Ny0rLS03KysuLSstMzc2LTcvNzcrLS0tLTctOP/AABEIAMgAyAMBIgACEQEDEQH/xAAcAAEAAgIDAQAAAAAAAAAAAAAABgcFCAIDBAH/xABMEAABAwIDBAUFCwgIBwAAAAABAAIDBAQFBhIHEyExIkFRYXEUMoGRoRUWIzY3QnKSsbKzM0NSVHOC0vAIFzVjdKLB0yQ0U1Vig9H/xAAZAQEAAwEBAAAAAAAAAAAAAAAAAgMEAQX/xAAgEQEAAgICAwEBAQAAAAAAAAAAAQIDERJBBCExUSIT/9oADAMBAAIRAxEAPwC8EREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREGP+yqr/AOYzf0D/APFYHEcUhw5gdLI1oJ4C5ufQBzWRVd5nzPPitw6Seq/SbeTO14PWxB9K51yjlPJ9ViNw6eouByYDpYO4cPEoL3xnO1BTOtHJ0h/MY4j0i1lxPV5gqGOvNP2MGrw0kjwuqkjY2RpDgCDwIPJZKixOopmuZHI9jXcWte4A+gcEF1RbSqNzQ6aCdrh1a2vHrC2DC8VgxaIugkD7cQNj6DwPqWluHaxHFb+i8lDXTUz9UUj43d7HFp9YKDUZkp8FxNgZVua1w+c3Qfq4/5XNkw7L9OzV7pJGTsaS12lwtyvcFvFHj+I0gAiqpGgcgXEj0G4Wvp8xYhNcPqZDf8ALd/sEGPo8AgqY9UEzH9jm3v4XuPStYvDRVEkLg6N7mOHJzSQR6QvdjmNTYvMHzuLrd3Qz9g6vFayCBkTQGNa0DkALBB0vJGcKug/I3LHMHzu1jtHgbj0LrGZsejxVgZUNDid7HgafAcFkQq4zVgz8Ox6WMAhwJfGeVn8fOHz4q6sk5ojyyGxzEcnO0/EZo0nUb9x5Hv47wpjVVTYIi6RwaxxaSSSAAPEqCWRkj2vYHNIIIO4gg8CF1dERER/9k=';
+
+  const w = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const PW = 210, ML = 14, MR = 14, MT = 10;
+  let y = MT;
+
+  w.addImage(LOGO, 'JPEG', ML, y, 36, 16);
+  w.setFillColor(3,3,181);
+  w.rect(54, y, PW-54-MR, 8, 'F');
+  w.setFont('helvetica','bold'); w.setFontSize(9); w.setTextColor(255,255,255);
+  w.text('GRUPO HELSE SAS', 56, y+5.5);
+  w.setFillColor(240,242,255); w.rect(54, y+8, PW-54-MR, 8, 'F');
+  w.setTextColor(3,3,181); w.setFontSize(8.5);
+  w.text('FORMATO: ACTA DE ENTREGA DE MUESTRAS MÉDICAS', 56, y+13);
+  w.setFillColor(240,242,255); w.rect(54, y+16, PW-54-MR, 6, 'F');
+  w.setTextColor(50,50,50); w.setFontSize(7.5);
+  w.text('Código: FTA-02-P2D-V.2    Vigente desde: 20/10/2025    Página 1 de 1', 56, y+20);
+  y += 30;
+
+  const colW = (PW-ML-MR-6)/3;
+  const fieldRow = (label, value, x, width, yy) => {
+    w.setFont('helvetica','bold'); w.setFontSize(8); w.setTextColor(80,80,80);
+    w.text(label+':', x, yy);
+    w.setFont('helvetica','normal'); w.setTextColor(20,20,20);
+    w.text(String(value||''), x+2, yy+4.5);
+    w.setDrawColor(200,200,200); w.line(x, yy+5.5, x+width, yy+5.5);
+  };
+  fieldRow('Nombre del Gestor', acta.gestorNombre, ML, colW, y);
+  fieldRow('Fecha de Gestión', acta.fecha, ML+colW+3, colW, y);
+  fieldRow('Zona', acta.zona, ML+(colW+3)*2, colW, y);
+  y += 16;
+  fieldRow('Fabricante / Laboratorio', acta.laboratorio, ML, PW-ML-MR, y);
+  y += 16;
+
+  w.setFont('helvetica','bold'); w.setFontSize(9); w.setTextColor(255,255,255);
+  w.setFillColor(3,3,181); w.rect(ML, y, PW-ML-MR, 6.5, 'F');
+  w.text('RELACIÓN DE PRODUCTOS ENTREGADOS', ML+2, y+4.5);
+  y += 7;
+
+  const cols=[8,64,18,30,38,22];
+  const headers=['#','Nombre del Producto','Cantidad','F. Vencimiento','Ciudad / Municipio','Lote'];
+  let cx=ML;
+  w.setFillColor(230,232,255); w.rect(ML, y, PW-ML-MR, 6, 'F');
+  w.setFont('helvetica','bold'); w.setFontSize(7.5); w.setTextColor(3,3,181);
+  headers.forEach((h,i)=>{ w.text(h,cx+1,y+4.2); cx+=cols[i]; });
+  y+=6;
+
+  const allProds=[...(acta.productos||[])];
+  while(allProds.length<5) allProds.push({nombre:'',cantidad:'',vencimiento:'',ciudad:'',lote:''});
+  allProds.forEach((p,idx)=>{
+    cx=ML;
+    w.setFillColor(...(idx%2===0?[255,255,255]:[248,249,255]));
+    w.rect(ML,y,PW-ML-MR,6,'F');
+    w.setFont('helvetica','normal'); w.setFontSize(8); w.setTextColor(30,30,30);
+    [String(idx+1),p.nombre||'',String(p.cantidad||''),p.vencimiento||'',p.ciudad||'',p.lote||''].forEach((v,i)=>{w.text(v,cx+1,y+4.2);cx+=cols[i];});
+    w.setDrawColor(220,220,220); w.rect(ML,y,PW-ML-MR,6);
+    y+=6;
+  });
+  y+=8;
+
+  const halfW=(PW-ML-MR-6)/2;
+  w.setFont('helvetica','bold'); w.setFontSize(8.5); w.setTextColor(3,3,181);
+  w.setFillColor(240,242,255);
+  w.rect(ML,y,halfW,6,'F'); w.rect(ML+halfW+6,y,halfW,6,'F');
+  w.text('GESTOR COMERCIAL / P2D',ML+2,y+4.2);
+  w.text('PACIENTE BENEFICIADO',ML+halfW+8,y+4.2);
+  y+=7;
+  w.setFont('helvetica','normal'); w.setFontSize(8); w.setTextColor(50,50,50);
+  w.text('Nombre:',ML,y); w.setFont('helvetica','bold'); w.setTextColor(20,20,20);
+  w.text(acta.gcNombre||'',ML+18,y);
+  w.text('Nombre:',ML+halfW+6,y); w.text(acta.pacienteNombre||'',ML+halfW+24,y);
+  y+=7;
+  w.setFont('helvetica','normal'); w.setTextColor(50,50,50);
+  w.text('Cédula:',ML,y); w.setFont('helvetica','bold'); w.setTextColor(20,20,20);
+  w.text(acta.gcCedula||'',ML+14,y);
+  w.text('Cédula:',ML+halfW+6,y); w.text(acta.pacienteCedula||'',ML+halfW+20,y);
+  y+=7;
+  w.setFont('helvetica','normal'); w.setTextColor(50,50,50);
+  w.text('Teléfono:',ML+halfW+6,y); w.setFont('helvetica','bold'); w.setTextColor(20,20,20);
+  w.text(acta.pacienteTel||'',ML+halfW+22,y);
+  y+=10;
+
+  w.setFont('helvetica','bold'); w.setFontSize(8.5); w.setTextColor(3,3,181);
+  w.setFillColor(240,242,255);
+  w.rect(ML,y,halfW,6,'F'); w.rect(ML+halfW+6,y,halfW,6,'F');
+  w.text('FIRMA GESTOR COMERCIAL',ML+2,y+4.2);
+  w.text('FIRMA PACIENTE',ML+halfW+8,y+4.2);
+  y+=7;
+  w.setDrawColor(180,180,180);
+  w.rect(ML,y,halfW,24);
+  w.setFont('helvetica','italic'); w.setFontSize(7); w.setTextColor(160,160,160);
+  w.text('Firma del gestor',ML+2,y+15);
+  w.rect(ML+halfW+6,y,halfW,24);
+  if(acta.firmaPaciente){
+    try{w.addImage(acta.firmaPaciente,'PNG',ML+halfW+7,y+1,halfW-2,22);}catch(e){}
+  } else {
+    w.text('Firma del paciente',ML+halfW+8,y+15);
+  }
+  y+=28;
+  if(acta.fechaFirma){
+    w.setFont('helvetica','normal'); w.setFontSize(7.5); w.setTextColor(100,100,100);
+    w.text('Fecha de firma: '+new Date(acta.fechaFirma).toLocaleString('es-CO'),ML+halfW+6,y);
+    y+=8;
+  }
+
+  w.setFont('helvetica','bold'); w.setFontSize(8.5); w.setTextColor(3,3,181);
+  w.setFillColor(240,242,255); w.rect(ML,y,PW-ML-MR,6,'F');
+  w.text('OBSERVACIONES',ML+2,y+4.2);
+  y+=7;
+  w.setFont('helvetica','normal'); w.setFontSize(8); w.setTextColor(30,30,30);
+  const obsL=w.splitTextToSize(acta.observaciones||'Sin observaciones.',PW-ML-MR-4);
+  w.text(obsL,ML+2,y+4);
+  y+=obsL.length*5+6;
+
+  w.setFillColor(250,250,255); w.rect(ML,y,PW-ML-MR,18,'F');
+  w.setFont('helvetica','italic'); w.setFontSize(6.5); w.setTextColor(80,80,80);
+  const nota='Nota: APME – USO MÉDICO ESPECIAL. Producto sin valor comercial. NO TIENE PRECIO – PROHIBIDA SU VENTA. Uso exclusivo bajo indicación médica o nutricional. No es un medicamento. Prohibido su uso diferente al indicado. Programa de Apoyo a Pacientes. Cumple normatividad del INVIMA.';
+  w.text(w.splitTextToSize(nota,PW-ML-MR-4),ML+2,y+4);
+  w.save(`Acta_${acta.pacienteNombre||actaId}_${acta.fecha||''}.pdf`);
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>window.jsPDF = window.jspdf ? window.jspdf.jsPDF : null;</script>
+</body>
+</html>
