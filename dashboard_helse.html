@@ -121,6 +121,7 @@ td.nombre{font-weight:600;}
 .usuario-rol{font-size:11px;color:var(--gris);margin-top:2px;}
 .badge-sa{background:#EDE7F6;color:#4527A0;}
 .badge-adm{background:var(--verde-light);color:var(--verde-dark);}
+.badge-gestor{background:#FFF3E0;color:#BF360C;}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
@@ -363,12 +364,14 @@ td.nombre{font-weight:600;}
     <div class="usuarios-section">
       <h2 style="font-size:16px;font-weight:600;margin-bottom:16px;">👥 Gestión de Usuarios</h2>
       <div class="form-usuario">
+        <div><label>Nombre</label><input type="text" id="nuevoNombre" placeholder="Nombre completo" style="width:190px;"></div>
         <div><label>Correo electrónico</label><input type="email" id="nuevoEmail" placeholder="usuario@helse.com.co" style="width:230px;"></div>
         <div><label>Contraseña temporal</label><input type="text" id="nuevoPass" placeholder="Mínimo 6 caracteres" style="width:180px;"></div>
         <div><label>Rol</label>
           <select id="nuevoRol">
             <option value="admin">Admin (solo lectura)</option>
             <option value="superadmin">SuperAdmin (control total)</option>
+            <option value="gestor">Gestor (solo sus actas)</option>
           </select>
         </div>
         <button class="btn-generar" onclick="crearUsuario()">+ Crear usuario</button>
@@ -413,6 +416,7 @@ auth.onAuthStateChanged(async user=>{
     const snap=await db.collection('usuarios').doc(user.uid).get();
     if(!snap.exists){auth.signOut();return;}
     rolActual=snap.data().rol;
+    if(rolActual==='gestor'){ location.replace('gestor.html'); return; }
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='block';
     document.getElementById('userEmail').textContent=user.email;
@@ -1269,11 +1273,12 @@ async function cargarUsuarios(){
   grid.innerHTML=users.map(u=>{
     const ini=(u.email||'?').slice(0,2).toUpperCase();
     const esSA=u.rol==='superadmin';
+    const esG=u.rol==='gestor';
     return `<div class="usuario-card">
       <div class="usuario-avatar">${ini}</div>
       <div class="usuario-info">
-        <div class="usuario-email">${u.email}</div>
-        <div class="usuario-rol"><span class="badge ${esSA?'badge-sa':'badge-adm'}">${esSA?'👑 SuperAdmin':'👁️ Admin'}</span></div>
+        <div class="usuario-email">${u.nombre?u.nombre+' · ':''}${u.email}</div>
+        <div class="usuario-rol"><span class="badge ${esSA?'badge-sa':esG?'badge-gestor':'badge-adm'}">${esSA?'👑 SuperAdmin':esG?'🧑‍💼 Gestor':'👁️ Admin'}</span></div>
       </div>
       ${!esSA?`<button class="btn-revocar" data-id="${u.id}" data-email="${u.email}" onclick="eliminarUsuario(this.dataset.id,this.dataset.email)">Eliminar</button>`:''}
     </div>`;
@@ -1281,14 +1286,24 @@ async function cargarUsuarios(){
 }
 
 async function crearUsuario(){
+  const nombre=document.getElementById('nuevoNombre').value.trim();
   const email=document.getElementById('nuevoEmail').value.trim();
   const pass=document.getElementById('nuevoPass').value;
   const rol=document.getElementById('nuevoRol').value;
-  if(!email||!pass)return alert('Completa todos los campos.');
+  if(!email||!pass)return alert('Completa correo y contraseña.');
   if(pass.length<6)return alert('La contraseña debe tener mínimo 6 caracteres.');
+  if(rol==='gestor'&&!nombre)return alert('Escribe el nombre del gestor.');
   try{
-    const cred=await auth.createUserWithEmailAndPassword(email,pass);
-    await db.collection('usuarios').doc(cred.user.uid).set({email,rol,creadoEn:Date.now()});
+    // App secundaria: crea el usuario sin cerrar la sesión del administrador.
+    const sec=firebase.initializeApp(firebase.app().options,'creador-'+Date.now());
+    const secAuth=sec.auth();
+    const cred=await secAuth.createUserWithEmailAndPassword(email,pass);
+    await db.collection('usuarios').doc(cred.user.uid).set({
+      email,rol,nombre:nombre||email.split('@')[0],creadoEn:Date.now()
+    });
+    await secAuth.signOut();
+    try{ await sec.delete(); }catch(e){}
+    document.getElementById('nuevoNombre').value='';
     document.getElementById('nuevoEmail').value='';
     document.getElementById('nuevoPass').value='';
     alert('✅ Usuario '+email+' creado como '+rol);

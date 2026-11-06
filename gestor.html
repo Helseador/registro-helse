@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Gestores – Helse</title>
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="acta_inicio_pdf.js"></script>
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122A52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--rojo:#C62828;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;line-height:1.5;}
+/* login */
+.login{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0D2B5E 0%,#1B3A6B 60%,#2E7D32 100%);padding:16px;}
+.login-card{background:#fff;border-radius:20px;padding:34px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.login-card img{height:56px;display:block;margin:0 auto 14px;background:#fff;border-radius:10px;}
+.login-card h1{font-family:'DM Serif Display',serif;font-size:21px;font-weight:400;text-align:center;color:var(--azul);}
+.login-card p{font-size:12.5px;color:var(--gris);text-align:center;margin:4px 0 20px;}
+.login-card input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14.5px;margin-bottom:10px;outline:none;}
+.login-card input:focus{border-color:var(--azul);}
+.login-card button{width:100%;background:var(--azul);color:#fff;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;}
+.login-card button:hover{background:var(--azul-dark);}
+.login-error{display:none;color:var(--rojo);font-size:12.5px;text-align:center;margin-top:10px;}
+/* app */
+.app{display:none;}
+.topbar{background:var(--azul);color:#fff;padding:13px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(27,58,107,.2);}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-left img{height:34px;background:#fff;border-radius:8px;padding:3px 8px;}
+.topbar h1{font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;}
+.topbar p{font-size:11px;opacity:.75;}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.user{font-size:11.5px;opacity:.85;}
+.btn-top{background:#fff;color:var(--azul-dark);border:none;border-radius:8px;padding:7px 13px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-top:hover{background:var(--azul-light);}
+.btn-top.danger{background:#FFEBEE;color:var(--rojo);}
+.container{max-width:1080px;margin:0 auto;padding:22px 18px 60px;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
+.stat{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 12px rgba(27,58,107,.08);border-top:3px solid var(--azul);}
+.stat b{font-size:27px;display:block;}
+.stat span{font-size:12px;color:var(--gris);}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.search{flex:1;min-width:220px;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13.5px;outline:none;background:#fff;}
+.search:focus{border-color:var(--azul);}
+.btn-nueva{background:var(--verde);color:#fff;border-radius:10px;padding:11px 16px;font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-nueva:hover{filter:brightness(.92);}
+.panel{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(27,58,107,.08);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead{background:var(--azul);color:#fff;}
+th{padding:10px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid #EFF3F9;vertical-align:middle;}
+tbody tr:hover{background:var(--azul-bg);}
+.btn-acc{border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;background:var(--azul-light);color:var(--azul);white-space:nowrap;}
+.btn-acc:hover{background:var(--azul);color:#fff;}
+.badge{border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge.ok{background:#E8F5E9;color:#2E7D32;}
+.badge.pend{background:#FFF8E1;color:#8A5A00;}
+.empty{text-align:center;padding:40px;color:var(--gris);font-size:13.5px;}
+.loading{text-align:center;padding:36px;color:var(--gris);}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--azul);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:620px;max-height:92vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+.modal-head{background:var(--azul);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;}
+.modal-head h2{font-family:'DM Serif Display',serif;font-size:16px;font-weight:400;}
+.modal-head button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;}
+.modal-body{padding:18px;}
+.fila{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #EFF3F9;font-size:13px;}
+.fila b{min-width:150px;color:var(--gris);font-weight:600;}
+.firma-img{max-width:100%;border:1.5px solid var(--border);border-radius:10px;margin-top:6px;background:#fff;}
+@media(max-width:720px){.panel{overflow-x:auto;}table{min-width:760px;}.topbar{padding:11px 14px;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginScreen">
+  <div class="login-card">
+    <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+    <h1>Portal de Gestores</h1>
+    <p>Inicio de Tratamiento · Grupo Helse SAS</p>
+    <input type="email" id="email" placeholder="Correo electrónico" autocomplete="email">
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()">
+    <button onclick="entrar()" id="btnLogin">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appScreen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+      <div>
+        <h1>Portal de Gestores</h1>
+        <p>Inicio de Tratamiento</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="user" id="userName"></span>
+      <a class="btn-top" href="inicio_tratamiento.html" target="_blank" rel="noopener">＋ Nueva acta</a>
+      <button class="btn-top danger" onclick="salir()">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="stats">
+      <div class="stat"><b id="stTotal">—</b><span>Mis actas</span></div>
+      <div class="stat"><b id="stPend">—</b><span>Pendientes de firma</span></div>
+      <div class="stat"><b id="stFirm">—</b><span>Firmadas</span></div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" class="search" id="buscador" placeholder="🔍 Buscar por paciente, cédula o zona…">
+      <a class="btn-nueva" href="inicio_tratamiento.html" target="_blank" rel="noopener">＋ Nueva acta</a>
+      <button class="btn-top" style="background:var(--azul);color:#fff;" onclick="cargarMisActas()">↻ Actualizar</button>
+    </div>
+
+    <div class="panel">
+      <div class="loading" id="loading"><div class="spinner"></div>Cargando tus actas…</div>
+      <table id="tabla" style="display:none;">
+        <thead><tr><th>#</th><th>Fecha</th><th>Paciente</th><th>Cédula</th><th>Estado</th><th>Link de firma</th><th>Acta</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none;">Todavía no tienes actas. Crea la primera con “＋ Nueva acta”.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)cerrar()">
+  <div class="modal">
+    <div class="modal-head"><h2 id="mTitle">Detalle</h2><button onclick="cerrar()">✕</button></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+});
+const auth = firebase.auth();
+const db = firebase.firestore();
+const $ = (id) => document.getElementById(id);
+let misActas = [], miNombre = '', miUid = '';
+
+function salir() { auth.signOut(); }
+
+async function entrar() {
+  const email = $('email').value.trim();
+  const pass = $('pass').value;
+  const err = $('loginError');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Completa correo y contraseña.'; err.style.display = 'block'; return; }
+  $('btnLogin').disabled = true; $('btnLogin').textContent = 'Ingresando…';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch (e) {
+    err.textContent = 'Correo o contraseña incorrectos.';
+    err.style.display = 'block';
+    $('btnLogin').disabled = false; $('btnLogin').textContent = 'Ingresar';
+  }
+}
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    $('loginScreen').style.display = 'flex';
+    $('appScreen').style.display = 'none';
+    $('btnLogin').disabled = false; $('btnLogin').textContent = 'Ingresar';
+    return;
+  }
+  const snap = await db.collection('usuarios').doc(user.uid).get();
+  if (!snap.exists) {
+    await auth.signOut();
+    $('loginError').textContent = 'Usuario sin perfil asignado. Contacta al administrador.';
+    $('loginError').style.display = 'block';
+    return;
+  }
+  const data = snap.data();
+  if (data.rol !== 'gestor') {
+    // administradores van al dashboard; nadie más entra aquí
+    if (data.rol === 'admin' || data.rol === 'superadmin') {
+      location.replace('dashboard_helse.html');
+    } else {
+      await auth.signOut();
+      $('loginError').textContent = 'Este portal es solo para gestores.';
+      $('loginError').style.display = 'block';
+    }
+    return;
+  }
+  miUid = user.uid;
+  miNombre = data.nombre || user.email;
+  $('userName').textContent = miNombre;
+  $('loginScreen').style.display = 'none';
+  $('appScreen').style.display = 'block';
+  cargarMisActas();
+});
+
+async function cargarMisActas() {
+  $('loading').style.display = 'block';
+  $('tabla').style.display = 'none';
+  $('empty').style.display = 'none';
+  try {
+    const snap = await db.collection('actas_inicio_tratamiento')
+      .where('gestorUid', '==', miUid).get();
+    misActas = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+      const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
+      const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
+      return tb - ta;
+    });
+    render(misActas);
+    stats();
+    $('loading').style.display = 'none';
+  } catch (e) {
+    $('loading').innerHTML = '❌ Error: ' + e.message;
+  }
+}
+
+function stats() {
+  $('stTotal').textContent = misActas.length;
+  $('stPend').textContent = misActas.filter(a => a.estado !== 'firmado').length;
+  $('stFirm').textContent = misActas.filter(a => a.estado === 'firmado').length;
+}
+
+function render(lista) {
+  const tb = $('tbody');
+  tb.innerHTML = '';
+  if (!lista.length) { $('tabla').style.display = 'none'; $('empty').style.display = 'block'; return; }
+  $('tabla').style.display = 'table';
+  $('empty').style.display = 'none';
+  lista.forEach((a, i) => {
+    const tr = document.createElement('tr');
+    const badge = a.estado === 'firmado'
+      ? '<span class="badge ok">✔ Firmada</span>'
+      : '<span class="badge pend">⏳ Pendiente</span>';
+    tr.innerHTML = '<td style="color:var(--gris);font-size:11px;">' + (i + 1) + '</td>' +
+      '<td style="font-size:11.5px;color:var(--gris);white-space:nowrap;">' + (a.fecha || '—') + '</td>' +
+      '<td style="font-weight:600;">' + (a.pacienteNombre || '—') + '</td>' +
+      '<td>' + (a.pacienteCedula || '—') + '</td>' +
+      '<td>' + badge + '</td>' +
+      '<td><button class="btn-acc" onclick="copiarLink(\'' + a.id + '\',this)">🔗 Copiar link</button></td>' +
+      '<td><button class="btn-acc" onclick="pdf(\'' + a.id + '\',this)">📄 PDF</button></td>' +
+      '<td><button class="btn-acc" onclick="ver(\'' + a.id + '\')">Ver</button></td>';
+    tb.appendChild(tr);
+  });
+}
+
+$('buscador').addEventListener('input', function () {
+  const q = this.value.toLowerCase();
+  render(misActas.filter(a =>
+    (a.pacienteNombre || '').toLowerCase().includes(q) ||
+    (a.pacienteCedula || '').toLowerCase().includes(q) ||
+    (a.zona || '').toLowerCase().includes(q)
+  ));
+});
+
+function urlFirma(id) {
+  return location.origin + location.pathname.replace(/[^\/]*$/, '') + 'firma_inicio_tratamiento.html?id=' + id;
+}
+async function copiarLink(id, btn) {
+  const url = urlFirma(id);
+  try {
+    await navigator.clipboard.writeText(url);
+    const t = btn.textContent; btn.textContent = '✔ Copiado';
+    setTimeout(() => btn.textContent = t, 1500);
+  } catch (e) { prompt('Copia el link:', url); }
+}
+function pdf(id, btn) {
+  const a = misActas.find(x => x.id === id);
+  if (!a) return;
+  const t = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  setTimeout(() => {
+    try { window.ActaInicioPDF.descargar(a); }
+    catch (e) { alert('No se pudo generar el PDF: ' + e.message); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = t; } }
+  }, 30);
+}
+function ver(id) {
+  const a = misActas.find(x => x.id === id);
+  if (!a) return;
+  const prods = (a.productos || []).map(p => [p.cantidad, p.nombre, p.lote].filter(Boolean).join(' × ')).join(' | ') || '—';
+  const filas = [
+    ['Fecha de gestión', a.fecha], ['Zona', a.zona], ['Laboratorio', a.laboratorio],
+    ['Paciente', a.pacienteNombre], ['Cédula', a.pacienteCedula], ['Teléfono', a.pacienteTel],
+    ['Gestor comercial', a.gcNombre], ['Productos', prods],
+    ['Observaciones', a.observaciones || '—'],
+    ['Estado', a.estado === 'firmado' ? '✅ Firmada' : '⏳ Pendiente'],
+  ].map(([k, v]) => '<div class="fila"><b>' + k + '</b><span>' + (v || '—') + '</span></div>').join('');
+  const firma = a.firmaPaciente
+    ? '<div class="fila" style="flex-direction:column;"><b style="margin-bottom:6px;">Firma del paciente</b><img class="firma-img" src="' + a.firmaPaciente + '"></div>'
+    : '';
+  $('mTitle').textContent = a.pacienteNombre || 'Detalle';
+  $('mBody').innerHTML = filas + firma;
+  $('overlay').classList.add('open');
+}
+function cerrar() { $('overlay').classList.remove('open'); }
+</script>
+</body>
+</html>

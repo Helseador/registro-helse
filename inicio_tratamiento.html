@@ -209,11 +209,30 @@ $('fecha').value = new Date().toISOString().slice(0, 10);
 $('fecha').max = new Date().toISOString().slice(0, 10);
 
 // ── Auth: solo usuarios del dashboard ──
-auth.onAuthStateChanged(user => {
+let miNombreGestor = '';
+auth.onAuthStateChanged(async (user) => {
   if (user) {
+    let perfil = null;
+    try {
+      const snap = await db.collection('usuarios').doc(user.uid).get();
+      if (snap.exists) perfil = snap.data();
+    } catch (e) { console.error(e); }
+    if (!perfil || ['admin', 'superadmin', 'gestor'].indexOf(perfil.rol) < 0) {
+      $('loginReq').style.display = 'block';
+      $('app').style.display = 'none';
+      return;
+    }
+    miNombreGestor = perfil.nombre || user.displayName || user.email.split('@')[0];
     $('app').style.display = 'block';
     $('loginReq').style.display = 'none';
-    if (!val('gestor')) $('gestor').value = user.displayName || user.email.split('@')[0];
+    if (!val('gestor') || perfil.rol === 'gestor') {
+      $('gestor').value = miNombreGestor;
+    }
+    if (perfil.rol === 'gestor') {
+      $('gestor').readOnly = true;
+      $('gestor').style.background = '#EEF2F8';
+      $('gestor').title = 'El gestor se toma de tu usuario';
+    }
   } else {
     $('loginReq').style.display = 'block';
     $('app').style.display = 'none';
@@ -334,6 +353,7 @@ $('btnOtra').addEventListener('click', () => {
   $('tbodyProd').innerHTML = '';
   agregarProducto();
   $('fecha').value = new Date().toISOString().slice(0, 10);
+  if (miNombreGestor) $('gestor').value = miNombreGestor;
   $('form').style.display = 'block';
   $('exito').style.display = 'none';
   window.scrollTo({ top: 0, behavior: 'smooth' });
