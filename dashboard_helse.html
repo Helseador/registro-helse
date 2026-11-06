@@ -49,6 +49,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--verde-bg);color:var(--tex
 .tab{padding:13px 18px;font-size:13px;font-weight:600;color:var(--gris);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;white-space:nowrap;}
 .tab.active{color:var(--verde);border-bottom-color:var(--verde);}
 .tab.sa-only{display:none;}
+.tab-link{text-decoration:none;display:inline-flex;align-items:center;}
+.tab-link:hover{color:var(--verde);background:var(--verde-light);}
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;padding:20px 28px 0;}
@@ -173,7 +175,6 @@ td.nombre{font-weight:600;}
       <span class="badge-rol-user" id="badgeRol"></span>
       <span id="userEmail" style="font-size:12px;opacity:0.8;"></span>
       <a class="btn-top" href="vista_dotacion.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;">👕 Dotación &amp; Herramientas</a>
-      <a class="btn-top" href="inicio-tratamiento/index.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;">💊 Inicio de tratamiento</a>
       <button class="btn-top" id="btnCSV" onclick="exportarCSV('pacientes')">⬇️ CSV Pacientes</button>
       <button class="btn-top" id="btnCSVMed" onclick="exportarCSV('medicos')">⬇️ CSV Médicos</button>
       <button class="btn-top" id="btnCSVImg" onclick="exportarCSV('imagen')">⬇️ CSV Imagen</button>
@@ -186,6 +187,7 @@ td.nombre{font-weight:600;}
   <!-- TABS -->
   <div class="tabs">
     <div class="tab active" onclick="cambiarTab('pacientes',this)">🧑‍⚕️ Pacientes</div>
+    <a class="tab tab-link" href="inicio-tratamiento/index.html" target="_blank" rel="noopener" title="Abrir el módulo de inicio de tratamiento">🩺 Inicio de Tratamiento</a>
     <div class="tab" onclick="cambiarTab('medicos',this)">👨‍⚕️ Médicos</div>
     <div class="tab" onclick="cambiarTab('imagen',this)">📸 Uso de Imagen</div>
     <div class="tab" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
