@@ -209,7 +209,7 @@ $('fecha').value = new Date().toISOString().slice(0, 10);
 $('fecha').max = new Date().toISOString().slice(0, 10);
 
 // ── Auth: solo usuarios del dashboard ──
-let miNombreGestor = '';
+let miNombreGestor = '', miUid = '', miRol = '';
 auth.onAuthStateChanged(async (user) => {
   if (user) {
     let perfil = null;
@@ -222,6 +222,7 @@ auth.onAuthStateChanged(async (user) => {
       $('app').style.display = 'none';
       return;
     }
+    miUid = user.uid; miRol = perfil.rol;
     miNombreGestor = perfil.nombre || user.displayName || user.email.split('@')[0];
     $('app').style.display = 'block';
     $('loginReq').style.display = 'none';
@@ -324,6 +325,12 @@ $('form').addEventListener('submit', async (e) => {
       fechaFirma: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    if (miUid) {
+      try {
+        await db.collection('gestores_index').doc(miUid).set(
+          { actas: firebase.firestore.FieldValue.arrayUnion(ref.id) }, { merge: true });
+      } catch (e) { console.warn('No se pudo actualizar el índice del gestor', e); }
+    }
     const url = location.origin + location.pathname.replace('inicio_tratamiento.html', '') + 'firma_inicio_tratamiento.html?id=' + ref.id;
     $('linkFirma').value = url;
     $('btnAbrir').href = url;

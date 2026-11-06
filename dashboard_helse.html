@@ -228,6 +228,7 @@ td.nombre{font-weight:600;}
     <div class="toolbar">
       <input type="text" class="search-box" id="buscadorIni" placeholder="🔍 Buscar por paciente, cédula, gestor, zona...">
       <a class="btn-top" href="inicio_tratamiento.html" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;background:var(--verde);color:white;">＋ Nueva acta</a>
+      <button class="btn-top" id="btnReindex" onclick="reindexarActas(this)" style="display:none;background:var(--azul);color:#fff;">↻ Reindexar gestores</button>
     </div>
     <div class="table-wrap">
       <div class="loading" id="loadingIni"><div class="spinner"></div>Cargando...</div>
@@ -423,6 +424,7 @@ auth.onAuthStateChanged(async user=>{
     document.getElementById('badgeRol').textContent=rolActual==='superadmin'?'👑 SuperAdmin':'👁️ Admin';
     if(rolActual==='superadmin'){
       document.querySelectorAll('.sa-only').forEach(e=>e.style.display='block');
+      const br=document.getElementById('btnReindex'); if(br) br.style.display='inline-flex';
     } else {
       document.getElementById('btnCSV').style.display='none';
       document.getElementById('btnCSVMed').style.display='none';
@@ -829,6 +831,24 @@ function descargarActaInicio(id,btn){
     catch(e){ console.error(e); alert('No se pudo generar el PDF: '+e.message); }
     finally{ if(btn){btn.disabled=false;btn.textContent=t;} }
   },40);
+}
+
+async function reindexarActas(btn){
+  if(!actasInicio.length)return alert('No hay actas para indexar.');
+  const t=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='Reindexando…';}
+  try{
+    const porGestor={};
+    actasInicio.forEach(a=>{ if(a.gestorUid){ (porGestor[a.gestorUid]=porGestor[a.gestorUid]||[]).push(a.id); } });
+    let n=0;
+    for(const uid of Object.keys(porGestor)){
+      await db.collection('gestores_index').doc(uid).set(
+        { actas: firebase.firestore.FieldValue.arrayUnion(...porGestor[uid]) }, { merge:true });
+      n++;
+    }
+    alert('✅ Índices actualizados para '+n+' gestores.');
+  }catch(e){ alert('❌ Error al reindexar: '+e.message); }
+  finally{ if(btn){btn.disabled=false;btn.textContent=t;} }
 }
 
 // ── MODAL ──

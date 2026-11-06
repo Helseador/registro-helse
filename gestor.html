@@ -212,9 +212,21 @@ async function cargarMisActas() {
   $('tabla').style.display = 'none';
   $('empty').style.display = 'none';
   try {
-    const snap = await db.collection('actas_inicio_tratamiento')
-      .where('gestorUid', '==', miUid).get();
-    misActas = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+    // Índice propio del gestor (permite leer solo sus actas)
+    const idx = await db.collection('gestores_index').doc(miUid).get();
+    const ids = (idx.exists && Array.isArray(idx.data().actas)) ? idx.data().actas.slice() : [];
+    let docs = [];
+    if (ids.length) {
+      const snaps = await Promise.all(ids.map(id => db.collection('actas_inicio_tratamiento').doc(id).get()));
+      docs = snaps.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
+    } else {
+      // Compatibilidad mientras no exista índice (se puede reindexar desde el dashboard)
+      try {
+        const snap = await db.collection('actas_inicio_tratamiento').where('gestorUid', '==', miUid).get();
+        docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) { docs = []; }
+    }
+    misActas = docs.sort((a, b) => {
       const ta = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
       const tb = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
       return tb - ta;

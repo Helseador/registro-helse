@@ -1,0 +1,95 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────
+// Grupo Helse · registro-helse
+// Reglas de Firestore
+//
+// Objetivo:
+//  · Los formularios públicos solo pueden CREAR registros (no leer).
+//  · Solo admin/superadmin leen los registros de pacientes y afines.
+//  · Cada gestor solo puede leer/crear SUS actas (por gestorUid).
+//  · El link de firma del paciente puede leer 1 acta por id y
+//    actualizar únicamente los campos de la firma.
+//  · Los usuarios no pueden leer datos de otros usuarios.
+//
+// Publicar en: Firebase Console → Firestore Database → Reglas
+// ─────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function rol() {
+      return perfil().rol;
+    }
+    function esAdmin() {
+      return request.auth != null && rol() in ['admin', 'superadmin'];
+    }
+    function esSuper() {
+      return request.auth != null && rol() == 'superadmin';
+    }
+    function esGestor() {
+      return request.auth != null && rol() == 'gestor';
+    }
+
+    // ── Usuarios ──
+    match /usuarios/{uid} {
+      allow get: if request.auth != null && (request.auth.uid == uid || esAdmin());
+      allow list: if esAdmin();
+      allow create, update, delete: if esSuper();
+    }
+
+    // ── Registros de pacientes / médicos / imagen / dotación / colaboradores ──
+    // Los formularios públicos solo crean; la lectura es del panel.
+    match /registros_entrega_efectiva/{id} {
+      allow create: if true;
+      allow read: if esAdmin();
+      allow update, delete: if esAdmin();
+    }
+
+    // ── Capturas MIPRES ──
+    match /capturas_mipres/{id} {
+      allow create: if true;
+      allow read: if esAdmin();
+      allow update, delete: if esAdmin();
+    }
+
+    // ── Actas de Inicio de Tratamiento ──
+    match /actas_inicio_tratamiento/{id} {
+      // El paciente abre su link: solo lectura de esa acta
+      allow get: if true;
+
+      // El panel lista todas; el gestor NO puede listar (usa su índice)
+      allow list: if esAdmin();
+
+      allow create: if esAdmin() ||
+        (esGestor() && request.resource.data.gestorUid == request.auth.uid);
+
+      // Edición: dueño/admin, o el paciente firmando (solo esos campos)
+      allow update: if esAdmin() ||
+        (esGestor() && resource.data.gestorUid == request.auth.uid) ||
+        request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly(['estado', 'firmaPaciente', 'fechaFirma']);
+
+      allow delete: if esAdmin() ||
+        (esGestor() && resource.data.gestorUid == request.auth.uid);
+    }
+
+    // ── Índice de actas por gestor (para que vea solo las suyas) ──
+    match /gestores_index/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || esAdmin());
+      allow write: if request.auth != null && (request.auth.uid == uid || esAdmin());
+    }
+
+    // ── Links temporales (solo panel) ──
+    match /links_temporales/{id} {
+      allow read, write: if esAdmin();
+    }
+    match /links_historial/{id} {
+      allow read, write: if esAdmin();
+    }
+  }
+}
