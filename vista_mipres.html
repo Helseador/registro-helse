@@ -160,7 +160,7 @@ td.nombre{font-weight:600;}
 
   <div class="toolbar">
     <input type="text" class="search-box" id="buscador"
-           placeholder="🔍 Buscar por nombre, documento, teléfono…">
+           placeholder="🔍 Buscar por nombre o teléfono…">
     <input type="date" class="filtro-fecha" id="filtroFecha" title="Filtrar por fecha">
     <button class="btn-top" onclick="limpiarFiltros()" style="background:var(--azul-light);color:var(--azul-dark);">✕ Limpiar</button>
   </div>
@@ -173,12 +173,10 @@ td.nombre{font-weight:600;}
           <th>#</th>
           <th>Fecha</th>
           <th>Nombre Paciente</th>
-          <th>Documento</th>
           <th>Teléfono</th>
-          <th>Familiar</th>
-          <th>prescriptor</th>
+          <th>Teléfono 2</th>
           <th>Fórmula</th>
-          <th>Ver</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -200,10 +198,9 @@ td.nombre{font-weight:600;}
         <!-- IDENTIFICACIÓN -->
         <div class="g-section">Identificación del Paciente</div>
         <div class="g-grid g-grid-4">
-          <div class="g-campo"><label>Tipo Doc</label><input id="g_tipo_doc" readonly></div>
-          <div class="g-campo"><label># Documento</label><input id="g_num_documento" readonly></div>
           <div class="g-campo"><label>Nombre</label><input id="g_nombre" readonly></div>
           <div class="g-campo"><label>Teléfono</label><input id="g_telefono" readonly></div>
+          <div class="g-campo"><label>Teléfono 2</label><input id="g_telefono2" readonly></div>
         </div>
 
         <!-- DATOS GENERALES -->
@@ -426,10 +423,8 @@ function renderTabla(lista){
       '<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
       '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
       '<td class="nombre">'+(r.nombre||'—')+'</td>'+
-      '<td><span class="badge">'+(r.tipo_documento||'')+' '+(r.num_documento||'—')+'</span></td>'+
       '<td>'+(r.telefono||'—')+'</td>'+
-      '<td style="color:var(--gris);">'+(r.familiar||'—')+'</td>'+
-      '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+(r.nombre_prescriptor||'')+'">'+( r.nombre_prescriptor||'—')+'</td>'+
+      '<td>'+(r.telefono2||'—')+'</td>'+
       '<td style="text-align:center;">'+(tieneFormula?'📋 Sí':'—')+'</td>'+
       '<td style="display:flex;gap:5px;align-items:center;">'+
         '<button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button>'+
@@ -445,7 +440,7 @@ function filtrar(){
   const q=document.getElementById('buscador').value.toLowerCase();
   const fecha=document.getElementById('filtroFecha').value;
   let lista=registros.filter(r=>{
-    const texto=(r.nombre||'')+' '+(r.num_documento||'')+' '+(r.telefono||'')+' '+(r.familiar||'');
+    const texto=(r.nombre||'')+' '+(r.telefono||'')+' '+(r.telefono2||'');
     return texto.toLowerCase().includes(q);
   });
   if(fecha){
@@ -473,17 +468,8 @@ function abrirModal(id){
   const campos=[
     ['Fecha captura',formatFecha(r.fecha)],
     ['Nombre paciente',r.nombre],
-    ['Tipo documento',r.tipo_documento],
-    ['N° documento',r.num_documento],
     ['Teléfono',r.telefono],
-    ['Familiar / acudiente',r.familiar||'—'],
-    ['EPS',r.eps||'—'],
-    ['Nombre prescriptor(a)',r.nombre_prescriptor||'—'],
-    ['Correo del prescriptor',r.correo_prescriptor||'—'],
-    ['Teléfono del prescriptor',r.telefono_prescriptor||'—'],
-    ['Especialidad',r.especialidad||'—'],
-    ['IPS',r.ips||'—'],
-    ['Nutritional Advance',r.nutritional||'—'],
+    ['Teléfono 2',r.telefono2||'—'],
     ['Nombre archivo',r.formula_nombre||'—'],
   ];
   let html=campos.map(([k,v])=>
@@ -536,10 +522,9 @@ function abrirGestion(id){
   document.getElementById('gestionTitulo').textContent = 'Gestión · ' + (r.nombre || '');
 
   // Pre-llenar campos de solo lectura desde la captura
-  document.getElementById('g_tipo_doc').value      = r.tipo_documento || '';
-  document.getElementById('g_num_documento').value = r.num_documento  || '';
-  document.getElementById('g_nombre').value         = r.nombre         || '';
-  document.getElementById('g_telefono').value       = r.telefono       || '';
+  document.getElementById('g_nombre').value    = r.nombre    || '';
+  document.getElementById('g_telefono').value  = r.telefono  || '';
+  document.getElementById('g_telefono2').value = r.telefono2 || '';
 
   // Cargar datos de gestión guardados
   const g = r.gestion || {};
@@ -600,10 +585,12 @@ async function eliminarRegistro(id, nombre){
 // ── CSV ──
 function exportarCSV(){
   if(!registros.length)return alert('No hay registros.');
-  const cols=['fecha','nombre','tipo_documento','num_documento','telefono','eps','familiar','nombre_prescriptor','correo_prescriptor','telefono_prescriptor','especialidad','ips','nutritional','formula_nombre'];
-  const cabecera=['Fecha','Nombre','Tipo Doc','N° Documento','Teléfono','EPS','Familiar','Prescriptor(a)','Correo Prescriptor','Tel. Prescriptor','Especialidad','IPS','Nutritional Advance','Archivo Fórmula'];
-  const rows=registros.map(r=>cols.map(c=>'"'+(c==='fecha'?formatFecha(r.fecha):(r[c]??'')).toString().replace(/"/g,'""')+'"').join(','));
-  const blob=new Blob(['\ufeff'+[cabecera.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
+  const SEP=';';
+  const cols=['fecha','nombre','telefono','telefono2','formula_nombre'];
+  const cabecera=['Fecha','Nombre','Teléfono','Teléfono 2','Archivo Fórmula'];
+  const celda=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=registros.map(r=>cols.map(c=>celda(c==='fecha'?formatFecha(r.fecha):r[c])).join(SEP));
+  const blob=new Blob(['\ufeff'+[cabecera.map(celda).join(SEP),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
   a.download='capturas_mipres_'+new Date().toISOString().slice(0,10)+'.csv';

@@ -84,8 +84,8 @@ input::placeholder{color:#9EAFAD;}
       <img src="https://helseador.github.io/registro-helse/logo.png"
            onerror="this.style.display='none'" alt="Helse">
     </div>
-    <div class="header-tag">Grupo Helse SAS · Programa MIPRES</div>
-    <h1>Captura de Fórmula <span>MIPRES · Ruta de Atención</span></h1>
+    <div class="header-tag">Grupo Helse SAS · Registro de fórmulas</div>
+    <h1>Captura de Fórmula <span>MIPRES · Todas las líneas Helse</span></h1>
   </div>
 
   <div class="card">
@@ -93,113 +93,32 @@ input::placeholder{color:#9EAFAD;}
 
       <div class="section-label">Datos del Paciente</div>
 
-      <!-- Nombre -->
       <div class="campo" id="cNombre">
         <label class="campo-label" for="nombre">Nombre completo <span class="req">*</span></label>
         <input type="text" id="nombre" placeholder="Nombre y apellidos del paciente">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
-      <!-- Documento -->
-      <div class="grid2">
-        <div class="campo" id="cTipoDoc">
-          <label class="campo-label">Tipo doc. <span class="req">*</span></label>
-          <div class="select-wrap">
-            <select id="tipoDoc">
-              <option value="" disabled selected>Tipo…</option>
-              <option>CC</option>
-              <option>TI</option>
-              <option>RC</option>
-              <option>Pasaporte</option>
-              <option>CE</option>
-              <option>PPT</option>
-            </select>
-          </div>
-          <div class="error-msg">Requerido.</div>
-        </div>
-        <div class="campo" id="cNumDoc">
-          <label class="campo-label" for="numDoc">Número de documento <span class="req">*</span></label>
-          <input type="text" id="numDoc" placeholder="Ej. 1023456789">
-          <div class="error-msg">Este campo es obligatorio.</div>
-        </div>
-      </div>
-
-      <!-- Teléfono -->
       <div class="campo" id="cTelefono">
         <label class="campo-label" for="telefono">Número de teléfono <span class="req">*</span></label>
         <input type="tel" id="telefono" placeholder="Ej. 3001234567">
         <div class="error-msg">Este campo es obligatorio.</div>
       </div>
 
-      <!-- Familiar (opcional) -->
-      <div class="campo" id="cFamiliar">
-        <label class="campo-label" for="familiar">Nombre de familiar <span class="opcional">(opcional)</span></label>
-        <input type="text" id="familiar" placeholder="Nombre del familiar o acudiente">
-      </div>
-
-      <!-- Datos del prescriptor -->
-      <div class="campo" id="cEps">
-        <label class="campo-label" for="eps">EPS <span class="req">*</span></label>
-        <input type="text" id="eps" placeholder="Nombre de la EPS">
-        <div class="error-msg">Este campo es obligatorio.</div>
-      </div>
-
-      <div class="section-label">Datos del prescriptor</div>
-
-      <div class="campo" id="cNombreprescriptor">
-        <label class="campo-label" for="nombreprescriptor">Nombre prescriptor(a) <span class="req">*</span></label>
-        <input type="text" id="nombreprescriptor" placeholder="Nombre completo del prescriptor(a)">
-        <div class="error-msg">Este campo es obligatorio.</div>
-      </div>
-
-      <div class="campo" id="cCorreoprescriptor">
-        <label class="campo-label" for="correoprescriptor">Correo del prescriptor <span class="req">*</span></label>
-        <input type="text" id="correoprescriptor" placeholder="correo@ejemplo.com">
-        <div class="error-msg">Ingrese un correo válido.</div>
-      </div>
-
-      <div class="campo" id="cTelefonoprescriptor">
-        <label class="campo-label" for="telefonoprescriptor">Teléfono del prescriptor <span class="req">*</span></label>
-        <input type="tel" id="telefonoprescriptor" placeholder="Ej. 3001234567">
-        <div class="error-msg">Este campo es obligatorio.</div>
-      </div>
-
-      <div class="campo" id="cEspecialidad">
-        <label class="campo-label" for="especialidad">Especialidad <span class="req">*</span></label>
-        <input type="text" id="especialidad" placeholder="Ej. Oncología, Medicina Interna…">
-        <div class="error-msg">Este campo es obligatorio.</div>
-      </div>
-
-      <div class="campo" id="cIps">
-        <label class="campo-label" for="ips">IPS <span class="req">*</span></label>
-        <input type="text" id="ips" placeholder="Nombre de la institución o clínica">
-        <div class="error-msg">Este campo es obligatorio.</div>
-      </div>
-
-      <div class="campo" id="cNutritional">
-        <label class="campo-label">Nutritional Advance <span class="req">*</span></label>
-        <div class="select-wrap">
-          <select id="nutritional">
-            <option value="" disabled selected>Seleccione…</option>
-            <option>Angela Bohorquez</option>
-            <option>Pablo Silva</option>
-            <option>Carolina Ardila</option>
-            <option>Angelica Bautista</option>
-            <option>Isabella Caro</option>
-            <option>Johana Florez</option>
-          </select>
-        </div>
-        <div class="error-msg">Seleccione una opción.</div>
+      <div class="campo" id="cTelefono2">
+        <label class="campo-label" for="telefono2">Número de teléfono 2 <span class="opcional">(opcional)</span></label>
+        <input type="tel" id="telefono2" placeholder="Ej. 3105552211">
+        <div class="error-msg">Si lo escribe, debe ser un teléfono válido.</div>
       </div>
 
       <!-- Foto fórmula -->
       <div class="section-label">Fórmula MIPRES</div>
 
       <div class="campo" id="cFoto">
-        <label class="campo-label">Foto de la fórmula MIPRES <span class="req">*</span></label>
+        <label class="campo-label">Fórmula MIPRES (foto o PDF) <span class="req">*</span></label>
         <div class="foto-zona" id="fotoZona">
           <span class="foto-zona-icono">📋</span>
-          <p class="foto-zona-titulo">Toma o sube la foto de la fórmula</p>
+          <p class="foto-zona-titulo">Toma la foto o sube el PDF de la fórmula</p>
           <p class="foto-zona-sub">JPG, PNG o PDF · Máx. 10 MB</p>
           <div class="foto-btns">
             <label class="btn-foto galeria" for="inputGaleria">
@@ -222,7 +141,7 @@ input::placeholder{color:#9EAFAD;}
             <button type="button" class="btn-quitar-foto" id="btnQuitarFoto">✕</button>
           </div>
         </div>
-        <div class="error-msg">La foto de la fórmula es obligatoria.</div>
+        <div class="error-msg">La fórmula (foto o PDF) es obligatoria.</div>
       </div>
 
       <div class="submit-area">
@@ -286,7 +205,7 @@ function comprimirImagen(file, maxW = 1400, calidad = 0.85) {
 
 function mostrarFoto(file) {
   archivoFoto = file;
-  document.getElementById('fotoNombre').textContent = file.name;
+  document.getElementById('fotoNombre').textContent = (file.type === 'application/pdf' ? '📄 ' : '') + file.name;
   const preview = document.getElementById('fotoPreview');
   const img = document.getElementById('fotoImg');
   if (file.type.startsWith('image/')) {
@@ -325,19 +244,12 @@ document.getElementById('form').addEventListener('submit', async e => {
   document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
   let ok = true;
 
+  const telOk = v => /^[\d\s+\-]{7,15}$/.test(v);
   const checks = [
-    ['cNombre',  () => !txt('nombre')],
-    ['cEps',     () => !txt('eps')],
-    ['cTipoDoc', () => !document.getElementById('tipoDoc').value],
-    ['cNumDoc',  () => !txt('numDoc')],
-    ['cTelefono',() => !txt('telefono')],
-    ['cNombreprescriptor',  () => !txt('nombreprescriptor')],
-    ['cCorreoprescriptor',  () => { const v=txt('correoprescriptor'); return !v||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }],
-    ['cTelefonoprescriptor',() => !txt('telefonoprescriptor')],
-    ['cEspecialidad',  () => !txt('especialidad')],
-    ['cIps',           () => !txt('ips')],
-    ['cNutritional',   () => !document.getElementById('nutritional').value],
-    ['cFoto',          () => !archivoFoto],
+    ['cNombre',   () => txt('nombre').length < 3],
+    ['cTelefono', () => !telOk(txt('telefono'))],
+    ['cTelefono2',() => { const v=txt('telefono2'); return !!v && !telOk(v); }],
+    ['cFoto',     () => !archivoFoto],
   ];
   checks.forEach(([id, fn]) => { if(fn()) { document.getElementById(id).classList.add('invalid'); ok = false; } });
 
@@ -352,19 +264,11 @@ document.getElementById('form').addEventListener('submit', async e => {
     await addDoc(collection(db, 'capturas_mipres'), {
       fecha:          serverTimestamp(),
       nombre:         txt('nombre'),
-      tipo_documento: document.getElementById('tipoDoc').value,
-      num_documento:  txt('numDoc'),
       telefono:       txt('telefono'),
-      familiar:       txt('familiar'),
-      eps:            txt('eps'),
-      nombre_prescriptor:  txt('nombreprescriptor'),
-      correo_prescriptor:  txt('correoprescriptor'),
-      telefono_prescriptor:txt('telefonoprescriptor'),
-      especialidad:   txt('especialidad'),
-      ips:            txt('ips'),
-      nutritional:    document.getElementById('nutritional').value,
+      telefono2:      txt('telefono2'),
       formula_nombre: archivoFoto.name,
       formula_imagen: fotoBase64,
+      formula_tipo:   archivoFoto.type === 'application/pdf' ? 'pdf' : 'imagen',
       token:          linkToken,
     });
 
