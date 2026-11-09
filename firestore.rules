@@ -52,7 +52,10 @@ service cloud.firestore {
 
     // ── Capturas MIPRES ──
     match /capturas_mipres/{id} {
-      allow create: if true;
+      allow create: if request.resource.data.nombre is string
+        && request.resource.data.nombre.size() < 160
+        && request.resource.data.telefono is string
+        && request.resource.data.formula_imagen is string;
       allow read: if esAdmin();
       allow update, delete: if esAdmin();
     }
@@ -69,13 +72,15 @@ service cloud.firestore {
         (esGestor() && request.resource.data.gestorUid == request.auth.uid);
 
       // Edición: dueño/admin, o el paciente firmando (solo esos campos)
+      // Solo el paciente puede firmar, y solo si el acta está pendiente
       allow update: if esAdmin() ||
-        (esGestor() && resource.data.gestorUid == request.auth.uid) ||
-        request.resource.data.diff(resource.data)
-          .affectedKeys().hasOnly(['estado', 'firmaPaciente', 'fechaFirma']);
+        (resource.data.estado == 'pendiente' &&
+         request.resource.data.estado == 'firmado' &&
+         request.resource.data.diff(resource.data)
+           .affectedKeys().hasOnly(['estado', 'firmaPaciente', 'fechaFirma']));
 
-      allow delete: if esAdmin() ||
-        (esGestor() && resource.data.gestorUid == request.auth.uid);
+      // Borrar actas es solo de administración (no se pierde evidencia)
+      allow delete: if esAdmin();
     }
 
     // ── Índice de actas por gestor (para que vea solo las suyas) ──

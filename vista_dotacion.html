@@ -259,6 +259,20 @@ firebase.initializeApp({
   appId:"1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
 });
 const db=firebase.firestore(), auth=firebase.auth();
+function limpiarDato(v){
+  if (typeof v === 'string') {
+    if (v.length > 5000 || v.indexOf('data:') === 0) return v;
+    return v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  if (Array.isArray(v)) return v.map(limpiarDato);
+  if (v && typeof v === 'object' && typeof v.toDate !== 'function') {
+    const o = {};
+    for (const k in v) o[k] = limpiarDato(v[k]);
+    return o;
+  }
+  return v;
+}
+
 let dotacion=[], herramientas=[], colaboradores=[], rolActual=null;
 
 // AUTH
@@ -317,19 +331,19 @@ function stats(lista, prefHoy, prefSem, prefTotal){
 async function cargarDatos(){
   try{
     const snapDot=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','dotacion').get();
-    dotacion=snapDot.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    dotacion=snapDot.docs.map(d=>limpiarDato({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
     renderTabla(dotacion,'dot');
     stats(dotacion,'dHoy','dSemana','dTotal');
     document.getElementById('loadDot').style.display='none';
 
     const snapHer=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','herramientas').get();
-    herramientas=snapHer.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    herramientas=snapHer.docs.map(d=>limpiarDato({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
     renderTabla(herramientas,'her');
     stats(herramientas,'hHoy','hSemana','hTotal');
     document.getElementById('loadHer').style.display='none';
 
     const snapCol=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','colaborador').get();
-    colaboradores=snapCol.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    colaboradores=snapCol.docs.map(d=>limpiarDato({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
     renderTablaCol(colaboradores);
     stats(colaboradores,'cHoy','cSemana','cTotal');
     document.getElementById('loadCol').style.display='none';
@@ -485,7 +499,7 @@ function descargarTodas(tipo, btn){
 function exportarCSV(tipo){
   const SEP=';';            // Excel en español usa punto y coma como separador
   const FIN='\r\n';
-  const celda=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const celda=v=>{let x=String(v==null?'':v);if(/^[=+\-@]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
   if(tipo==='colaboradores'){
     if(!colaboradores.length)return alert('No hay registros.');
     const cab=['No.','COLABORADOR','CEDULA','CARGO','FECHA DE INGRESO','SALUD','PENSION','RH','CIUDAD','DIRECCION','TELEFONO','MAIL','FECHA DE NACIMIENTO','TALLA CAMISA','TALLA PANTALON','TALLA ZAPATOS','CONTACTO DE EMERGENCIA NOMBRE','PARENTESCO','CONTACTO DE EMERGENCIA TELEFONO'];

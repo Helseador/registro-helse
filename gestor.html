@@ -151,6 +151,20 @@ firebase.initializeApp({
   appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
 });
 const auth = firebase.auth();
+function limpiarDato(v){
+  if (typeof v === 'string') {
+    if (v.length > 5000 || v.indexOf('data:') === 0) return v;
+    return v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  if (Array.isArray(v)) return v.map(limpiarDato);
+  if (v && typeof v === 'object' && typeof v.toDate !== 'function') {
+    const o = {};
+    for (const k in v) o[k] = limpiarDato(v[k]);
+    return o;
+  }
+  return v;
+}
+
 const db = firebase.firestore();
 const $ = (id) => document.getElementById(id);
 let misActas = [], miNombre = '', miUid = '';
@@ -218,12 +232,12 @@ async function cargarMisActas() {
     let docs = [];
     if (ids.length) {
       const snaps = await Promise.all(ids.map(id => db.collection('actas_inicio_tratamiento').doc(id).get()));
-      docs = snaps.filter(s => s.exists).map(s => ({ id: s.id, ...s.data() }));
+      docs = snaps.filter(s => s.exists).map(s => limpiarDato({ id: s.id, ...s.data() }));
     } else {
       // Compatibilidad mientras no exista índice (se puede reindexar desde el dashboard)
       try {
         const snap = await db.collection('actas_inicio_tratamiento').where('gestorUid', '==', miUid).get();
-        docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        docs = snap.docs.map(d => limpiarDato({ id: d.id, ...d.data() }));
       } catch (e) { docs = []; }
     }
     misActas = docs.sort((a, b) => {

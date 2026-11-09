@@ -339,6 +339,20 @@ firebase.initializeApp({
   appId:"1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
 });
 const db=firebase.firestore(), auth=firebase.auth();
+function limpiarDato(v){
+  if (typeof v === 'string') {
+    if (v.length > 5000 || v.indexOf('data:') === 0) return v;
+    return v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  if (Array.isArray(v)) return v.map(limpiarDato);
+  if (v && typeof v === 'object' && typeof v.toDate !== 'function') {
+    const o = {};
+    for (const k in v) o[k] = limpiarDato(v[k]);
+    return o;
+  }
+  return v;
+}
+
 
 let registros=[], registroActual=null;
 
@@ -375,7 +389,7 @@ function cerrarSesion(){ auth.signOut(); }
 async function cargarDatos(){
   try{
     const snap=await db.collection('capturas_mipres').orderBy('fecha','desc').get();
-    registros=snap.docs.map(d=>({id:d.id,...d.data()}));
+    registros=snap.docs.map(d=>limpiarDato({id:d.id,...d.data()}));
     renderTabla(registros);
     actualizarStats(registros);
     document.getElementById('loading').style.display='none';
@@ -588,7 +602,7 @@ function exportarCSV(){
   const SEP=';';
   const cols=['fecha','nombre','telefono','telefono2','formula_nombre'];
   const cabecera=['Fecha','Nombre','Teléfono','Teléfono 2','Archivo Fórmula'];
-  const celda=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const celda=v=>{let x=String(v==null?'':v);if(/^[=+\-@]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
   const rows=registros.map(r=>cols.map(c=>celda(c==='fecha'?formatFecha(r.fecha):r[c])).join(SEP));
   const blob=new Blob(['\ufeff'+[cabecera.map(celda).join(SEP),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
