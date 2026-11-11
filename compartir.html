@@ -62,6 +62,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text
       <button class="btn btn-azul" id="btnCopiar">Copiar link</button>
     </div>
 
+    <div class="label">ID del gestor (para que las capturas le lleguen a él)</div>
+    <div class="link-box">
+      <input type="text" id="ownerId" placeholder="Pega el ID del gestor (botón “Copiar ID” en Usuarios)">
+    </div>
+    <p id="ownerWarn" style="font-size:11.5px;color:#8A5A00;margin-top:6px;">Sin ID, las capturas quedan sin dueño y solo las ve el superadmin.</p>
+
     <div class="label">Código QR (lleva al mismo link)</div>
     <div class="qr-wrap"><div id="qr"></div></div>
 
@@ -89,25 +95,43 @@ document.getElementById('labBox').textContent = 'Laboratorio: ' + lab;
 document.getElementById('subLab').textContent = lab;
 document.getElementById('notaLab').textContent = lab;
 
-const url = location.origin + location.pathname.replace(/[^\/]*$/, '') +
-  'captura_mipres.html?lab=' + encodeURIComponent(lab) +
-  (gestor ? '&g=' + encodeURIComponent(gestor) : '') +
-  (owner ? '&u=' + encodeURIComponent(owner) : '');
-document.getElementById('link').value = url;
 document.title = 'Compartir captura · ' + lab + ' – Helse';
 
-// QR
 let qrOk = false;
-try {
-  new QRCode(document.getElementById('qr'), {
-    text: url, width: 520, height: 520,
-    colorDark: '#1B3A6B', colorLight: '#FFFFFF',
-    correctLevel: QRCode.CorrectLevel.M
-  });
-  qrOk = true;
-} catch (e) {
-  document.getElementById('qr').textContent = 'No se pudo generar el QR';
+function buildUrl() {
+  const uid = document.getElementById('ownerId').value.trim();
+  return location.origin + location.pathname.replace(/[^\/]*$/, '') +
+    'captura_mipres.html?lab=' + encodeURIComponent(lab) +
+    (gestor ? '&g=' + encodeURIComponent(gestor) : '') +
+    (uid ? '&u=' + encodeURIComponent(uid) : '');
 }
+function renderQR(url) {
+  const box = document.getElementById('qr');
+  box.innerHTML = '';
+  qrOk = false;
+  try {
+    new QRCode(box, {
+      text: url, width: 520, height: 520,
+      colorDark: '#1B3A6B', colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    qrOk = true;
+  } catch (e) {
+    box.textContent = 'No se pudo generar el QR';
+  }
+}
+function actualizar() {
+  const url = buildUrl();
+  document.getElementById('link').value = url;
+  document.getElementById('btnWhats').href =
+    'https://wa.me/?text=' + encodeURIComponent('Captura de fórmulas ' + lab + ': ' + url);
+  const tiene = !!document.getElementById('ownerId').value.trim();
+  document.getElementById('ownerWarn').style.display = tiene ? 'none' : 'block';
+  renderQR(url);
+}
+document.getElementById('ownerId').value = owner;
+document.getElementById('ownerId').addEventListener('input', actualizar);
+actualizar();
 
 document.getElementById('btnCopiar').addEventListener('click', async () => {
   const b = document.getElementById('btnCopiar');

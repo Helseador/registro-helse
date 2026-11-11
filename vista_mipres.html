@@ -354,7 +354,7 @@ function limpiarDato(v){
 }
 
 
-let registros=[], registroActual=null, rolActual=null;
+let registros=[], registroActual=null, rolActual=null, gestoresLista=[];
 
 // ── AUTH ──
 auth.onAuthStateChanged(async user=>{
@@ -363,6 +363,7 @@ auth.onAuthStateChanged(async user=>{
     const snap=await db.collection('usuarios').doc(user.uid).get();
     if(!snap.exists){auth.signOut();return;}
     rolActual = snap.data().rol || 'admin';
+    if(rolActual==='superadmin') cargarGestores();
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='block';
     document.getElementById('userEmail').textContent = user.email +
@@ -432,6 +433,13 @@ function actualizarStats(lista){
 }
 
 // ── RENDER ──
+async function cargarGestores(){
+  try{
+    const snap = await db.collection('usuarios').get();
+    gestoresLista = snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.rol==='gestor');
+  }catch(e){ console.warn('No se pudieron cargar los gestores', e); }
+}
+
 function formatFecha(ts){
   if(!ts)return'—';
   const d=ts.toDate?ts.toDate():new Date(ts);
@@ -529,6 +537,17 @@ function abrirModal(id){
     html+='</div>';
   }
   if(rolActual==='superadmin'){
+    const opts = gestoresLista.map(u =>
+      '<option value="'+u.id+'"'+(u.id===r.gestor_uid?' selected':'')+'>'+(u.nombre||u.email||u.id)+'</option>'
+    ).join('');
+    html+='<div class="detalle-fila" style="flex-direction:column;gap:8px;">'+
+      '<span class="detalle-key">Asignar a gestor</span>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+      '<select id="selGestor" style="flex:1;min-width:180px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:\'DM Sans\',sans-serif;font-size:13px;">'+
+      '<option value="">— Selecciona un gestor —</option>'+opts+'</select>'+
+      '<button onclick="asignarGestor(\''+r.id+'\')" style="background:var(--azul);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;">Asignar</button>'+
+      '</div></div>';
+
     html+='<div style="margin-top:16px;text-align:right;">'+
       '<button onclick="eliminarRegistro(\''+r.id+'\',\''+( r.nombre||'').replace(/'/g,'')+'\')" '+
       'style="background:#FFEBEE;color:var(--rojo);border:none;border-radius:8px;padding:9px 18px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">'+
@@ -538,6 +557,25 @@ function abrirModal(id){
   document.getElementById('modalOverlay').classList.add('open');
 }
 function cerrarModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+async function asignarGestor(id){
+  const sel = document.getElementById('selGestor');
+  const uid = sel ? sel.value : '';
+  if(!uid) return alert('Selecciona un gestor.');
+  const nombre = sel.options[sel.selectedIndex].textContent;
+  try{
+    await db.collection('capturas_mipres').doc(id).update({ gestor_uid: uid, gestor_nombre: nombre });
+    await db.collection('mipres_index').doc(uid).set(
+      { capturas: firebase.firestore.FieldValue.arrayUnion(id) }, { merge: true });
+    const r = registros.find(x=>x.id===id);
+    if(r){ r.gestor_uid = uid; r.gestor_nombre = nombre; }
+    cerrarModal();
+    filtrar();
+    alert('✅ Captura asignada a ' + nombre);
+  }catch(e){
+    alert('❌ No se pudo asignar: ' + e.message);
+  }
+}
 
 // ── GESTIÓN ──
 let gestionActualId = null;
