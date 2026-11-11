@@ -462,8 +462,10 @@ function renderTabla(lista){
       '<td style="display:flex;gap:5px;align-items:center;">'+
         '<button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button>'+
         ((rolActual==='admin'||rolActual==='superadmin')
-          ? '<button class="btn-gestion'+(r.gestion?' tiene-gestion':'')+'" onclick="abrirGestion(\''+r.id+'\')">'+(r.gestion?'✅ Gestión':'📋 Gestión')+'</button>'+
-            '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+(r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'
+          ? '<button class="btn-gestion'+(r.gestion?' tiene-gestion':'')+'" onclick="abrirGestion(\''+r.id+'\')">'+(r.gestion?'✅ Gestión':'📋 Gestión')+'</button>'
+          : '')+
+        (rolActual==='superadmin'
+          ? '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+(r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'
           : '')+
       '</td>';
     tbody.appendChild(tr);
@@ -526,10 +528,12 @@ function abrirModal(id){
     }
     html+='</div>';
   }
-  html+='<div style="margin-top:16px;text-align:right;">'+
-    '<button onclick="eliminarRegistro(\''+r.id+'\',\''+( r.nombre||'').replace(/'/g,'')+'\')" '+
-    'style="background:#FFEBEE;color:var(--rojo);border:none;border-radius:8px;padding:9px 18px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">'+
-    '🗑️ Eliminar registro</button></div>';
+  if(rolActual==='superadmin'){
+    html+='<div style="margin-top:16px;text-align:right;">'+
+      '<button onclick="eliminarRegistro(\''+r.id+'\',\''+( r.nombre||'').replace(/'/g,'')+'\')" '+
+      'style="background:#FFEBEE;color:var(--rojo);border:none;border-radius:8px;padding:9px 18px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">'+
+      '🗑️ Eliminar registro</button></div>';
+  }
   document.getElementById('modalBody').innerHTML=html;
   document.getElementById('modalOverlay').classList.add('open');
 }

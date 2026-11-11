@@ -47,7 +47,8 @@ service cloud.firestore {
     match /registros_entrega_efectiva/{id} {
       allow create: if true;
       allow read: if esAdmin();
-      allow update, delete: if esAdmin();
+      allow update: if esAdmin();
+      allow delete: if esSuper();
     }
 
     // ── Capturas MIPRES ──
@@ -67,7 +68,8 @@ service cloud.firestore {
       allow get: if esAdmin() ||
         (request.auth != null && resource.data.gestor_uid == request.auth.uid);
       allow list: if esAdmin();
-      allow update, delete: if esAdmin();
+      allow update: if esAdmin();
+      allow delete: if esSuper();
     }
 
     // Índice de capturas por gestor (lo escribe el link público al capturar)
@@ -75,7 +77,7 @@ service cloud.firestore {
       allow read: if request.auth != null && (request.auth.uid == uid || esAdmin());
       allow create, update: if request.resource.data.keys().hasOnly(['capturas'])
         && request.resource.data.capturas is list;
-      allow delete: if esAdmin();
+      allow delete: if esSuper();
     }
 
     // ── Actas de Inicio de Tratamiento ──
@@ -97,8 +99,8 @@ service cloud.firestore {
          request.resource.data.diff(resource.data)
            .affectedKeys().hasOnly(['estado', 'firmaPaciente', 'fechaFirma']));
 
-      // Borrar actas es solo de administración (no se pierde evidencia)
-      allow delete: if esAdmin();
+      // Borrar actas es solo del superadmin (no se pierde evidencia)
+      allow delete: if esSuper();
     }
 
     // ── Índice de actas por gestor (para que vea solo las suyas) ──
