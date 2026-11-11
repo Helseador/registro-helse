@@ -83,6 +83,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text
 const p = new URLSearchParams(location.search);
 const lab = (p.get('lab') || '').trim() || 'Glenmark';
 const gestor = (p.get('g') || '').trim();
+const owner = (p.get('u') || '').trim();
 
 document.getElementById('labBox').textContent = 'Laboratorio: ' + lab;
 document.getElementById('subLab').textContent = lab;
@@ -90,7 +91,8 @@ document.getElementById('notaLab').textContent = lab;
 
 const url = location.origin + location.pathname.replace(/[^\/]*$/, '') +
   'captura_mipres.html?lab=' + encodeURIComponent(lab) +
-  (gestor ? '&g=' + encodeURIComponent(gestor) : '');
+  (gestor ? '&g=' + encodeURIComponent(gestor) : '') +
+  (owner ? '&u=' + encodeURIComponent(owner) : '');
 document.getElementById('link').value = url;
 document.title = 'Compartir captura · ' + lab + ' – Helse';
 

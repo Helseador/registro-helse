@@ -213,6 +213,7 @@ const linkToken = new URLSearchParams(window.location.search).get('t') || '';
 const params = new URLSearchParams(window.location.search);
 const lab = (params.get('lab') || '').trim();
 const gestorNombre = (params.get('g') || '').trim();
+const ownerUid = (params.get('u') || '').trim();
 if (lab || gestorNombre) {
   const b = document.getElementById('labBanner');
   b.style.display = 'block';
@@ -221,7 +222,7 @@ if (lab || gestorNombre) {
 }
 
 // ── Login (solo para links de laboratorio/gestor) ──
-const requiereLogin = !!(lab || gestorNombre);
+const requiereLogin = false;
 onAuthStateChanged(auth, (u) => {
   usuario = u;
   const gate = document.getElementById('gate');
@@ -341,8 +342,8 @@ document.getElementById('form').addEventListener('submit', async e => {
       nombre:         txt('nombre'),
       laboratorio:    lab,
       gestor_nombre:  gestorNombre,
-      gestor_uid:     usuario ? usuario.uid : '',
-      gestor_email:   usuario ? usuario.email : '',
+      gestor_uid:     ownerUid,
+      gestor_email:   '',
       telefono:       txt('telefono'),
       telefono2:      txt('telefono2'),
       formula_nombre: archivoFoto.name,
@@ -351,9 +352,9 @@ document.getElementById('form').addEventListener('submit', async e => {
       token:          linkToken,
     });
 
-    if (usuario) {
+    if (ownerUid) {
       try {
-        await setDoc(doc(db, 'mipres_index', usuario.uid), { capturas: arrayUnion(ref.id) }, { merge: true });
+        await setDoc(doc(db, 'mipres_index', ownerUid), { capturas: arrayUnion(ref.id) }, { merge: true });
       } catch (e) { console.warn('No se pudo actualizar el índice', e); }
     }
 

@@ -95,6 +95,8 @@ td.nombre{font-weight:600;}
 .countdown.vencido-txt{color:var(--gris);}
 .btn-copiar{background:var(--verde-light);color:var(--verde-dark);border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;}
 .btn-copiar:hover{background:var(--verde);color:white;}
+.btn-id{background:var(--azul-light);color:var(--azul);border:none;border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:700;cursor:pointer;margin-right:6px;}
+.btn-id:hover{background:var(--azul);color:#fff;}
 .btn-revocar{background:#FFEBEE;color:var(--rojo);border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;}
 .btn-revocar:hover{background:var(--rojo);color:white;}
 .links-empty{text-align:center;padding:40px;color:var(--gris);background:white;border-radius:14px;}
@@ -1297,6 +1299,12 @@ async function revocarLink(id){
   cargarLinks();
 }
 
+function copiarIdUsuario(id){
+  navigator.clipboard.writeText(id)
+    .then(()=>alert('ID copiado:\n'+id))
+    .catch(()=>prompt('Copia el ID del usuario:',id));
+}
+
 function copiarLink(url){navigator.clipboard.writeText(url).then(()=>{alert('✅ Link copiado al portapapeles');});}
 
 // ── USUARIOS ──
@@ -1315,7 +1323,8 @@ async function cargarUsuarios(){
         <div class="usuario-email">${u.nombre?u.nombre+' · ':''}${u.email}</div>
         <div class="usuario-rol"><span class="badge ${esSA?'badge-sa':esG?'badge-gestor':'badge-adm'}">${esSA?'👑 SuperAdmin':esG?'🧑‍💼 Gestor':'👁️ Admin'}</span></div>
       </div>
-      ${!esSA?`<button class="btn-revocar" data-id="${u.id}" data-email="${u.email}" onclick="eliminarUsuario(this.dataset.id,this.dataset.email)">Eliminar</button>`:''}
+      ${!esSA?`<button class="btn-id" data-id="${u.id}" onclick="copiarIdUsuario(this.dataset.id)">Copiar ID</button>
+      <button class="btn-revocar" data-id="${u.id}" data-email="${u.email}" onclick="eliminarUsuario(this.dataset.id,this.dataset.email)">Eliminar</button>`:''}
     </div>`;
   }).join('');
 }
