@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compartir captura de fórmulas – Helse</title>
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122A52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:30px 14px 60px;line-height:1.5;}
+.wrapper{max-width:620px;margin:0 auto;}
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:26px 30px 22px;color:#fff;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-50px;right:-50px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.06);}
+.header img{height:46px;background:#fff;border-radius:10px;padding:6px 12px;display:block;position:relative;}
+.header-tag{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;opacity:.72;margin:14px 0 6px;font-weight:600;}
+.header h1{font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;position:relative;}
+.header h1 span{display:block;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;opacity:.85;margin-top:3px;}
+.card{background:#fff;border-radius:0 0 20px 20px;padding:26px 30px 30px;box-shadow:0 4px 24px rgba(27,58,107,.10);}
+.lab{background:#E8F5E9;border-left:4px solid var(--verde);color:#1B5E20;border-radius:0 10px 10px 0;padding:12px 16px;font-size:13px;font-weight:700;margin-bottom:20px;}
+.paso{display:flex;gap:10px;font-size:13px;color:var(--gris);margin-bottom:8px;}
+.paso b{color:var(--azul);}
+.label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gris);margin:18px 0 7px;}
+.link-box{display:flex;gap:8px;flex-wrap:wrap;}
+.link-box input{flex:1;min-width:220px;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-size:12.5px;background:var(--azul-light);color:var(--azul-dark);font-family:'DM Sans',sans-serif;}
+.btn{border:none;border-radius:10px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-azul{background:var(--azul);color:#fff;}
+.btn-azul:hover{background:var(--azul-dark);}
+.btn-verde{background:var(--verde);color:#fff;}
+.btn-verde:hover{filter:brightness(.92);}
+.btn-gris{background:#fff;color:var(--azul);border:1.5px solid var(--border);}
+.btn-gris:hover{border-color:var(--azul);}
+.qr-wrap{display:flex;justify-content:center;margin:18px 0 6px;}
+#qr{background:#fff;padding:12px;border:1.5px solid var(--border);border-radius:14px;}
+#qr img,#qr canvas{display:block;width:260px;height:260px;}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+.nota{background:#FFF8E1;border:1px solid #FFE0A3;color:#8A5A00;border-radius:10px;padding:11px 14px;font-size:11.5px;margin-top:20px;line-height:1.55;}
+@media(max-width:520px){.header,.card{padding-left:20px;padding-right:20px;}.header h1{font-size:21px;}}
+@media print{body{background:#fff;padding:0;}.header{border-radius:0;}.acciones,.btn,.nota{display:none!important;}.card{box-shadow:none;border-radius:0;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+    <div class="header-tag">Grupo Helse SAS</div>
+    <h1>Comparte la captura<span id="subLab">de fórmulas MIPRES</span></h1>
+  </div>
+
+  <div class="card">
+    <div class="lab" id="labBox">Laboratorio</div>
+
+    <div class="paso"><b>1.</b> Comparte este link o el QR con las personas que van a capturar.</div>
+    <div class="paso"><b>2.</b> Quien lo abra registra nombre, teléfonos y la fórmula (foto o PDF).</div>
+    <div class="paso"><b>3.</b> Cada captura queda marcada con el laboratorio.</div>
+
+    <div class="label">Link para compartir</div>
+    <div class="link-box">
+      <input type="text" id="link" readonly>
+      <button class="btn btn-azul" id="btnCopiar">Copiar link</button>
+    </div>
+
+    <div class="label">Código QR (lleva al mismo link)</div>
+    <div class="qr-wrap"><div id="qr"></div></div>
+
+    <div class="acciones">
+      <button class="btn btn-verde" id="btnDescargar">⬇️ Descargar QR</button>
+      <a class="btn btn-azul" id="btnWhats" target="_blank" rel="noopener">WhatsApp</a>
+      <button class="btn btn-gris" id="btnImprimir">🖨 Imprimir</button>
+    </div>
+
+    <div class="nota">
+      <strong>Para la prueba:</strong> comparte el link o el QR solo con la persona encargada.
+      Todas las capturas que lleguen por este link quedarán asociadas al laboratorio
+      <strong id="notaLab">Glenmark</strong>.
+    </div>
+  </div>
+</div>
+
+<script>
+const p = new URLSearchParams(location.search);
+const lab = (p.get('lab') || '').trim() || 'Glenmark';
+const gestor = (p.get('g') || '').trim();
+
+document.getElementById('labBox').textContent = 'Laboratorio: ' + lab;
+document.getElementById('subLab').textContent = lab;
+document.getElementById('notaLab').textContent = lab;
+
+const url = location.origin + location.pathname.replace(/[^\/]*$/, '') +
+  'captura_mipres.html?lab=' + encodeURIComponent(lab) +
+  (gestor ? '&g=' + encodeURIComponent(gestor) : '');
+document.getElementById('link').value = url;
+document.title = 'Compartir captura · ' + lab + ' – Helse';
+
+// QR
+let qrOk = false;
+try {
+  new QRCode(document.getElementById('qr'), {
+    text: url, width: 520, height: 520,
+    colorDark: '#1B3A6B', colorLight: '#FFFFFF',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+  qrOk = true;
+} catch (e) {
+  document.getElementById('qr').textContent = 'No se pudo generar el QR';
+}
+
+document.getElementById('btnCopiar').addEventListener('click', async () => {
+  const b = document.getElementById('btnCopiar');
+  try {
+    await navigator.clipboard.writeText(url);
+    b.textContent = '¡Copiado!';
+    setTimeout(() => b.textContent = 'Copiar link', 1600);
+  } catch (e) {
+    const i = document.getElementById('link');
+    i.select(); document.execCommand('copy');
+  }
+});
+
+document.getElementById('btnWhats').href =
+  'https://wa.me/?text=' + encodeURIComponent('Captura de fórmulas ' + lab + ': ' + url);
+
+document.getElementById('btnDescargar').addEventListener('click', () => {
+  if (!qrOk) return;
+  const cont = document.getElementById('qr');
+  const canvas = cont.querySelector('canvas');
+  const img = cont.querySelector('img');
+  const a = document.createElement('a');
+  if (canvas) {
+    a.href = canvas.toDataURL('image/png');
+  } else if (img) {
+    a.href = img.src;
+  } else { return; }
+  a.download = 'QR_' + lab.replace(/\s+/g, '_') + '.png';
+  a.click();
+});
+
+document.getElementById('btnImprimir').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>

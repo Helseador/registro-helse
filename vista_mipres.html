@@ -454,7 +454,7 @@ function filtrar(){
   const q=document.getElementById('buscador').value.toLowerCase();
   const fecha=document.getElementById('filtroFecha').value;
   let lista=registros.filter(r=>{
-    const texto=(r.nombre||'')+' '+(r.telefono||'')+' '+(r.telefono2||'');
+    const texto=(r.nombre||'')+' '+(r.telefono||'')+' '+(r.telefono2||'')+' '+(r.laboratorio||'')+' '+(r.gestor_nombre||'');
     return texto.toLowerCase().includes(q);
   });
   if(fecha){
@@ -484,6 +484,8 @@ function abrirModal(id){
     ['Nombre paciente',r.nombre],
     ['Teléfono',r.telefono],
     ['Teléfono 2',r.telefono2||'—'],
+    ['Laboratorio',r.laboratorio||'—'],
+    ['Gestor',r.gestor_nombre||'—'],
     ['Nombre archivo',r.formula_nombre||'—'],
   ];
   let html=campos.map(([k,v])=>
