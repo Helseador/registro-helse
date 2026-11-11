@@ -181,14 +181,14 @@ input::placeholder{color:#9EAFAD;}
         <p style="font-size:11.5px;color:var(--gris);text-align:center;">Al enviar confirma que la información es verídica y autoriza el tratamiento de sus datos (Ley 1581 de 2012).</p>
       </div>
 
-      <div class="success-msg" id="successMsg">
-        <div class="icon">✅</div>
-        <h3>¡Registro guardado!</h3>
-        <p>La fórmula MIPRES fue capturada correctamente.<br>El equipo de Helse procesará la información pronto.</p>
-        <button type="button" class="btn-nuevo" onclick="nuevoRegistro()">+ Nuevo registro</button>
-      </div>
-
     </form>
+
+    <div class="success-msg" id="successMsg">
+      <div class="icon">✅</div>
+      <h3>¡Registro guardado!</h3>
+      <p>La fórmula MIPRES fue capturada correctamente.<br>El equipo de Helse procesará la información pronto.</p>
+      <button type="button" class="btn-nuevo" onclick="nuevoRegistro()">+ Nuevo registro</button>
+    </div>
   </div>
 </div>
 
@@ -371,6 +371,8 @@ document.getElementById('form').addEventListener('submit', async e => {
 window.nuevoRegistro = function() {
   document.getElementById('form').reset();
   limpiarFoto();
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = false; btn.textContent = 'Enviar Registro';
   document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
   document.getElementById('form').style.display = 'block';
   document.getElementById('successMsg').style.display = 'none';
