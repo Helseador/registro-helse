@@ -77,10 +77,32 @@ input::placeholder{color:#9EAFAD;}
 .legal-box{background:white;border-left:4px solid var(--verde);padding:14px 18px;font-size:11.5px;color:var(--gris);line-height:1.6;}
 .legal-box strong{color:var(--verde-dark);}
 .legal-box a{color:var(--verde-dark);font-weight:600;}
+.gate{position:fixed;inset:0;background:rgba(13,43,94,.93);display:flex;align-items:center;justify-content:center;padding:18px;z-index:1000;}
+.gate-card{background:#fff;border-radius:18px;padding:30px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.gate-card img{height:50px;margin:0 auto 12px;display:block;}
+.gate-card h2{font-family:'DM Serif Display',serif;font-size:20px;color:var(--verde);margin-bottom:4px;}
+.gate-card p{font-size:12px;color:var(--gris);margin-bottom:16px;}
+.gate-card input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;}
+.gate-card input:focus{border-color:var(--verde);}
+.gate-card button{width:100%;background:var(--verde);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;}
+.gate-card button:disabled{opacity:.6;cursor:wait;}
+.gate-error{color:var(--rojo);font-size:12px;margin-top:8px;display:none;}
 @media(max-width:500px){.card,.header{padding-left:18px;padding-right:18px;}.grid2{grid-template-columns:1fr;}.foto-btns{flex-direction:column;align-items:center;}}
 </style>
 </head>
 <body>
+<div class="gate" id="gate" style="display:none">
+  <div class="gate-card">
+    <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+    <h2>Ingresa para capturar</h2>
+    <p id="gateLab">Captura de fórmulas</p>
+    <input type="email" id="gateEmail" placeholder="Correo electrónico" autocomplete="email">
+    <input type="password" id="gatePass" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrarGate()">
+    <button id="gateBtn" onclick="entrarGate()">Ingresar</button>
+    <p class="gate-error" id="gateError"></p>
+  </div>
+</div>
+
 <div class="wrapper">
 
   <div class="header">
@@ -171,8 +193,9 @@ input::placeholder{color:#9EAFAD;}
 </div>
 
 <script type="module">
-import { initializeApp }                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
@@ -184,6 +207,8 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+const auth = getAuth(app);
+let usuario = null;
 const linkToken = new URLSearchParams(window.location.search).get('t') || '';
 const params = new URLSearchParams(window.location.search);
 const lab = (params.get('lab') || '').trim();
@@ -194,6 +219,37 @@ if (lab || gestorNombre) {
   b.textContent = 'Captura para: ' + [lab, gestorNombre].filter(Boolean).join(' · ');
   document.title = (lab ? lab + ' · ' : '') + 'Captura de Fórmula MIPRES – Helse';
 }
+
+// ── Login (solo para links de laboratorio/gestor) ──
+const requiereLogin = !!(lab || gestorNombre);
+onAuthStateChanged(auth, (u) => {
+  usuario = u;
+  const gate = document.getElementById('gate');
+  if (requiereLogin && !u) {
+    document.getElementById('gateLab').textContent = 'Captura para: ' + [lab, gestorNombre].filter(Boolean).join(' · ');
+    gate.style.display = 'flex';
+  } else {
+    gate.style.display = 'none';
+  }
+});
+
+window.entrarGate = async function () {
+  const email = document.getElementById('gateEmail').value.trim();
+  const pass = document.getElementById('gatePass').value;
+  const err = document.getElementById('gateError');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Completa correo y contraseña.'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('gateBtn');
+  btn.disabled = true; btn.textContent = 'Ingresando…';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    err.textContent = 'Correo o contraseña incorrectos.';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Ingresar';
+  }
+};
 
 // ── Foto ──
 let archivoFoto = null, fotoBase64 = null;
@@ -280,11 +336,13 @@ document.getElementById('form').addEventListener('submit', async e => {
   try {
     fotoBase64 = await comprimirImagen(archivoFoto, 1400, 0.85);
 
-    await addDoc(collection(db, 'capturas_mipres'), {
+    const ref = await addDoc(collection(db, 'capturas_mipres'), {
       fecha:          serverTimestamp(),
       nombre:         txt('nombre'),
       laboratorio:    lab,
       gestor_nombre:  gestorNombre,
+      gestor_uid:     usuario ? usuario.uid : '',
+      gestor_email:   usuario ? usuario.email : '',
       telefono:       txt('telefono'),
       telefono2:      txt('telefono2'),
       formula_nombre: archivoFoto.name,
@@ -292,6 +350,12 @@ document.getElementById('form').addEventListener('submit', async e => {
       formula_tipo:   archivoFoto.type === 'application/pdf' ? 'pdf' : 'imagen',
       token:          linkToken,
     });
+
+    if (usuario) {
+      try {
+        await setDoc(doc(db, 'mipres_index', usuario.uid), { capturas: arrayUnion(ref.id) }, { merge: true });
+      } catch (e) { console.warn('No se pudo actualizar el índice', e); }
+    }
 
     document.getElementById('form').style.display = 'none';
     document.getElementById('successMsg').style.display = 'block';

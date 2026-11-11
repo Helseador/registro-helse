@@ -354,7 +354,7 @@ function limpiarDato(v){
 }
 
 
-let registros=[], registroActual=null;
+let registros=[], registroActual=null, rolActual=null;
 
 // ── AUTH ──
 auth.onAuthStateChanged(async user=>{
@@ -362,9 +362,11 @@ auth.onAuthStateChanged(async user=>{
     // Verificar que tenga acceso (mismo sistema de usuarios del dashboard)
     const snap=await db.collection('usuarios').doc(user.uid).get();
     if(!snap.exists){auth.signOut();return;}
+    rolActual = snap.data().rol || 'admin';
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='block';
-    document.getElementById('userEmail').textContent=user.email;
+    document.getElementById('userEmail').textContent = user.email +
+      (rolActual === 'gestor' ? ' · mis capturas' : '');
     cargarDatos();
   } else {
     document.getElementById('loginScreen').style.display='flex';
@@ -388,8 +390,25 @@ function cerrarSesion(){ auth.signOut(); }
 // ── CARGA DE DATOS ──
 async function cargarDatos(){
   try{
-    const snap=await db.collection('capturas_mipres').orderBy('fecha','desc').get();
-    registros=snap.docs.map(d=>limpiarDato({id:d.id,...d.data()}));
+    let docs = [];
+    if(rolActual==='admin' || rolActual==='superadmin'){
+      const snap=await db.collection('capturas_mipres').orderBy('fecha','desc').get();
+      docs = snap.docs.map(d=>limpiarDato({id:d.id,...d.data()}));
+    } else if(rolActual==='gestor'){
+      // Solo las capturas propias (índice del gestor)
+      const idx = await db.collection('mipres_index').doc(auth.currentUser.uid).get();
+      const ids = (idx.exists && Array.isArray(idx.data().capturas)) ? idx.data().capturas : [];
+      if(ids.length){
+        const snaps = await Promise.all(ids.map(id=>db.collection('capturas_mipres').doc(id).get()));
+        docs = snaps.filter(x=>x.exists).map(x=>limpiarDato({id:x.id,...x.data()}));
+      }
+      docs.sort((a,b)=>{
+        const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
+        const tb=b.fecha&&b.fecha.toDate?b.fecha.toDate().getTime():0;
+        return tb-ta;
+      });
+    }
+    registros = docs;
     renderTabla(registros);
     actualizarStats(registros);
     document.getElementById('loading').style.display='none';
@@ -442,8 +461,10 @@ function renderTabla(lista){
       '<td style="text-align:center;">'+(tieneFormula?'📋 Sí':'—')+'</td>'+
       '<td style="display:flex;gap:5px;align-items:center;">'+
         '<button class="btn-ver" onclick="abrirModal(\''+r.id+'\')">Ver</button>'+
-        '<button class="btn-gestion'+(r.gestion?' tiene-gestion':'')+'" onclick="abrirGestion(\''+r.id+'\')">'+(r.gestion?'✅ Gestión':'📋 Gestión')+'</button>'+
-        '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+(r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'+
+        ((rolActual==='admin'||rolActual==='superadmin')
+          ? '<button class="btn-gestion'+(r.gestion?' tiene-gestion':'')+'" onclick="abrirGestion(\''+r.id+'\')">'+(r.gestion?'✅ Gestión':'📋 Gestión')+'</button>'+
+            '<button class="btn-eliminar" onclick="eliminarRegistro(\''+r.id+'\',\''+(r.nombre||'').replace(/'/g,'')+'\')">🗑️</button>'
+          : '')+
       '</td>';
     tbody.appendChild(tr);
   });
