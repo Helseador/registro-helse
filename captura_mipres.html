@@ -187,6 +187,7 @@ input::placeholder{color:#9EAFAD;}
       <div class="icon">✅</div>
       <h3>¡Registro guardado!</h3>
       <p>La fórmula MIPRES fue capturada correctamente.<br>El equipo de Helse procesará la información pronto.</p>
+      <p id="successOwner" style="font-size:12px;font-weight:700;margin-top:8px;"></p>
       <button type="button" class="btn-nuevo" onclick="nuevoRegistro()">+ Nuevo registro</button>
     </div>
   </div>
@@ -217,7 +218,8 @@ const ownerUid = (params.get('u') || '').trim();
 if (lab || gestorNombre) {
   const b = document.getElementById('labBanner');
   b.style.display = 'block';
-  b.textContent = 'Captura para: ' + [lab, gestorNombre].filter(Boolean).join(' · ');
+  b.textContent = 'Captura para: ' + [lab, gestorNombre].filter(Boolean).join(' · ') +
+    (ownerUid ? '' : '  ·  ⚠️ sin gestor asignado');
   document.title = (lab ? lab + ' · ' : '') + 'Captura de Fórmula MIPRES – Helse';
 }
 
@@ -358,6 +360,14 @@ document.getElementById('form').addEventListener('submit', async e => {
       } catch (e) { console.warn('No se pudo actualizar el índice', e); }
     }
 
+    const so = document.getElementById('successOwner');
+    if (ownerUid) {
+      so.textContent = '✅ Asignada a: ' + (gestorNombre || 'gestor') + ' · ' + (lab || 'Helse');
+      so.style.color = 'var(--verde)';
+    } else {
+      so.textContent = '⚠️ Quedó sin asignar: el link no lleva el ID del gestor.';
+      so.style.color = 'var(--rojo)';
+    }
     document.getElementById('form').style.display = 'none';
     document.getElementById('successMsg').style.display = 'block';
     document.getElementById('successMsg').scrollIntoView({ behavior:'smooth', block:'center' });
