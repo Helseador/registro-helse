@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="actas_pdf.js"></script>
 <script src="registro_colaborador_pdf.js"></script>
+<script src="declaracion_pdf.js"></script>
 <style>
 :root{--azul:#1B3A6B;--azul-dark:#122a52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--verde-light:#E8F5E9;--naranja:#BF360C;--naranja-light:#FBE9E7;--rojo:#C62828;--gris:#546E7A;--gris-light:#ECEFF1;--text:#1A2C2B;--border:#B0C4DE;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -169,6 +170,7 @@ thead.col{background:var(--azul);}
     <div class="tab active dot" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
     <div class="tab her"       onclick="cambiarTab('herramientas',this)">🔧 Herramientas</div>
     <div class="tab col"       onclick="cambiarTab('colaboradores',this)">🧑‍💼 Colaboradores</div>
+  <div class="tab col"       onclick="cambiarTab('documentos',this)">📄 Documentos</div>
   </div>
 
   <!-- TAB DOTACIÓN -->
@@ -238,6 +240,27 @@ thead.col{background:var(--azul);}
   </div>
 </div>
 
+<!-- TAB DOCUMENTOS -->
+<div class="tab-content" id="tc-documentos">
+  <div class="stats">
+    <div class="stat-card col"><div class="stat-num col" id="docTotal">—</div><div class="stat-label">Total documentos</div></div>
+    <div class="stat-card col"><div class="stat-num col" id="docHoy">—</div><div class="stat-label">Hoy</div></div>
+    <div class="stat-card col"><div class="stat-num col" id="docSemana">—</div><div class="stat-label">Esta semana</div></div>
+  </div>
+  <div class="toolbar">
+    <input type="text" class="search-box" id="buscadorDoc" placeholder="🔍 Buscar por nombre, cédula, cargo, placa…">
+    <button class="btn-top" id="btnCSVDoc" onclick="exportarCSVDocs()">⬇️ Descargar Excel (documentos)</button>
+  </div>
+  <div class="table-wrap">
+    <div class="loading" id="loadDoc"><div class="spinner"></div>Cargando…</div>
+    <table id="tablaDoc" style="display:none;">
+      <thead class="col"><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Placa</th><th>Documento</th></tr></thead>
+      <tbody id="tbodyDoc"></tbody>
+    </table>
+    <div class="empty" id="emptyDoc" style="display:none;">No hay declaraciones firmadas.</div>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)cerrarModal()">
   <div class="modal">
@@ -273,7 +296,7 @@ function limpiarDato(v){
   return v;
 }
 
-let dotacion=[], herramientas=[], colaboradores=[], rolActual=null;
+let dotacion=[], herramientas=[], colaboradores=[], declaraciones=[], rolActual=null;
 
 // AUTH
 auth.onAuthStateChanged(async user=>{
@@ -314,6 +337,65 @@ function cambiarTab(nombre,el){
 }
 
 // HELPERS
+
+// ── DOCUMENTOS ──
+function renderDocs(lista){
+  const tbody=document.getElementById('tbodyDoc');
+  const tabla=document.getElementById('tablaDoc');
+  const empty=document.getElementById('emptyDoc');
+  tbody.innerHTML='';
+  if(!lista.length){ tabla.style.display='none'; empty.style.display='block'; return; }
+  tabla.style.display='table'; empty.style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.cargo||'—')+'</td>'+
+      '<td>'+(r.vehiculo_placa||'—')+'</td>'+
+      '<td><button class="btn-pdf col" onclick="descargarDeclaracion(\''+r.id+'\',this)">📄 PDF</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function descargarDeclaracion(id,btn){
+  const r=declaraciones.find(x=>x.id===id);
+  if(!r) return alert('No se encontró la declaración.');
+  if(!window.DeclaracionPDF) return alert('No se cargó el generador de PDF.');
+  const t=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
+  setTimeout(()=>{
+    try{ window.DeclaracionPDF.descargar(r); }
+    catch(e){ alert('Error al generar el PDF: '+e.message); }
+    finally{ if(btn){ btn.disabled=false; btn.textContent=t; } }
+  },100);
+}
+
+document.getElementById('buscadorDoc').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderDocs(declaraciones.filter(r=>
+    (r.nombre||'').toLowerCase().includes(q) ||
+    (r.cedula||'').toLowerCase().includes(q) ||
+    (r.cargo||'').toLowerCase().includes(q) ||
+    (r.vehiculo_placa||'').toLowerCase().includes(q)
+  ));
+});
+
+function exportarCSVDocs(){
+  if(!declaraciones.length) return alert('No hay documentos para exportar.');
+  const SEP=';';
+  const cols=['fecha','nombre','cedula','cargo','ciudad_fecha','vehiculo_clase','vehiculo_marca','vehiculo_placa','conductor'];
+  const cab=['Fecha','Nombre','Cédula','Cargo','Ciudad y fecha','Clase','Marca y modelo','Placa','Conductor'];
+  const celda=v=>{let x=String(v==null?'':v);if(/^[=+\-@]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
+  const rows=declaraciones.map(r=>cols.map(c=>celda(c==='fecha'?formatFecha(r.fecha):r[c])).join(SEP));
+  const blob=new Blob(['\ufeff'+[cab.map(celda).join(SEP),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Documentos_Generales_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
 function formatFecha(ts){
   if(!ts)return'—';
   const d=ts.toDate?ts.toDate():new Date(ts);
@@ -347,6 +429,12 @@ async function cargarDatos(){
     renderTablaCol(colaboradores);
     stats(colaboradores,'cHoy','cSemana','cTotal');
     document.getElementById('loadCol').style.display='none';
+
+    const snapDoc=await db.collection('registros_entrega_efectiva').where('tipo_registro','==','declaracion_traslado').get();
+    declaraciones=snapDoc.docs.map(d=>limpiarDato({id:d.id,...d.data()})).sort((a,b)=>((b.fecha?.toDate?.()?.getTime()||0)-(a.fecha?.toDate?.()?.getTime()||0)));
+    renderDocs(declaraciones);
+    stats(declaraciones,'docHoy','docSemana','docTotal');
+    document.getElementById('loadDoc').style.display='none';
   }catch(e){ console.error(e); }
 }
 

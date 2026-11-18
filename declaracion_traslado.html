@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Declaración Voluntaria de Traslado – Helse</title>
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122A52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--verde-light:#E8F5E9;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;--rojo:#C62828;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:28px 14px 70px;line-height:1.55;}
+.wrapper{max-width:760px;margin:0 auto;}
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:26px 32px 24px;color:#fff;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-60px;right:-60px;width:210px;height:210px;border-radius:50%;background:rgba(255,255,255,.06);}
+.header img{height:46px;background:#fff;border-radius:10px;padding:6px 12px;display:block;position:relative;}
+.header-tag{font-size:10.5px;letter-spacing:2.4px;text-transform:uppercase;opacity:.75;margin:14px 0 6px;font-weight:600;}
+.header h1{font-family:'DM Serif Display',serif;font-size:25px;font-weight:400;position:relative;line-height:1.2;}
+.header h1 span{display:block;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:300;opacity:.9;margin-top:5px;}
+.card{background:#fff;border-radius:0 0 20px 20px;padding:30px 32px 34px;box-shadow:0 4px 24px rgba(27,58,107,.10);}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--azul);margin:26px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--azul-light);}
+.section-label:first-child{margin-top:0;}
+.campo{margin-bottom:14px;}
+.campo-label{display:block;font-size:12.5px;font-weight:600;color:var(--azul-dark);margin-bottom:5px;}
+.req{color:var(--rojo);}
+.opcional{font-weight:400;color:var(--gris);font-size:11px;}
+input[type=text],input[type=number]{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:11px 13px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;background:#fff;transition:border-color .2s;}
+input[type=text]:focus,input[type=number]:focus{border-color:var(--azul);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.legal{background:var(--azul-bg);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:12.5px;color:#334155;line-height:1.65;}
+.legal p{margin-bottom:10px;}
+.legal p:last-child{margin-bottom:0;}
+.legal strong{color:var(--azul-dark);}
+.firma-bloque{margin-top:6px;}
+.firma-box{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;}
+.firma-box canvas{display:block;width:100%;height:160px;cursor:crosshair;touch-action:none;}
+.btn{border:none;border-radius:9px;padding:11px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;}
+.btn-azul{background:var(--azul);color:#fff;}
+.btn-azul:hover{background:var(--azul-dark);}
+.btn-gris{background:#fff;color:var(--azul);border:1.5px solid var(--border);}
+.btn-gris:hover{border-color:var(--azul);}
+.btn-verde{background:var(--verde);color:#fff;}
+.btn-verde:hover{filter:brightness(.92);}
+.btn:disabled{opacity:.6;cursor:not-allowed;}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:#334155;margin:16px 0 4px;}
+.check input{margin-top:3px;width:16px;height:16px;flex:0 0 auto;}
+.error-msg{display:none;font-size:11.5px;color:var(--rojo);margin-top:4px;}
+.campo.invalid input{border-color:var(--rojo);}
+.campo.invalid .firma-box{border-color:var(--rojo);}
+.campo.invalid .check{color:var(--rojo);}
+.btn-submit{width:100%;background:var(--azul);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:18px;}
+.btn-submit:hover{background:var(--azul-dark);}
+.nota-pie{font-size:11px;color:var(--gris);text-align:center;margin-top:12px;}
+.success-msg{display:none;text-align:center;padding:16px 0;}
+.success-msg .icon{font-size:44px;margin-bottom:10px;}
+.success-msg h3{font-size:18px;color:var(--verde);margin-bottom:6px;}
+.success-msg p{font-size:13px;color:var(--gris);}
+.success-msg .btn{margin-top:16px;}
+@media(max-width:560px){.header,.card{padding-left:20px;padding-right:20px;}.grid2{grid-template-columns:1fr;}.header h1{font-size:21px;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+    <div class="header-tag">Grupo Helse SAS · Evento corporativo</div>
+    <h1>Declaración Voluntaria de Traslado<span>Despedida de Fin de Año 2026 · Arbeláez, Cundinamarca</span></h1>
+  </div>
+
+  <div class="card">
+    <form id="form" novalidate>
+
+      <div class="section-label">Datos del Trabajador</div>
+
+      <div class="campo" id="cNombre">
+        <label class="campo-label" for="nombre">Nombre completo <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Nombre y apellidos" autocomplete="name">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cCedula">
+          <label class="campo-label" for="cedula">C.C. No. <span class="req">*</span></label>
+          <input type="text" id="cedula" placeholder="Número de documento">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="cCargo">
+          <label class="campo-label" for="cargo">Cargo <span class="req">*</span></label>
+          <input type="text" id="cargo" placeholder="Cargo en la compañía">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+      </div>
+
+      <div class="campo" id="cCiudad">
+        <label class="campo-label" for="ciudadFecha">Ciudad y fecha <span class="req">*</span></label>
+        <input type="text" id="ciudadFecha" placeholder="Ej. Bogotá, 20 de noviembre de 2026">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="section-label">Vehículo</div>
+
+      <div class="grid2">
+        <div class="campo" id="cClase">
+          <label class="campo-label" for="clase">Clase de vehículo <span class="req">*</span></label>
+          <input type="text" id="clase" placeholder="Ej. Automóvil, camioneta, moto">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="cMarca">
+          <label class="campo-label" for="marca">Marca y modelo <span class="req">*</span></label>
+          <input type="text" id="marca" placeholder="Ej. Toyota Corolla 2020">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cPlaca">
+          <label class="campo-label" for="placa">Placa <span class="req">*</span></label>
+          <input type="text" id="placa" placeholder="Ej. ABC123">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="cConductor">
+          <label class="campo-label" for="conductor">Nombre del conductor <span class="opcional">(si es distinto al trabajador)</span></label>
+          <input type="text" id="conductor" placeholder="Opcional">
+        </div>
+      </div>
+
+      <div class="section-label">Declaración</div>
+
+      <div class="legal">
+        <p>Por medio del presente documento, yo, <strong id="txtNombre">____________________</strong>, mayor de edad y plenamente capaz, obrando en nombre propio, manifiesto de forma libre, voluntaria y espontánea lo siguiente de cara al evento corporativo programado en el municipio de Arbeláez (Cundinamarca) entre el 20 y el 22 de noviembre de 2026:</p>
+        <p><strong>PRIMERO.</strong> Reconozco expresamente que GRUPO HELSE S.A.S. ha puesto a mi disposición, de manera gratuita y garantizada, un medio de transporte idóneo para mi desplazamiento de ida y regreso al lugar del evento. No obstante, por motivos estrictamente personales y de mi exclusiva conveniencia, <strong>HE DECIDIDO DECLINAR</strong> el uso de dicho transporte oficial.</p>
+        <p><strong>SEGUNDO.</strong> Informo a la compañía que realizaré el desplazamiento hacia y desde Arbeláez (Cundinamarca) asumiendo por mi cuenta y riesgo la logística del viaje, utilizando para ello el siguiente vehículo (propio o de un tercero bajo mi responsabilidad):</p>
+        <p>Clase de Vehículo: <strong id="txtClase">____________________</strong> · Marca y Modelo: <strong id="txtMarca">____________________</strong><br>
+           Placa: <strong id="txtPlaca">____________________</strong> · Nombre del Conductor: <strong id="txtConductor">____________________</strong></p>
+        <p><strong>TERCERO.</strong> Declaro bajo la gravedad de juramento que el vehículo descrito cuenta con toda la documentación legal vigente exigida por las autoridades de tránsito colombianas, incluyendo, pero sin limitarse a: Seguro Obligatorio de Accidentes de Tránsito (SOAT), Revisión Técnico-Mecánica (si aplica) y que el conductor asignado posee licencia de conducción vigente y de la categoría correspondiente.</p>
+        <p><strong>CUARTO.</strong> Entiendo y acepto que, al no utilizar el transporte suministrado por el empleador, mi desplazamiento no obedece a órdenes, subordinación ni cumplimiento de funciones propias de mi cargo. En consecuencia, acepto expresamente que cualquier siniestro, accidente de tránsito o eventualidad que ocurra durante los trayectos de ida o regreso <strong>NO CONSTITUYE ACCIDENTE DE TRABAJO</strong>, liberando a GRUPO HELSE S.A.S. de cualquier reporte ante la Administradora de Riesgos Laborales (ARL) por hechos ocurridos en el trayecto.</p>
+        <p><strong>QUINTO.</strong> Asumo la guarda material y jurídica de la actividad peligrosa de conducción. Por consiguiente, eximo y libero total y definitivamente a GRUPO HELSE S.A.S., a sus accionistas, representantes legales, directivos y empleados, de cualquier responsabilidad civil (contractual o extracontractual), penal, administrativa o contravencional derivada de accidentes, choques, hurtos, daños a terceros (bienes o personas) o multas de tránsito que puedan presentarse durante mi desplazamiento o el estacionamiento del vehículo.</p>
+        <p>Me obligo a mantener indemne a GRUPO HELSE S.A.S. ante cualquier reclamación, demanda o requerimiento de terceros que tenga causa en mi desplazamiento independiente.</p>
+        <p>En constancia de lectura, entendimiento y aceptación plena de las implicaciones legales de este documento, lo suscribo a los <input type="number" id="dia" min="1" max="31" style="width:56px;display:inline-block;padding:2px 6px;" value="20"> días del mes de noviembre de 2026.</p>
+      </div>
+
+      <div class="section-label">Firma</div>
+
+      <div class="campo" id="cFirma">
+        <div class="firma-bloque">
+          <div id="fr1">
+            <label class="campo-label">Firma del trabajador <span class="req">*</span></label>
+            <button type="button" class="btn btn-gris" style="width:100%;" onclick="mostrarFirma()">✍️ Toque aquí para firmar</button>
+          </div>
+          <div id="fr2" style="display:none;">
+            <p style="font-size:12px;color:var(--gris);margin-bottom:8px;">Firme en el recuadro blanco de abajo</p>
+            <div class="firma-box" id="fwFirma"><canvas id="canvasFirma"></canvas></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button type="button" class="btn btn-azul" onclick="guardarFirma()">✅ Guardar firma</button>
+              <button type="button" class="btn btn-gris" onclick="limpiarFirmaCanvas()">🔄 Limpiar</button>
+            </div>
+          </div>
+          <div id="fr3" style="display:none;">
+            <p style="font-size:12px;color:var(--verde);font-weight:600;margin-bottom:8px;">✅ Firma guardada</p>
+            <img id="previewFirma" style="width:100%;max-height:110px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:8px;" alt="Firma">
+            <button type="button" class="btn btn-gris" style="margin-top:10px;" onclick="volverFirmar()">🔄 Volver a firmar</button>
+          </div>
+        </div>
+        <div class="error-msg">La firma es obligatoria.</div>
+      </div>
+
+      <div class="campo" id="cAcepta">
+        <label class="check"><input type="checkbox" id="acepta"> He leído, entiendo y acepto voluntariamente las implicaciones legales de esta declaración.</label>
+        <div class="error-msg">Debe aceptar la declaración para continuar.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">Firmar y enviar declaración</button>
+      <p class="nota-pie">Al enviar, confirma que la información es verídica y autoriza el tratamiento de sus datos (Ley 1581 de 2012).</p>
+
+      <div class="success-msg" id="successMsg">
+        <div class="icon">✅</div>
+        <h3>¡Declaración firmada!</h3>
+        <p>Su declaración quedó registrada correctamente.<br>Puede descargar el PDF firmado.</p>
+        <button type="button" class="btn btn-verde" onclick="descargarMiPDF()">⬇️ Descargar PDF</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="declaracion_pdf.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const linkToken = new URLSearchParams(window.location.search).get('t') || '';
+
+const txt = id => document.getElementById(id).value.trim();
+
+document.getElementById('nombre').addEventListener('input', e => {
+  document.getElementById('txtNombre').textContent = e.target.value || '____________________';
+});
+['clase','marca','placa','conductor'].forEach(id => {
+  const map = {clase:'txtClase', marca:'txtMarca', placa:'txtPlaca', conductor:'txtConductor'};
+  document.getElementById(id).addEventListener('input', e => {
+    document.getElementById(map[id]).textContent = e.target.value || '____________________';
+  });
+});
+
+// ── Firma ──
+let firmaHecha = false, firmaGuardada = false, canvas, ctx, draw = false;
+
+function mostrarFirma(){
+  document.getElementById('fr1').style.display = 'none';
+  document.getElementById('fr2').style.display = 'block';
+  initCanvas();
+}
+
+function initCanvas(){
+  const wrap = document.getElementById('fwFirma');
+  canvas = document.getElementById('canvasFirma');
+  const w = wrap.clientWidth || 500;
+  canvas.width = w; canvas.height = 160;
+  canvas.style.width = w + 'px'; canvas.style.height = '160px';
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, 160);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  firmaHecha = false; draw = false;
+  const xy = e => {
+    const r = canvas.getBoundingClientRect();
+    const s = e.touches ? e.touches[0] : e;
+    return { x: s.clientX - r.left, y: s.clientY - r.top };
+  };
+  canvas.onmousedown = e => { draw = true; const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+  canvas.onmousemove = e => { if(!draw) return; const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHecha = true; };
+  canvas.onmouseup = canvas.onmouseleave = () => draw = false;
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); draw = true; const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive:false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!draw) return; const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHecha = true; }, { passive:false });
+  canvas.addEventListener('touchend', () => draw = false);
+}
+
+function limpiarFirmaCanvas(){
+  if(!ctx) return;
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  firmaHecha = false;
+}
+
+function guardarFirma(){
+  if(!firmaHecha){ alert('Por favor firme antes de guardar.'); return; }
+  document.getElementById('previewFirma').src = canvas.toDataURL('image/png');
+  document.getElementById('fr2').style.display = 'none';
+  document.getElementById('fr3').style.display = 'block';
+  firmaGuardada = true;
+  document.getElementById('cFirma').classList.remove('invalid');
+}
+
+function volverFirmar(){
+  firmaGuardada = false;
+  document.getElementById('fr3').style.display = 'none';
+  document.getElementById('fr1').style.display = 'block';
+}
+
+// ── Validación y envío ──
+let ultimaDeclaracion = null;
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
+  let ok = true;
+  const req = ['cNombre','cCedula','cCargo','cCiudad','cClase','cMarca','cPlaca'];
+  const map = {cNombre:'nombre',cCedula:'cedula',cCargo:'cargo',cCiudad:'ciudadFecha',cClase:'clase',cMarca:'marca',cPlaca:'placa'};
+  req.forEach(c => { if(!txt(map[c])){ document.getElementById(c).classList.add('invalid'); ok = false; } });
+  if(!firmaGuardada){ document.getElementById('cFirma').classList.add('invalid'); ok = false; }
+  if(!document.getElementById('acepta').checked){ document.getElementById('cAcepta').classList.add('invalid'); ok = false; }
+  if(!ok){ document.querySelector('.campo.invalid')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+
+  try{
+    const data = {
+      tipo_registro: 'declaracion_traslado',
+      fecha: firebase.firestore.FieldValue.serverTimestamp(),
+      nombre: txt('nombre'),
+      cedula: txt('cedula'),
+      cargo: txt('cargo'),
+      ciudad_fecha: txt('ciudadFecha'),
+      vehiculo_clase: txt('clase'),
+      vehiculo_marca: txt('marca'),
+      vehiculo_placa: txt('placa'),
+      conductor: txt('conductor'),
+      dia_firma: txt('dia'),
+      mes_firma: 'noviembre',
+      anio_firma: '2026',
+      firma_trabajador: document.getElementById('previewFirma').src,
+      token: linkToken,
+    };
+    const ref = await db.collection('registros_entrega_efectiva').add(data);
+    ultimaDeclaracion = Object.assign({ id: ref.id, fecha: new Date() }, data);
+    btn.style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+    document.getElementById('successMsg').scrollIntoView({ behavior:'smooth', block:'center' });
+  }catch(err){
+    btn.disabled = false; btn.textContent = 'Firmar y enviar declaración';
+    alert('Error al enviar: ' + err.message);
+  }
+});
+
+function descargarMiPDF(){
+  if(ultimaDeclaracion && window.DeclaracionPDF) window.DeclaracionPDF.descargar(ultimaDeclaracion);
+}
+</script>
+</body>
+</html>

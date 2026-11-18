@@ -12,6 +12,7 @@
 <script src="actas_pdf.js"></script>
 <script src="registro_colaborador_pdf.js"></script>
 <script src="acta_inicio_pdf.js"></script>
+<script src="declaracion_pdf.js"></script>
 <style>
 :root{
   --verde:#1B3A6B;--verde-dark:#122a52;--verde-light:#E3EAF5;--verde-bg:#F0F4FA;
@@ -196,6 +197,7 @@ td.nombre{font-weight:600;}
     <div class="tab" onclick="cambiarTab('dotacion',this)">👕 Dotación</div>
     <div class="tab" onclick="cambiarTab('herramientas',this)">🔧 Herramientas</div>
     <div class="tab" onclick="cambiarTab('colaboradores',this)">🧑‍💼 Colaboradores</div>
+    <div class="tab" onclick="cambiarTab('documentos',this)">📄 Documentos generales</div>
     <div class="tab" id="tabLinks" onclick="cambiarTab('links',this)">🔗 Links</div>
     <div class="tab sa-only" onclick="cambiarTab('usuarios',this)">👥 Usuarios</div>
   </div>
@@ -341,7 +343,28 @@ td.nombre{font-weight:600;}
   </div>
 
   <!-- TAB: LINKS -->
-  <div class="tab-content" id="tc-links">
+  <!-- TAB: DOCUMENTOS GENERALES -->
+<div class="tab-content" id="tc-documentos">
+  <div class="stats">
+    <div class="stat-card"><div class="stat-num" id="docTotal">—</div><div class="stat-label">Total documentos</div></div>
+    <div class="stat-card"><div class="stat-num" id="docHoy">—</div><div class="stat-label">Hoy</div></div>
+    <div class="stat-card"><div class="stat-num" id="docSemana">—</div><div class="stat-label">Esta semana</div></div>
+  </div>
+  <div class="toolbar">
+    <input type="text" class="search-box" id="buscadorDoc" placeholder="🔍 Buscar por nombre, cédula, cargo, placa…">
+    <button class="btn-top" id="btnCSVDoc" onclick="exportarCSVDocs()">⬇️ CSV Documentos</button>
+  </div>
+  <div class="table-wrap">
+    <div class="loading" id="loadDoc"><div class="spinner"></div>Cargando...</div>
+    <table id="tablaDoc" style="display:none;">
+      <thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Placa</th><th>Documento</th></tr></thead>
+      <tbody id="tbodyDoc"></tbody>
+    </table>
+    <div class="empty" id="emptyDoc" style="display:none;">No hay declaraciones firmadas.</div>
+  </div>
+</div>
+
+<div class="tab-content" id="tc-links">
     <div class="links-section">
       <div class="links-header">
         <div>
@@ -355,6 +378,7 @@ td.nombre{font-weight:600;}
           <button class="btn-generar" style="background:#2E7D32;" onclick="generarLink('dotacion')">+ Link Dotación</button>
           <button class="btn-generar" style="background:#BF360C;" onclick="generarLink('herramientas')">+ Link Herramientas</button>
           <button class="btn-generar" style="background:#1B3A6B;" onclick="generarLink('colaborador')">+ Link Colaborador</button>
+          <button class="btn-generar" style="background:#455A64;" onclick="generarLink('declaracion')">+ Link Declaración</button>
         </div>
       </div>
       <div class="links-grid" id="linksGrid">
@@ -458,6 +482,7 @@ auth.onAuthStateChanged(async user=>{
     cargarHerramientas();
     cargarColaboradores();
     cargarActasInicio();
+    cargarDocumentos();
     if(rolActual==='superadmin') cargarUsuarios();
   } else {
     document.getElementById('loginScreen').style.display='flex';
@@ -487,6 +512,7 @@ function cambiarTab(nombre,el){
   el.classList.add('active');
   document.getElementById('tc-'+nombre).classList.add('active');
   if(nombre==='inicio') cargarActasInicio();
+  if(nombre==='documentos') cargarDocumentos();
 }
 
 // ── HELPERS ──
@@ -507,7 +533,7 @@ async function cargarPacientes(){
   try{
     // Traemos todo y filtramos en cliente (evita index compuesto con !=)
     const snapSin=await db.collection('registros_entrega_efectiva').get();
-    const tiposExcluidos=new Set(['medico','uso_imagen','dotacion','herramientas']);
+    const tiposExcluidos=new Set(['medico','uso_imagen','dotacion','herramientas','declaracion_traslado']);
     const todos=snapSin.docs
       .filter(d=>!tiposExcluidos.has(d.data().tipo_registro))
       .map(d=>limpiarDato({id:d.id,...d.data()}))
@@ -1213,6 +1239,94 @@ document.getElementById('buscadorHer').addEventListener('input',function(){
   ));
 });
 
+// ── DOCUMENTOS GENERALES ──
+let registrosDoc=[];
+
+async function cargarDocumentos(){
+  try{
+    const snap=await db.collection('registros_entrega_efectiva')
+      .where('tipo_registro','==','declaracion_traslado').get();
+    registrosDoc=snap.docs.map(d=>limpiarDato({id:d.id,...d.data()})).sort((a,b)=>{
+      const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
+      const tb=b.fecha&&b.fecha.toDate?b.fecha.toDate().getTime():0;
+      return tb-ta;
+    });
+    renderDocs(registrosDoc);
+    statsDocs(registrosDoc);
+    document.getElementById('loadDoc').style.display='none';
+  }catch(e){
+    document.getElementById('loadDoc').innerHTML='❌ Error al cargar: '+e.message;
+  }
+}
+
+function renderDocs(lista){
+  const tbody=document.getElementById('tbodyDoc');
+  const tabla=document.getElementById('tablaDoc');
+  const empty=document.getElementById('emptyDoc');
+  tbody.innerHTML='';
+  if(!lista.length){ tabla.style.display='none'; empty.style.display='block'; return; }
+  tabla.style.display='table'; empty.style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.cargo||'—')+'</td>'+
+      '<td>'+(r.vehiculo_placa||'—')+'</td>'+
+      '<td><button class="btn-pdf" onclick="descargarDeclaracion(\''+r.id+'\',this)">📄 PDF</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function statsDocs(lista){
+  const ahora=new Date(), hoy=ahora.toDateString();
+  const inicioSemana=new Date(ahora); inicioSemana.setDate(ahora.getDate()-ahora.getDay());
+  document.getElementById('docTotal').textContent=lista.length;
+  document.getElementById('docHoy').textContent=lista.filter(r=>{
+    const d=r.fecha&&r.fecha.toDate?r.fecha.toDate():null; return d&&d.toDateString()===hoy;
+  }).length;
+  document.getElementById('docSemana').textContent=lista.filter(r=>{
+    const d=r.fecha&&r.fecha.toDate?r.fecha.toDate():null; return d&&d>=inicioSemana;
+  }).length;
+}
+
+function descargarDeclaracion(id,btn){
+  const r=registrosDoc.find(x=>x.id===id);
+  if(!r) return alert('No se encontró la declaración.');
+  if(!window.DeclaracionPDF) return alert('No se cargó el generador de PDF.');
+  const t=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
+  setTimeout(()=>{
+    try{ window.DeclaracionPDF.descargar(r); }
+    catch(e){ alert('Error al generar el PDF: '+e.message); }
+    finally{ if(btn){ btn.disabled=false; btn.textContent=t; } }
+  },100);
+}
+
+document.getElementById('buscadorDoc').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderDocs(registrosDoc.filter(r=>
+    (r.nombre||'').toLowerCase().includes(q) ||
+    (r.cedula||'').toLowerCase().includes(q) ||
+    (r.cargo||'').toLowerCase().includes(q) ||
+    (r.vehiculo_placa||'').toLowerCase().includes(q)
+  ));
+});
+
+function exportarCSVDocs(){
+  if(!registrosDoc.length) return alert('No hay documentos para exportar.');
+  const cols=['fecha','nombre','cedula','cargo','ciudad_fecha','vehiculo_clase','vehiculo_marca','vehiculo_placa','conductor'];
+  const cab=['Fecha','Nombre','Cédula','Cargo','Ciudad y fecha','Clase','Marca y modelo','Placa','Conductor'];
+  const celda=v=>{let x=String(v==null?'':v);if(/^[=+\-@]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
+  const rows=registrosDoc.map(r=>cols.map(c=>celda(c==='fecha'?formatFecha(r.fecha):r[c])).join(';'));
+  const blob=new Blob(['\ufeff'+[cab.map(celda).join(';'),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Documentos_Generales_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
 // ── LINKS ──
 async function cargarLinks(){
   const ahora=Date.now();
@@ -1276,7 +1390,8 @@ async function generarLink(tipoFormulario){
     imagen:   'https://helseador.github.io/registro-helse/uso_imagen_medicos.html',
     dotacion:     'https://helseador.github.io/registro-helse/acta_dotacion.html',
     herramientas: 'https://helseador.github.io/registro-helse/acta_herramientas.html',
-    colaborador:  'https://helseador.github.io/registro-helse/registro_colaborador.html'
+    colaborador:  'https://helseador.github.io/registro-helse/registro_colaborador.html',
+    declaracion:  'https://helseador.github.io/registro-helse/declaracion_traslado.html'
   };
   const base=baseMap[tipoFormulario]||baseMap.paciente;
   const url=base+'?t='+token;
