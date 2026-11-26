@@ -106,11 +106,11 @@ input[type=text]:focus,input[type=email]:focus{border-color:var(--azul);}
       <div class="section-label">Contenido de la Capacitación</div>
       <div class="temario">
         <ul>
-          <li>Contraseñas seguras y autenticación de dos factores.</li>
-          <li>Phishing, ingeniería social y correos sospechosos.</li>
-          <li>Manejo de datos personales y Ley 1581 de 2012.</li>
-          <li>Uso seguro de dispositivos, correo y redes.</li>
-          <li>Cómo reportar un incidente de seguridad.</li>
+          <li>El caso del 20 %: autorización, registro y respaldo.</li>
+          <li>Qué hace la IA cuando inventa, ejecuta o saca datos.</li>
+          <li>Phishing y fraude del proveedor (cambio de cuenta bancaria).</li>
+          <li>Datos sensibles y principio de finalidad (Ley 1581 de 2012).</li>
+          <li>Protocolo si algo pasa: para, reporta y no borres.</li>
         </ul>
       </div>
 
@@ -184,14 +184,14 @@ const linkToken = new URLSearchParams(window.location.search).get('t') || '';
 const txt = id => document.getElementById(id).value.trim();
 
 const QUIZ = [
-  { q: '¿Cuál de estas es una contraseña segura?',
-    opts: ['Helse2026', 'Seguridad123', 'M!r4#Tq9$Lp2', '12345678'], ok: 2 },
-  { q: 'Recibes un correo que pide “verificar tu contraseña” con un enlace. ¿Qué haces?',
-    opts: ['Abro el enlace y escribo mi clave', 'Lo reenvío a mis compañeros', 'No abro el enlace y lo reporto por el canal oficial', 'Lo ignoro y lo borro'], ok: 2 },
-  { q: '¿Cómo debes manejar la información de pacientes?',
-    opts: ['Compartirla por WhatsApp personal', 'Solo por canales autorizados y con acceso mínimo necesario', 'Enviarla a mi correo personal para trabajar', 'Comentarla con compañeros'], ok: 1 },
-  { q: '¿Qué haces si pierdes un dispositivo con información de la empresa?',
-    opts: ['No digo nada', 'Reporto de inmediato al área de sistemas / seguridad', 'Cambio la clave después', 'Espero a que aparezca'], ok: 1 },
+  { q: 'En el caso del 20 % de la información que se borró, ¿qué fue lo que faltó?',
+    opts: ['El respaldo de la información', 'La autorización previa de TI', 'El registro de los cambios', 'El aviso al área de seguridad'], ok: 1 },
+  { q: 'Cuando una IA no tiene la cifra exacta, ¿qué hace según la charla?',
+    opts: ['Se detiene y dice “no lo sé”', 'Consulta la base de datos oficial', 'Inventa una cifra probable y la afirma con seguridad', 'Pide permiso a TI antes de responder'], ok: 2 },
+  { q: 'Tienes acceso a la base de pacientes y un compañero te pide buscar a un familiar suyo. ¿Qué haces?',
+    opts: ['Lo busco, es solo una consulta rápida', 'Lo busco y no lo comento con nadie', 'No lo busco: no corresponde a una finalidad de mi cargo', 'Lo busco solo si me lo pide un jefe'], ok: 2 },
+  { q: 'Un proveedor escribe por correo pidiendo cambiar su cuenta bancaria. ¿Cuál es el procedimiento correcto?',
+    opts: ['Responder al correo pidiendo confirmación', 'Llamar al número que ya teníamos registrado y verificar por otro canal', 'Hacer el cambio y avisar después', 'Reenviar el correo a tesorería para que decida'], ok: 1 },
 ];
 
 function renderQuiz(){

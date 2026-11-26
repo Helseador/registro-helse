@@ -5,11 +5,11 @@
   }
 
   const TEMAS = [
-    "Contraseñas seguras y autenticación de dos factores.",
-    "Phishing, ingeniería social y correos sospechosos.",
-    "Manejo de datos personales y Ley 1581 de 2012.",
-    "Uso seguro de dispositivos, correo y redes.",
-    "Cómo reportar un incidente de seguridad.",
+    "El caso del 20 %: autorización, registro y respaldo.",
+    "Qué hace la IA cuando inventa, ejecuta o saca datos.",
+    "Phishing y fraude del proveedor (cambio de cuenta bancaria).",
+    "Datos sensibles y principio de finalidad (Ley 1581 de 2012).",
+    "Protocolo si algo pasa: para, reporta y no borres.",
   ];
 
   window.CapacitacionPDF = {
