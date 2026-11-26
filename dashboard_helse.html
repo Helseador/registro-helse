@@ -13,6 +13,7 @@
 <script src="registro_colaborador_pdf.js"></script>
 <script src="acta_inicio_pdf.js"></script>
 <script src="declaracion_pdf.js"></script>
+<script src="capacitacion_pdf.js"></script>
 <style>
 :root{
   --verde:#1B3A6B;--verde-dark:#122a52;--verde-light:#E3EAF5;--verde-bg:#F0F4FA;
@@ -198,6 +199,7 @@ td.nombre{font-weight:600;}
     <div class="tab" onclick="cambiarTab('herramientas',this)">🔧 Herramientas</div>
     <div class="tab" onclick="cambiarTab('colaboradores',this)">🧑‍💼 Colaboradores</div>
     <div class="tab" onclick="cambiarTab('documentos',this)">📄 Documentos generales</div>
+    <div class="tab" onclick="cambiarTab('capacitaciones',this)">🎓 Capacitaciones</div>
     <div class="tab" id="tabLinks" onclick="cambiarTab('links',this)">🔗 Links</div>
     <div class="tab sa-only" onclick="cambiarTab('usuarios',this)">👥 Usuarios</div>
   </div>
@@ -364,6 +366,27 @@ td.nombre{font-weight:600;}
   </div>
 </div>
 
+<!-- TAB: CAPACITACIONES -->
+<div class="tab-content" id="tc-capacitaciones">
+  <div class="stats">
+    <div class="stat-card"><div class="stat-num" id="capTotal">—</div><div class="stat-label">Total asistentes</div></div>
+    <div class="stat-card"><div class="stat-num" id="capHoy">—</div><div class="stat-label">Hoy</div></div>
+    <div class="stat-card"><div class="stat-num" id="capAprob">—</div><div class="stat-label">Aprobados</div></div>
+  </div>
+  <div class="toolbar">
+    <input type="text" class="search-box" id="buscadorCap" placeholder="🔍 Buscar por nombre, cédula, cargo, área…">
+    <button class="btn-top" id="btnCSVCap" onclick="exportarCSVCap()">⬇️ CSV Capacitaciones</button>
+  </div>
+  <div class="table-wrap">
+    <div class="loading" id="loadCap"><div class="spinner"></div>Cargando...</div>
+    <table id="tablaCap" style="display:none;">
+      <thead><tr><th>#</th><th>Fecha firma</th><th>Capacitación</th><th>Nombre</th><th>Cédula</th><th>Cargo</th><th>Área</th><th>Puntaje</th><th>Constancia</th></tr></thead>
+      <tbody id="tbodyCap"></tbody>
+    </table>
+    <div class="empty" id="emptyCap" style="display:none;">No hay constancias firmadas.</div>
+  </div>
+</div>
+
 <div class="tab-content" id="tc-links">
     <div class="links-section">
       <div class="links-header">
@@ -379,6 +402,7 @@ td.nombre{font-weight:600;}
           <button class="btn-generar" style="background:#BF360C;" onclick="generarLink('herramientas')">+ Link Herramientas</button>
           <button class="btn-generar" style="background:#1B3A6B;" onclick="generarLink('colaborador')">+ Link Colaborador</button>
           <button class="btn-generar" style="background:#455A64;" onclick="generarLink('declaracion')">+ Link Declaración</button>
+          <button class="btn-generar" style="background:#6A1B9A;" onclick="generarLink('capacitacion')">+ Link Capacitación</button>
         </div>
       </div>
       <div class="links-grid" id="linksGrid">
@@ -483,6 +507,7 @@ auth.onAuthStateChanged(async user=>{
     cargarColaboradores();
     cargarActasInicio();
     cargarDocumentos();
+    cargarCapacitaciones();
     if(rolActual==='superadmin') cargarUsuarios();
   } else {
     document.getElementById('loginScreen').style.display='flex';
@@ -513,6 +538,7 @@ function cambiarTab(nombre,el){
   document.getElementById('tc-'+nombre).classList.add('active');
   if(nombre==='inicio') cargarActasInicio();
   if(nombre==='documentos') cargarDocumentos();
+  if(nombre==='capacitaciones') cargarCapacitaciones();
 }
 
 // ── HELPERS ──
@@ -533,7 +559,7 @@ async function cargarPacientes(){
   try{
     // Traemos todo y filtramos en cliente (evita index compuesto con !=)
     const snapSin=await db.collection('registros_entrega_efectiva').get();
-    const tiposExcluidos=new Set(['medico','uso_imagen','dotacion','herramientas','declaracion_traslado']);
+    const tiposExcluidos=new Set(['medico','uso_imagen','dotacion','herramientas','declaracion_traslado','capacitacion']);
     const todos=snapSin.docs
       .filter(d=>!tiposExcluidos.has(d.data().tipo_registro))
       .map(d=>limpiarDato({id:d.id,...d.data()}))
@@ -578,6 +604,7 @@ function renderTablaPac(lista){
     const tr=document.createElement('tr');
     tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
       '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td>'+(r.capacitacion_nombre||'—')+'</td>'+
       '<td class="nombre">'+(r.nombre||'—')+'</td>'+
       '<td>'+(r.tipo_documento||'')+' '+(r.num_identificacion||'')+'</td>'+
       '<td>'+(r.ciudad||'—')+'</td>'+
@@ -1327,6 +1354,93 @@ function exportarCSVDocs(){
   a.click();
 }
 
+// ── CAPACITACIONES ──
+let registrosCap=[];
+
+async function cargarCapacitaciones(){
+  try{
+    const snap=await db.collection('registros_entrega_efectiva')
+      .where('tipo_registro','==','capacitacion').get();
+    registrosCap=snap.docs.map(d=>limpiarDato({id:d.id,...d.data()})).sort((a,b)=>{
+      const ta=a.fecha&&a.fecha.toDate?a.fecha.toDate().getTime():0;
+      const tb=b.fecha&&b.fecha.toDate?b.fecha.toDate().getTime():0;
+      return tb-ta;
+    });
+    renderCap(registrosCap);
+    statsCap(registrosCap);
+    document.getElementById('loadCap').style.display='none';
+  }catch(e){
+    document.getElementById('loadCap').innerHTML='❌ Error al cargar: '+e.message;
+  }
+}
+
+function renderCap(lista){
+  const tbody=document.getElementById('tbodyCap');
+  const tabla=document.getElementById('tablaCap');
+  const empty=document.getElementById('emptyCap');
+  tbody.innerHTML='';
+  if(!lista.length){ tabla.style.display='none'; empty.style.display='block'; return; }
+  tabla.style.display='table'; empty.style.display='none';
+  lista.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--gris);font-size:11px;">'+(i+1)+'</td>'+
+      '<td style="white-space:nowrap;font-size:11px;color:var(--gris);">'+formatFecha(r.fecha)+'</td>'+
+      '<td class="nombre">'+(r.nombre||'—')+'</td>'+
+      '<td>'+(r.cedula||'—')+'</td>'+
+      '<td>'+(r.cargo||'—')+'</td>'+
+      '<td>'+(r.area||'—')+'</td>'+
+      '<td>'+(r.puntaje!=null?(r.puntaje+'/'+(r.total_preguntas||4)):'—')+'</td>'+
+      '<td><button class="btn-pdf" onclick="descargarConstancia(\''+r.id+'\',this)">📄 PDF</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function statsCap(lista){
+  const ahora=new Date(), hoy=ahora.toDateString();
+  document.getElementById('capTotal').textContent=lista.length;
+  document.getElementById('capHoy').textContent=lista.filter(r=>{
+    const d=r.fecha&&r.fecha.toDate?r.fecha.toDate():null; return d&&d.toDateString()===hoy;
+  }).length;
+  document.getElementById('capAprob').textContent=lista.filter(r=>r.aprobado).length;
+}
+
+function descargarConstancia(id,btn){
+  const r=registrosCap.find(x=>x.id===id);
+  if(!r) return alert('No se encontró la constancia.');
+  if(!window.CapacitacionPDF) return alert('No se cargó el generador de PDF.');
+  const t=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='Generando…'; }
+  setTimeout(()=>{
+    try{ window.CapacitacionPDF.descargar(r); }
+    catch(e){ alert('Error al generar el PDF: '+e.message); }
+    finally{ if(btn){ btn.disabled=false; btn.textContent=t; } }
+  },100);
+}
+
+document.getElementById('buscadorCap').addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  renderCap(registrosCap.filter(r=>
+    (r.nombre||'').toLowerCase().includes(q) ||
+    (r.cedula||'').toLowerCase().includes(q) ||
+    (r.cargo||'').toLowerCase().includes(q) ||
+    (r.area||'').toLowerCase().includes(q)
+  ));
+});
+
+function exportarCSVCap(){
+  if(!registrosCap.length) return alert('No hay constancias para exportar.');
+  const SEP=';';
+  const cols=['fecha','nombre','cedula','cargo','area','correo','puntaje','total_preguntas','aprobado'];
+  const cab=['Fecha','Nombre','Cédula','Cargo','Área','Correo','Puntaje','Total preguntas','Aprobado'];
+  const celda=v=>{let x=String(v==null?'':v);if(/^[=+\-@]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
+  const rows=registrosCap.map(r=>cols.map(c=>celda(c==='fecha'?formatFecha(r.fecha):r[c])).join(SEP));
+  const blob=new Blob(['\ufeff'+[cab.map(celda).join(SEP),...rows].join('\r\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Capacitaciones_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
 // ── LINKS ──
 async function cargarLinks(){
   const ahora=Date.now();
@@ -1391,7 +1505,8 @@ async function generarLink(tipoFormulario){
     dotacion:     'https://helseador.github.io/registro-helse/acta_dotacion.html',
     herramientas: 'https://helseador.github.io/registro-helse/acta_herramientas.html',
     colaborador:  'https://helseador.github.io/registro-helse/registro_colaborador.html',
-    declaracion:  'https://helseador.github.io/registro-helse/declaracion_traslado.html'
+    declaracion:  'https://helseador.github.io/registro-helse/declaracion_traslado.html',
+    capacitacion: 'https://helseador.github.io/registro-helse/capacitacion_seguridad.html'
   };
   const base=baseMap[tipoFormulario]||baseMap.paciente;
   const url=base+'?t='+token;

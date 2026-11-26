@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capacitación Seguridad de la Información – Helse</title>
+<link rel="icon" type="image/png" href="logo-mark.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#1B3A6B;--azul-dark:#122A52;--azul-light:#E3EAF5;--azul-bg:#F0F4FA;--verde:#2E7D32;--gris:#546E7A;--text:#1A2C2B;--border:#B0C4DE;--rojo:#C62828;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--azul-bg);color:var(--text);min-height:100vh;padding:28px 14px 70px;line-height:1.55;}
+.wrapper{max-width:780px;margin:0 auto;}
+.header{background:var(--azul);border-radius:20px 20px 0 0;padding:26px 32px 24px;color:#fff;position:relative;overflow:hidden;}
+.header::after{content:'';position:absolute;top:-60px;right:-60px;width:210px;height:210px;border-radius:50%;background:rgba(255,255,255,.06);}
+.header img{height:46px;background:#fff;border-radius:10px;padding:6px 12px;display:block;position:relative;}
+.header-tag{font-size:10.5px;letter-spacing:2.4px;text-transform:uppercase;opacity:.75;margin:14px 0 6px;font-weight:600;}
+.header h1{font-family:'DM Serif Display',serif;font-size:25px;font-weight:400;position:relative;line-height:1.2;}
+.header h1 span{display:block;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:300;opacity:.9;margin-top:5px;}
+.card{background:#fff;border-radius:0 0 20px 20px;padding:30px 32px 34px;box-shadow:0 4px 24px rgba(27,58,107,.10);}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--azul);margin:26px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--azul-light);}
+.section-label:first-child{margin-top:0;}
+.campo{margin-bottom:14px;}
+.campo-label{display:block;font-size:12.5px;font-weight:600;color:var(--azul-dark);margin-bottom:5px;}
+.req{color:var(--rojo);}
+input[type=text],input[type=email]{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:11px 13px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;background:#fff;transition:border-color .2s;}
+input[type=text]:focus,input[type=email]:focus{border-color:var(--azul);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.temario{background:var(--azul-bg);border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:13px;color:#334155;}
+.temario li{list-style:none;margin-bottom:7px;padding-left:24px;position:relative;}
+.temario li:before{content:'✓';position:absolute;left:0;color:var(--verde);font-weight:700;}
+.temario li:last-child{margin-bottom:0;}
+.pregunta{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+.pregunta h4{font-size:13px;color:var(--azul-dark);margin-bottom:9px;}
+.opcion{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:#334155;margin:5px 0;cursor:pointer;}
+.opcion input{margin-top:3px;width:15px;height:15px;flex:0 0 auto;}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:#334155;margin:14px 0 4px;}
+.check input{margin-top:3px;width:16px;height:16px;flex:0 0 auto;}
+.legal{background:var(--azul-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:12.5px;color:#334155;line-height:1.6;margin-top:6px;}
+.firma-box{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;}
+.firma-box canvas{display:block;width:100%;height:160px;cursor:crosshair;touch-action:none;}
+.btn{border:none;border-radius:9px;padding:11px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.2s;}
+.btn-azul{background:var(--azul);color:#fff;}
+.btn-gris{background:#fff;color:var(--azul);border:1.5px solid var(--border);}
+.btn-verde{background:var(--verde);color:#fff;}
+.btn-submit{width:100%;background:var(--azul);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:18px;}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;}
+.error-msg{display:none;font-size:11.5px;color:var(--rojo);margin-top:4px;}
+.campo.invalid input{border-color:var(--rojo);}
+.campo.invalid .firma-box{border-color:var(--rojo);}
+.campo.invalid .check{color:var(--rojo);}
+.nota-pie{font-size:11px;color:var(--gris);text-align:center;margin-top:12px;}
+.success-msg{display:none;text-align:center;padding:16px 0;}
+.success-msg .icon{font-size:44px;margin-bottom:10px;}
+.success-msg h3{font-size:18px;color:var(--verde);margin-bottom:6px;}
+.success-msg p{font-size:13px;color:var(--gris);}
+.success-msg .btn{margin-top:16px;}
+@media(max-width:560px){.header,.card{padding-left:20px;padding-right:20px;}.grid2{grid-template-columns:1fr;}.header h1{font-size:21px;}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <img src="logo.png" alt="Helse" onerror="this.style.display='none'">
+    <div class="header-tag">Grupo Helse SAS · Capacitación</div>
+    <h1>Seguridad de la Información<span>24 de noviembre de 2026 · Modalidad presencial / virtual</span></h1>
+  </div>
+
+  <div class="card">
+    <form id="form" novalidate>
+
+      <div class="section-label">Datos del Asistente</div>
+
+      <div class="campo" id="cNombre">
+        <label class="campo-label" for="nombre">Nombre completo <span class="req">*</span></label>
+        <input type="text" id="nombre" placeholder="Nombre y apellidos" autocomplete="name">
+        <div class="error-msg">Este campo es obligatorio.</div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cCedula">
+          <label class="campo-label" for="cedula">C.C. No. <span class="req">*</span></label>
+          <input type="text" id="cedula" placeholder="Número de documento">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="cCargo">
+          <label class="campo-label" for="cargo">Cargo <span class="req">*</span></label>
+          <input type="text" id="cargo" placeholder="Cargo">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="campo" id="cArea">
+          <label class="campo-label" for="area">Área / equipo <span class="req">*</span></label>
+          <input type="text" id="area" placeholder="Ej. Operaciones, Comercial">
+          <div class="error-msg">Este campo es obligatorio.</div>
+        </div>
+        <div class="campo" id="cCorreo">
+          <label class="campo-label" for="correo">Correo electrónico <span class="req">*</span></label>
+          <input type="email" id="correo" placeholder="usuario@helse.com.co">
+          <div class="error-msg">Ingresa un correo válido.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Contenido de la Capacitación</div>
+      <div class="temario">
+        <ul>
+          <li>Contraseñas seguras y autenticación de dos factores.</li>
+          <li>Phishing, ingeniería social y correos sospechosos.</li>
+          <li>Manejo de datos personales y Ley 1581 de 2012.</li>
+          <li>Uso seguro de dispositivos, correo y redes.</li>
+          <li>Cómo reportar un incidente de seguridad.</li>
+        </ul>
+      </div>
+
+      <div class="section-label">Evaluación corta</div>
+      <p style="font-size:12px;color:var(--gris);margin-bottom:10px;">Responde las 4 preguntas. Necesitas acertar al menos 3 para firmar la constancia.</p>
+      <div id="quiz"></div>
+      <div class="error-msg" id="quizError" style="margin-top:6px;">Debes acertar al menos 3 de 4 preguntas.</div>
+
+      <div class="section-label">Firma</div>
+
+      <div class="campo" id="cFirma">
+        <div class="firma-bloque">
+          <div id="fr1">
+            <label class="campo-label">Firma del asistente <span class="req">*</span></label>
+            <button type="button" class="btn btn-gris" style="width:100%;" onclick="mostrarFirma()">✍️ Toque aquí para firmar</button>
+          </div>
+          <div id="fr2" style="display:none;">
+            <p style="font-size:12px;color:var(--gris);margin-bottom:8px;">Firme en el recuadro blanco de abajo</p>
+            <div class="firma-box" id="fwFirma"><canvas id="canvasFirma"></canvas></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button type="button" class="btn btn-azul" onclick="guardarFirma()">✅ Guardar firma</button>
+              <button type="button" class="btn btn-gris" onclick="limpiarFirmaCanvas()">🔄 Limpiar</button>
+            </div>
+          </div>
+          <div id="fr3" style="display:none;">
+            <p style="font-size:12px;color:var(--verde);font-weight:600;margin-bottom:8px;">✅ Firma guardada</p>
+            <img id="previewFirma" style="width:100%;max-height:110px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:8px;" alt="Firma">
+            <button type="button" class="btn btn-gris" style="margin-top:10px;" onclick="volverFirmar()">🔄 Volver a firmar</button>
+          </div>
+        </div>
+        <div class="error-msg">La firma es obligatoria.</div>
+      </div>
+
+      <div class="legal">
+        <p><strong>Declaración de aceptación.</strong> Declaro que recibí la capacitación de Seguridad de la Información, que comprendí su contenido, que tuve la oportunidad de resolver mis dudas y que me comprometo a aplicar las medidas de seguridad, proteger la información de la compañía y reportar cualquier incidente por los canales oficiales.</p>
+        <label class="check"><input type="checkbox" id="acepta"> Acepto y confirmo que entendí la capacitación.</label>
+        <div class="error-msg" id="aceptaError">Debes aceptar para continuar.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">Firmar constancia</button>
+      <p class="nota-pie">Al enviar, confirma que la información es verídica y autoriza el tratamiento de sus datos (Ley 1581 de 2012).</p>
+
+      <div class="success-msg" id="successMsg">
+        <div class="icon">✅</div>
+        <h3>¡Constancia firmada!</h3>
+        <p>Tu asistencia y aceptación quedaron registradas.<br>Puedes descargar la constancia en PDF.</p>
+        <button type="button" class="btn btn-verde" onclick="descargarMiPDF()">⬇️ Descargar constancia</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="capacitacion_pdf.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAFwEKomENQ5RVni56o2N-7aZBTi1k-yk0",
+  authDomain: "helse-entregas.firebaseapp.com",
+  projectId: "helse-entregas",
+  storageBucket: "helse-entregas.firebasestorage.app",
+  messagingSenderId: "1086193469864",
+  appId: "1:1086193469864:web:6fa63ca72fc70d8e0ff59d"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const linkToken = new URLSearchParams(window.location.search).get('t') || '';
+
+const txt = id => document.getElementById(id).value.trim();
+
+const QUIZ = [
+  { q: '¿Cuál de estas es una contraseña segura?',
+    opts: ['Helse2026', 'Seguridad123', 'M!r4#Tq9$Lp2', '12345678'], ok: 2 },
+  { q: 'Recibes un correo que pide “verificar tu contraseña” con un enlace. ¿Qué haces?',
+    opts: ['Abro el enlace y escribo mi clave', 'Lo reenvío a mis compañeros', 'No abro el enlace y lo reporto por el canal oficial', 'Lo ignoro y lo borro'], ok: 2 },
+  { q: '¿Cómo debes manejar la información de pacientes?',
+    opts: ['Compartirla por WhatsApp personal', 'Solo por canales autorizados y con acceso mínimo necesario', 'Enviarla a mi correo personal para trabajar', 'Comentarla con compañeros'], ok: 1 },
+  { q: '¿Qué haces si pierdes un dispositivo con información de la empresa?',
+    opts: ['No digo nada', 'Reporto de inmediato al área de sistemas / seguridad', 'Cambio la clave después', 'Espero a que aparezca'], ok: 1 },
+];
+
+function renderQuiz(){
+  const cont = document.getElementById('quiz');
+  cont.innerHTML = QUIZ.map((item, i) =>
+    '<div class="pregunta" data-q="'+i+'">' +
+      '<h4>' + (i+1) + '. ' + item.q + '</h4>' +
+      item.opts.map((o, j) =>
+        '<label class="opcion"><input type="radio" name="q'+i+'" value="'+j+'"> <span>'+o+'</span></label>'
+      ).join('') +
+    '</div>'
+  ).join('');
+}
+renderQuiz();
+
+let firmaHecha = false, firmaGuardada = false, canvas, ctx, draw = false;
+
+function mostrarFirma(){
+  document.getElementById('fr1').style.display = 'none';
+  document.getElementById('fr2').style.display = 'block';
+  initCanvas();
+}
+
+function initCanvas(){
+  const wrap = document.getElementById('fwFirma');
+  canvas = document.getElementById('canvasFirma');
+  const w = wrap.clientWidth || 500;
+  canvas.width = w; canvas.height = 160;
+  canvas.style.width = w + 'px'; canvas.style.height = '160px';
+  ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, 160);
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  firmaHecha = false; draw = false;
+  const xy = e => {
+    const r = canvas.getBoundingClientRect();
+    const s = e.touches ? e.touches[0] : e;
+    return { x: s.clientX - r.left, y: s.clientY - r.top };
+  };
+  canvas.onmousedown = e => { draw = true; const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+  canvas.onmousemove = e => { if(!draw) return; const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHecha = true; };
+  canvas.onmouseup = canvas.onmouseleave = () => draw = false;
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); draw = true; const p = xy(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive:false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!draw) return; const p = xy(e); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaHecha = true; }, { passive:false });
+  canvas.addEventListener('touchend', () => draw = false);
+}
+
+function limpiarFirmaCanvas(){
+  if(!ctx) return;
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  firmaHecha = false;
+}
+
+function guardarFirma(){
+  if(!firmaHecha){ alert('Por favor firme antes de guardar.'); return; }
+  document.getElementById('previewFirma').src = canvas.toDataURL('image/png');
+  document.getElementById('fr2').style.display = 'none';
+  document.getElementById('fr3').style.display = 'block';
+  firmaGuardada = true;
+  document.getElementById('cFirma').classList.remove('invalid');
+}
+
+function volverFirmar(){
+  firmaGuardada = false;
+  document.getElementById('fr3').style.display = 'none';
+  document.getElementById('fr1').style.display = 'block';
+}
+
+let ultimaConstancia = null;
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.querySelectorAll('.campo').forEach(c => c.classList.remove('invalid'));
+  document.getElementById('quizError').style.display = 'none';
+  document.getElementById('aceptaError').style.display = 'none';
+
+  let ok = true;
+  const req = [['cNombre','nombre'],['cCedula','cedula'],['cCargo','cargo'],['cArea','area'],['cCorreo','correo']];
+  req.forEach(([c, f]) => {
+    const v = txt(f);
+    if(!v){ document.getElementById(c).classList.add('invalid'); ok = false; }
+  });
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(txt('correo'))){ document.getElementById('cCorreo').classList.add('invalid'); ok = false; }
+  if(!firmaGuardada){ document.getElementById('cFirma').classList.add('invalid'); ok = false; }
+  if(!document.getElementById('acepta').checked){ document.getElementById('aceptaError').style.display = 'block'; ok = false; }
+
+  const respuestas = [];
+  let puntaje = 0;
+  QUIZ.forEach((item, i) => {
+    const sel = document.querySelector('input[name="q'+i+'"]:checked');
+    if(!sel){ ok = false; }
+    else {
+      respuestas.push(parseInt(sel.value, 10));
+      if(parseInt(sel.value, 10) === item.ok) puntaje++;
+    }
+  });
+  if(respuestas.length < QUIZ.length || puntaje < 3){
+    document.getElementById('quizError').style.display = 'block';
+    ok = false;
+  }
+  if(!ok){ document.querySelector('.campo.invalid')?.scrollIntoView({ behavior:'smooth', block:'center' }); return; }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+
+  try{
+    const data = {
+      tipo_registro: 'capacitacion',
+      capacitacion_id: 'seguridad-informacion-2026-11-24',
+      capacitacion_nombre: 'Seguridad de la Información',
+      fecha_capacitacion: '2026-11-24',
+      fecha: firebase.firestore.FieldValue.serverTimestamp(),
+      nombre: txt('nombre'),
+      cedula: txt('cedula'),
+      cargo: txt('cargo'),
+      area: txt('area'),
+      correo: txt('correo'),
+      respuestas: respuestas,
+      puntaje: puntaje,
+      total_preguntas: QUIZ.length,
+      aprobado: puntaje >= 3,
+      acepta: true,
+      firma_imagen: document.getElementById('previewFirma').src,
+      token: linkToken,
+    };
+    const ref = await db.collection('registros_entrega_efectiva').add(data);
+    ultimaConstancia = Object.assign({ id: ref.id, fecha: new Date() }, data);
+    btn.style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+    document.getElementById('successMsg').scrollIntoView({ behavior:'smooth', block:'center' });
+  }catch(err){
+    btn.disabled = false; btn.textContent = 'Firmar constancia';
+    alert('Error al enviar: ' + err.message);
+  }
+});
+
+function descargarMiPDF(){
+  if(ultimaConstancia && window.CapacitacionPDF) window.CapacitacionPDF.descargar(ultimaConstancia);
+}
+</script>
+</body>
+</html>
